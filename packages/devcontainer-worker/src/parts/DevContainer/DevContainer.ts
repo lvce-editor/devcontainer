@@ -19,7 +19,7 @@ const configNotFound = (workspaceFolder: string) => {
 
 const getStringProperty = (value: unknown, property: string) => {
   if (value && typeof value === 'object' && property in value) {
-    const propertyValue = value[property as keyof typeof value]
+    const { [property]: propertyValue } = value as Record<string, unknown>
     if (typeof propertyValue === 'string') {
       return propertyValue
     }
@@ -31,7 +31,9 @@ const isOk = (result: unknown): result is CliLikeResult => {
   return Boolean(result && typeof result === 'object' && 'ok' in result)
 }
 
-export const detect = DevContainerConfig.detect
+export const detect = (options: { workspaceFolder: string }) => {
+  return DevContainerConfig.detect(options)
+}
 
 export const getState = ({ workspaceFolder }: { workspaceFolder: string }) => {
   return (
