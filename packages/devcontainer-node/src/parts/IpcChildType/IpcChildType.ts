@@ -19,5 +19,5 @@ export const Auto = () => {
   if (argv.includes('--ipc-type=electron-utility-process')) {
     return ElectronUtilityProcess
   }
-  throw new Error(`[pty-host] unknown ipc type`)
+  throw new Error(`[devcontainer] unknown ipc type`)
 }

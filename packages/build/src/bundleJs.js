@@ -10,7 +10,7 @@ import { root } from './root.js'
  * @type {import('rollup').RollupOptions}
  */
 const options = {
-  input: join(root, 'packages/pty-host/src/ptyHostMain.ts'),
+  input: join(root, 'packages/devcontainer/src/ptyHostMain.ts'),
   preserveEntrySignatures: 'strict',
   treeshake: {
     propertyReadSideEffects: false,

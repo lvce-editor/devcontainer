@@ -3,7 +3,7 @@
   "include": [],
   "references": [
     {
-      "path": "./packages/pty-host"
+      "path": "./packages/devcontainer"
     },
     {
       "path": "./packages/build"

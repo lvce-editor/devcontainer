@@ -1,5 +1,5 @@
 {
-  "name": "@lvce-editor/pty-host-memory",
+  "name": "@lvce-editor/devcontainer-memory",
   "version": "0.0.0-dev",
   "type": "module",
   "scripts": {

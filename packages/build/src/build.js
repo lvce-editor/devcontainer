@@ -64,7 +64,7 @@ await bundleJs()
 const version = await getVersion()
 
 const packageJson = await readJson(
-  join(root, 'packages', 'pty-host', 'package.json'),
+  join(root, 'packages', 'devcontainer', 'package.json'),
 )
 
 delete packageJson.scripts

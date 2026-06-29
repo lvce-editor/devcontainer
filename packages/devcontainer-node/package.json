@@ -1,13 +1,13 @@
 {
-  "name": "@lvce-editor/pty-host",
+  "name": "@lvce-editor/devcontainer",
   "version": "0.0.0-dev",
   "keywords": [
     "lvce-editor",
-    "pty-host"
+    "devcontainer"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/lvce-editor/pty-host.git"
+    "url": "https://github.com/lvce-editor/devcontainer.git"
   },
   "license": "MIT",
   "author": "Lvce Editor",
