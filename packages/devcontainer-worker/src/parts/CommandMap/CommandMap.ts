@@ -1,20 +1,21 @@
-import * as ExecuteShellCommand from '../ExecuteShellCommand/ExecuteShellCommand.ts'
+import * as DevContainer from '../DevContainer/DevContainer.ts'
+import * as DevContainerCommandType from '../DevContainerCommandType/DevContainerCommandType.ts'
 import * as HandleElectronMessagePort from '../HandleElectronMessagePort/HandleElectronMessagePort.ts'
 import * as HandleNodeMessagePort from '../HandleNodeMessagePort/HandleNodeMessagePort.ts'
 import * as HandleWebSocket from '../HandleWebSocket/HandleWebSocket.ts'
-import * as PtyController from '../PtyController/PtyController.ts'
-import * as TerminalProcessCommandType from '../TerminalProcessCommandType/TerminalProcessCommandType.ts'
 
 export const commandMap = {
-  [TerminalProcessCommandType.HandleElectronMessagePort]:
+  [DevContainerCommandType.HandleElectronMessagePort]:
     HandleElectronMessagePort.handleElectronMessagePort,
-  [TerminalProcessCommandType.HandleNodeMessagePort]:
+  [DevContainerCommandType.HandleNodeMessagePort]:
     HandleNodeMessagePort.handleNodeMessagePort,
-  [TerminalProcessCommandType.HandleWebSocket]: HandleWebSocket.handleWebSocket,
-  [TerminalProcessCommandType.TerminalCreate]: PtyController.create,
-  [TerminalProcessCommandType.TerminalDispose]: PtyController.dispose,
-  [TerminalProcessCommandType.TerminalExecuteShellCommand]:
-    ExecuteShellCommand.executeShellCommand,
-  [TerminalProcessCommandType.TerminalResize]: PtyController.resize,
-  [TerminalProcessCommandType.TerminalWrite]: PtyController.write,
+  [DevContainerCommandType.HandleWebSocket]: HandleWebSocket.handleWebSocket,
+  [DevContainerCommandType.DevContainerDetect]: DevContainer.detect,
+  [DevContainerCommandType.DevContainerReadConfiguration]:
+    DevContainer.readConfiguration,
+  [DevContainerCommandType.DevContainerUp]: DevContainer.up,
+  [DevContainerCommandType.DevContainerExec]: DevContainer.exec,
+  [DevContainerCommandType.DevContainerStop]: DevContainer.stop,
+  [DevContainerCommandType.DevContainerRemove]: DevContainer.remove,
+  [DevContainerCommandType.DevContainerGetState]: DevContainer.getState,
 }

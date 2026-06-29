@@ -3,7 +3,10 @@
   "include": [],
   "references": [
     {
-      "path": "./packages/devcontainer"
+      "path": "./packages/devcontainer-worker"
+    },
+    {
+      "path": "./packages/devcontainer-node"
     },
     {
       "path": "./packages/build"
@@ -12,13 +15,7 @@
       "path": "./packages/e2e"
     },
     {
-      "path": "./packages/test-integration-util"
-    },
-    {
-      "path": "./packages/test-integration"
-    },
-    {
-      "path": "./packages/pty-integration"
+      "path": "./packages/server"
     },
     {
       "path": "./packages/memory"

@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["esnext", "webworker"],
+    "lib": ["esnext"],
     "target": "esnext",
     "checkJs": true,
     "module": "NodeNext",
-    "types": [],
+    "types": ["node"],
     "moduleResolution": "nodenext",
     "isolatedModules": true,
     "noImplicitAny": false,

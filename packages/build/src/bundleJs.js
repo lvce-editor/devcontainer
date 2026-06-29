@@ -10,13 +10,16 @@ import { root } from './root.js'
  * @type {import('rollup').RollupOptions}
  */
 const options = {
-  input: join(root, 'packages/devcontainer/src/ptyHostMain.ts'),
+  input: join(
+    root,
+    'packages/devcontainer-worker/src/devcontainerWorkerMain.ts',
+  ),
   preserveEntrySignatures: 'strict',
   treeshake: {
     propertyReadSideEffects: false,
   },
   output: {
-    file: join(root, '.tmp/dist/dist/ptyHostMain.js'),
+    file: join(root, '.tmp/dist/dist/devcontainerWorkerMain.js'),
     format: 'es',
     freeze: false,
     generatedCode: {
@@ -25,7 +28,7 @@ const options = {
     },
     inlineDynamicImports: true,
   },
-  external: ['electron', 'execa', 'ws', 'node-pty', 'debug'],
+  external: ['electron', 'execa', 'ws', 'debug'],
   plugins: [
     babel({
       babelHelpers: 'bundled',

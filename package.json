@@ -12,8 +12,10 @@
   "license": "MIT",
   "author": "Lvce Editor",
   "type": "module",
-  "main": "src/ptyHostMain.ts",
-  "bin": "bin/ptyHost.js",
+  "main": "packages/devcontainer-worker/src/devcontainerWorkerMain.ts",
+  "bin": {
+    "devcontainer-worker": "bin/devcontainerWorker.js"
+  },
   "scripts": {
     "build": "node packages/build/src/build.js",
     "format": "prettier --write .",
