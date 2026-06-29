@@ -18,6 +18,7 @@
   },
   "scripts": {
     "build": "node packages/build/src/build.js",
+    "e2e:devcontainer": "npm run test:e2e --prefix packages/devcontainer-worker",
     "format": "prettier --write .",
     "postinstall": "lerna bootstrap --ci",
     "lint": "eslint .",
