@@ -1,0 +1,44 @@
+{
+  "name": "@lvce-editor/devcontainer-monorepo",
+  "version": "0.0.0-dev",
+  "keywords": [
+    "lvce-editor",
+    "devcontainer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lvce-editor/devcontainer.git"
+  },
+  "license": "MIT",
+  "author": "Lvce Editor",
+  "type": "module",
+  "main": "packages/devcontainer-worker/src/devcontainerWorkerMain.ts",
+  "bin": {
+    "devcontainer-worker": "bin/devcontainerWorker.js"
+  },
+  "scripts": {
+    "build": "node packages/build/src/build.js",
+    "e2e:devcontainer": "npm run test:e2e --prefix packages/devcontainer-worker",
+    "format": "prettier --write .",
+    "postinstall": "lerna bootstrap --ci",
+    "lint": "eslint .",
+    "test": "lerna run test",
+    "type-check": "tsc -b"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
+  "devDependencies": {
+    "@lerna/legacy-package-management": "^8.2.4",
+    "@lvce-editor/eslint-config": "^8.2.0",
+    "@types/node": "^24.2.0",
+    "eslint": "^10.2.0",
+    "lerna": "^8.2.3",
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

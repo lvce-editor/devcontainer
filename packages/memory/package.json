@@ -1,0 +1,13 @@
+{
+  "name": "@lvce-editor/devcontainer-memory",
+  "version": "0.0.0-dev",
+  "type": "module",
+  "scripts": {
+    "measure": "node --experimental-strip-types src/measureMemory.ts",
+    "measure:visible": "node --experimental-strip-types src/measureMemory.ts --no-headless"
+  },
+  "devDependencies": {
+    "@lvce-editor/measure-memory": "^3.1.0",
+    "@types/node": "^24.2.0"
+  }
+}
