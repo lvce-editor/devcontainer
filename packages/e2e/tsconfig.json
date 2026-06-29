@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["esnext", "WebWorker"],
+    "checkJs": true,
+    "module": "nodenext",
+    "types": [],
+    "moduleResolution": "nodeNext",
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "assumeChangesOnlyAffectDirectDependencies": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "composite": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src", "test"]
+}

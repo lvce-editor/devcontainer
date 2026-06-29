@@ -1,2 +1,3 @@
-# devcontainer
-Devcontainer support for Lvce Editor
+# Pty Host
+
+Terminal process used in Lvce Editor.

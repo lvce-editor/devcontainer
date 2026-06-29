@@ -1,0 +1,40 @@
+{
+  "name": "@lvce-editor/pty-host-monorepo",
+  "version": "0.0.0-dev",
+  "keywords": [
+    "lvce-editor",
+    "pty-host"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lvce-editor/pty-host.git"
+  },
+  "license": "MIT",
+  "author": "Lvce Editor",
+  "type": "module",
+  "main": "src/ptyHostMain.ts",
+  "bin": "bin/ptyHost.js",
+  "scripts": {
+    "build": "node packages/build/src/build.js",
+    "format": "prettier --write .",
+    "postinstall": "lerna bootstrap --ci",
+    "lint": "eslint .",
+    "test": "lerna run test",
+    "type-check": "tsc -b"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
+  "devDependencies": {
+    "@lerna/legacy-package-management": "^8.2.4",
+    "@lvce-editor/eslint-config": "^8.2.0",
+    "eslint": "^10.2.0",
+    "lerna": "^8.2.3",
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
