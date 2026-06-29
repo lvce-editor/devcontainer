@@ -28,11 +28,10 @@ function updateDependencies {
 
                                                        updateDependencies             &&
 cd packages/build                                   && updateDependencies && cd ../.. &&
-cd packages/devcontainer                                && updateDependencies && cd ../.. &&
+cd packages/devcontainer-node                                && updateDependencies && cd ../.. &&
+cd packages/devcontainer-worker                                && updateDependencies && cd ../.. &&
 cd packages/memory                                  && updateDependencies && cd ../.. &&
 cd packages/server                                  && updateDependencies && cd ../.. &&
-cd packages/test-integration                        && updateDependencies && cd ../.. &&
-cd packages/test-integration-util                   && updateDependencies && cd ../.. &&
 
 echo "Great Success!"
 
