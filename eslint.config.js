@@ -24,6 +24,11 @@ export default [
       'unicorn/consistent-function-scoping': 'off',
       'unicorn/no-process-exit': 'off',
       '@cspell/spellchecker': 'off',
+      'e2e/prefer-filesystem-set-files': 'off',
+      'sonarjs/no-empty-collection': 'off',
+      'unicorn/no-top-level-assignment-in-function': 'off',
+      'unicorn/no-unnecessary-splice': 'off',
+      'unicorn/no-unreadable-object-destructuring': 'off',
     },
   },
 ]
