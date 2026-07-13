@@ -6,7 +6,7 @@ import * as RunProcess from '../RunProcess/RunProcess.ts'
 export interface CliCommandSuccess {
   commandName: string
   exitCode: number | null
-  json: unknown
+  json?: unknown
   ok: true
   stderr: string
   stdout: string
@@ -57,7 +57,9 @@ export const getDevcontainerCliPath = () => {
   return require.resolve('@devcontainers/cli/devcontainer.js')
 }
 
-export const getCliReadConfigurationArgs = ({ workspaceFolder }: WorkspaceOptions) => {
+export const getCliReadConfigurationArgs = ({
+  workspaceFolder,
+}: WorkspaceOptions) => {
   return ['read-configuration', '--workspace-folder', workspaceFolder]
 }
 
@@ -143,6 +145,29 @@ const runDevcontainerCli = async (
   }
 }
 
+const runDevcontainerCommand = async (
+  commandName: string,
+  args: readonly string[],
+): Promise<CliCommandResult> => {
+  const result = await RunProcess.runProcess({
+    args,
+    command: process.execPath,
+    cwd: process.cwd(),
+  })
+
+  if (isErrorResult(result) || result.exitCode) {
+    return toCliError(commandName, result)
+  }
+
+  return {
+    commandName,
+    exitCode: result.exitCode,
+    ok: true,
+    stderr: result.stderr,
+    stdout: result.stdout,
+  }
+}
+
 const runDocker = async (
   commandName: string,
   args: readonly string[],
@@ -179,7 +204,7 @@ export const cliUp = (options: WorkspaceOptions) => {
 }
 
 export const cliExec = (options: ExecOptions) => {
-  return runDevcontainerCli('DevContainerNode.cliExec', [
+  return runDevcontainerCommand('DevContainerNode.cliExec', [
     getDevcontainerCliPath(),
     ...getCliExecArgs(options),
   ])
