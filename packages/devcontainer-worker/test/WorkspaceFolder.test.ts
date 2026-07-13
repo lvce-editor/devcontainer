@@ -1,10 +1,12 @@
 import { expect, test } from '@jest/globals'
+import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import * as WorkspaceFolder from '../src/parts/WorkspaceFolder/WorkspaceFolder.js'
 
 test('toPath - file uri', () => {
-  expect(WorkspaceFolder.toPath(pathToFileURL('/workspace/sample').href)).toBe(
-    '/workspace/sample',
+  const workspacePath = resolve('workspace', 'sample')
+  expect(WorkspaceFolder.toPath(pathToFileURL(workspacePath).href)).toBe(
+    workspacePath,
   )
 })
 
