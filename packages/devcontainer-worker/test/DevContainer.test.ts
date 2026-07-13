@@ -2,6 +2,7 @@ import { afterEach, expect, test } from '@jest/globals'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import * as DevContainer from '../src/parts/DevContainer/DevContainer.js'
 import * as DevContainerNodeClient from '../src/parts/DevContainerNodeClient/DevContainerNodeClient.js'
 import * as DevContainerState from '../src/parts/DevContainerState/DevContainerState.js'
@@ -102,7 +103,7 @@ test('exec - before container start', async () => {
   })
 })
 
-test('stop - clears state after docker stop', async () => {
+test('stop - stores stopped state after docker stop', async () => {
   const workspaceFolder = await createWorkspace()
   const stopped: string[] = []
   DevContainerState.set(workspaceFolder, {
@@ -124,8 +125,39 @@ test('stop - clears state after docker stop', async () => {
     ok: true,
   })
   expect(stopped).toEqual(['container-1'])
-  expect(DevContainer.getState({ workspaceFolder })).toEqual({
+  expect(DevContainer.getState({ workspaceFolder })).toMatchObject({
+    containerId: 'container-1',
     status: 'stopped',
+  })
+})
+
+test('up - accepts a file workspace uri', async () => {
+  const workspaceFolder = await createWorkspace()
+  const workspaceUri = pathToFileURL(workspaceFolder).href
+  DevContainerNodeClient.setNodeApi({
+    cliExec: async () => ({ ok: true }),
+    cliReadConfiguration: async () => ({ ok: true }),
+    cliUp: async ({ workspaceFolder: receivedWorkspaceFolder }) => ({
+      json: {
+        containerId: 'container-1',
+        remoteWorkspaceFolder: receivedWorkspaceFolder,
+      },
+      ok: true,
+    }),
+    dockerRemoveContainer: async () => ({ ok: true }),
+    dockerStopContainer: async () => ({ ok: true }),
+  })
+
+  expect(
+    await DevContainer.up({ workspaceFolder: workspaceUri }),
+  ).toMatchObject({
+    ok: true,
+  })
+  expect(
+    DevContainer.getState({ workspaceFolder: workspaceUri }),
+  ).toMatchObject({
+    containerId: 'container-1',
+    status: 'running',
   })
 })
 

@@ -75,6 +75,7 @@ delete packageJson.xo
 delete packageJson.directories
 delete packageJson.nodemonConfig
 delete packageJson.dependencies['@lvce-editor/assert']
+delete packageJson.dependencies['@lvce-editor/devcontainer-node']
 delete packageJson.dependencies['@lvce-editor/rpc']
 delete packageJson.dependencies['@lvce-editor/ipc']
 delete packageJson.dependencies['@lvce-editor/json-rpc']
@@ -87,6 +88,10 @@ await writeJson(join(dist, 'package.json'), packageJson)
 
 await cp(join(root, 'README.md'), join(dist, 'README.md'))
 await cp(join(root, 'LICENSE'), join(dist, 'LICENSE'))
+await cp(
+  join(root, 'packages', 'extension', 'extension.json'),
+  join(dist, 'extension.json'),
+)
 
 await cp(join(root, 'bin'), join(root, '.tmp', 'dist', 'bin'), {
   recursive: true,

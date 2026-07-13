@@ -1,0 +1,6 @@
+{
+  "name": "builtin.devcontainer",
+  "version": "0.0.0-dev",
+  "license": "MIT",
+  "type": "module"
+}

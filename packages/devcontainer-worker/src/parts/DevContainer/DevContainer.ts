@@ -1,6 +1,7 @@
 import * as DevContainerConfig from '../DevContainerConfig/DevContainerConfig.ts'
 import * as DevContainerNodeClient from '../DevContainerNodeClient/DevContainerNodeClient.ts'
 import * as DevContainerState from '../DevContainerState/DevContainerState.ts'
+import * as WorkspaceFolder from '../WorkspaceFolder/WorkspaceFolder.ts'
 
 interface CliLikeResult {
   json?: unknown
@@ -32,10 +33,12 @@ const isOk = (result: unknown): result is CliLikeResult => {
 }
 
 export const detect = (options: { workspaceFolder: string }) => {
-  return DevContainerConfig.detect(options)
+  const workspaceFolder = WorkspaceFolder.toPath(options.workspaceFolder)
+  return DevContainerConfig.detect({ workspaceFolder })
 }
 
 export const getState = ({ workspaceFolder }: { workspaceFolder: string }) => {
+  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
   return (
     DevContainerState.get(workspaceFolder) ?? {
       status: 'stopped',
@@ -48,6 +51,7 @@ export const readConfiguration = async ({
 }: {
   workspaceFolder: string
 }) => {
+  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
   const detected = await detect({ workspaceFolder })
   if (!detected.found) {
     return configNotFound(workspaceFolder)
@@ -56,6 +60,7 @@ export const readConfiguration = async ({
 }
 
 export const up = async ({ workspaceFolder }: { workspaceFolder: string }) => {
+  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
   const detected = await detect({ workspaceFolder })
   if (!detected.found) {
     return configNotFound(workspaceFolder)
@@ -101,6 +106,7 @@ export const exec = async ({
   command: string
   workspaceFolder: string
 }) => {
+  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
   const currentState = DevContainerState.get(workspaceFolder)
   if (!currentState || currentState.status !== 'running') {
     return {
@@ -114,7 +120,12 @@ export const exec = async ({
   return DevContainerNodeClient.cliExec({ args, command, workspaceFolder })
 }
 
-export const stop = async ({ workspaceFolder }: { workspaceFolder: string }) => {
+export const stop = async ({
+  workspaceFolder,
+}: {
+  workspaceFolder: string
+}) => {
+  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
   const currentState = DevContainerState.get(workspaceFolder)
   if (!currentState?.containerId) {
     return {
@@ -129,7 +140,11 @@ export const stop = async ({ workspaceFolder }: { workspaceFolder: string }) => 
     containerId: currentState.containerId,
   })
   if (isOk(result) && result.ok) {
-    DevContainerState.remove(workspaceFolder)
+    DevContainerState.set(workspaceFolder, {
+      ...currentState,
+      lastResult: result,
+      status: 'stopped',
+    })
   } else {
     DevContainerState.set(workspaceFolder, {
       ...currentState,
@@ -145,6 +160,7 @@ export const remove = async ({
 }: {
   workspaceFolder: string
 }) => {
+  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
   const currentState = DevContainerState.get(workspaceFolder)
   if (!currentState?.containerId) {
     return {

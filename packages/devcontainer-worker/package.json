@@ -18,7 +18,6 @@
   },
   "scripts": {
     "test": "node --unhandled-rejections=warn --experimental-vm-modules ./node_modules/jest/bin/jest.js --detectOpenHandles --forceExit",
-    "test:e2e": "node --unhandled-rejections=warn --experimental-vm-modules ./node_modules/jest/bin/jest.js --runTestsByPath test/DevContainer.e2e.test.ts --detectOpenHandles --forceExit",
     "test:watch": "node --unhandled-rejections=warn --experimental-vm-modules ./node_modules/jest/bin/jest.js --watch"
   },
   "jest": {
@@ -39,7 +38,9 @@
     }
   },
   "dependencies": {
+    "@devcontainers/cli": "^0.87.0",
     "@lvce-editor/assert": "^1.5.1",
+    "@lvce-editor/devcontainer-node": "0.0.0-dev",
     "@lvce-editor/pretty-error": "^2.0.0",
     "@lvce-editor/rpc": "^6.4.0"
   },

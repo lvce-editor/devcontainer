@@ -39,6 +39,14 @@ jobs:
         if: steps.npm-cache.outputs.cache-hit != 'true'
       - run: npm run build
       - run: npm test
+      - name: Verify Docker
+        run: docker version
+        if: matrix.os == 'ubuntu-24.04'
+      - name: Pull devcontainer e2e images
+        run: |
+          docker pull mcr.microsoft.com/devcontainers/javascript-node:24
+          docker pull mcr.microsoft.com/devcontainers/base:ubuntu24.04
+        if: matrix.os == 'ubuntu-24.04'
       - run: npm run e2e:devcontainer
         if: matrix.os == 'ubuntu-24.04'
       - run: npm run type-check
