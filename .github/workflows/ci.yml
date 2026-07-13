@@ -39,7 +39,7 @@ jobs:
       - run: npm run build
       - run: npm test
       - name: Install Playwright Chromium
-        run: npm exec --prefix packages/e2e -- playwright install --with-deps chromium
+        run: npm run install:chromium --prefix packages/e2e
         if: matrix.os == 'ubuntu-24.04'
       - name: Verify Docker
         run: docker version

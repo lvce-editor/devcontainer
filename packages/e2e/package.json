@@ -7,6 +7,7 @@
   "scripts": {
     "e2e": "node ./node_modules/@lvce-editor/test-with-playwright/bin/test-with-playwright.js --only-extension=../../.tmp/dist --test-path=.",
     "e2e:headless": "node ./node_modules/@lvce-editor/test-with-playwright/bin/test-with-playwright.js --only-extension=../../.tmp/dist --test-path=. --headless",
+    "install:chromium": "playwright install --with-deps chromium",
     "type-check": "tsc"
   },
   "devDependencies": {
