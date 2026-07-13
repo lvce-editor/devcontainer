@@ -6,20 +6,15 @@ import { join } from 'path'
 import { rollup } from 'rollup'
 import { root } from './root.js'
 
-/**
- * @type {import('rollup').RollupOptions}
- */
-const options = {
-  input: join(
-    root,
-    'packages/devcontainer-worker/src/devcontainerWorkerMain.ts',
-  ),
+/** @returns {import('rollup').RollupOptions} */
+const createOptions = ({ input, output }) => ({
+  input,
   preserveEntrySignatures: 'strict',
   treeshake: {
     propertyReadSideEffects: false,
   },
   output: {
-    file: join(root, '.tmp/dist/dist/devcontainerWorkerMain.js'),
+    file: output,
     format: 'es',
     freeze: false,
     generatedCode: {
@@ -39,10 +34,37 @@ const options = {
     // @ts-ignore
     commonjs(),
   ],
-}
+})
 
-export const bundleJs = async () => {
+const bundle = async (options) => {
   const input = await rollup(options)
   // @ts-ignore
   await input.write(options.output)
+}
+
+export const bundleJs = async () => {
+  await bundle(
+    createOptions({
+      input: join(
+        root,
+        'packages/devcontainer-worker/src/devcontainerWorkerMain.ts',
+      ),
+      output: join(root, '.tmp/dist/dist/devcontainerWorkerMain.js'),
+    }),
+  )
+  await bundle(
+    createOptions({
+      input: join(
+        root,
+        'packages/devcontainer-worker/src/devcontainerWorkerModule.ts',
+      ),
+      output: join(root, '.tmp/dist/dist/devcontainerWorkerModule.js'),
+    }),
+  )
+  await bundle(
+    createOptions({
+      input: join(root, 'packages/extension/src/devcontainerMain.ts'),
+      output: join(root, '.tmp/dist/dist/devcontainerMain.js'),
+    }),
+  )
 }

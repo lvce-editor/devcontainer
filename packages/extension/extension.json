@@ -1,0 +1,20 @@
+{
+  "id": "builtin.devcontainer",
+  "name": "Dev Containers",
+  "description": "Dev container lifecycle support",
+  "browser": "dist/devcontainerMain.js",
+  "compatibility": {
+    "web": false
+  },
+  "activation": ["onCommand:devcontainer.start", "onCommand:devcontainer.stop"],
+  "commands": [
+    {
+      "id": "devcontainer.start",
+      "label": "Dev Containers: Start Current Workspace"
+    },
+    {
+      "id": "devcontainer.stop",
+      "label": "Dev Containers: Stop Current Workspace"
+    }
+  ]
+}

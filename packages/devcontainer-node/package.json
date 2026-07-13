@@ -13,6 +13,12 @@
   "author": "Lvce Editor",
   "type": "module",
   "main": "src/devcontainerNodeMain.ts",
+  "exports": {
+    "./devcontainer-cli": {
+      "types": "./src/devcontainerCli.d.ts",
+      "import": "./src/parts/DevContainerCli/DevContainerCli.ts"
+    }
+  },
   "bin": {
     "devcontainer-node": "bin/devcontainerNode.js"
   },

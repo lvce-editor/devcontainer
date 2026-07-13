@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "node packages/build/src/build.js",
-    "e2e:devcontainer": "npm run test:e2e --prefix packages/devcontainer-worker",
+    "e2e:devcontainer": "npm run e2e:headless --prefix packages/e2e",
     "format": "prettier --write .",
     "postinstall": "lerna bootstrap --ci",
     "lint": "eslint .",
@@ -37,6 +37,9 @@
     "lerna": "^8.2.3",
     "prettier": "^3.9.5",
     "typescript": "^6.0.2"
+  },
+  "dependencies": {
+    "@devcontainers/cli": "^0.87.0"
   },
   "engines": {
     "node": ">=18"
