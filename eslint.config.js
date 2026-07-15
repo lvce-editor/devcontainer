@@ -31,4 +31,10 @@ export default [
       'unicorn/no-unreadable-object-destructuring': 'off',
     },
   },
+  {
+    files: ['packages/e2e/**/*.ts'],
+    rules: {
+      'e2e/no-imports': 'off',
+    },
+  },
 ]
