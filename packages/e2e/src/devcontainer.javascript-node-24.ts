@@ -1,6 +1,29 @@
 /* eslint-disable e2e/prefer-execute-extension-command */
 import type { Test } from '@lvce-editor/test-with-playwright'
-import * as AssertResult from './parts/AssertResult/AssertResult.ts'
+
+const getProperty = (value: unknown, property: string): unknown => {
+  if (!value || typeof value !== 'object' || !(property in value)) {
+    return undefined
+  }
+  return value[property as keyof typeof value]
+}
+
+const assertOk = (result: unknown): void => {
+  if (getProperty(result, 'ok') !== true) {
+    throw new Error(
+      `Expected a successful result, received ${JSON.stringify(result)}`,
+    )
+  }
+}
+
+const assertStatus = (result: unknown, expectedStatus: string): void => {
+  const actualStatus = getProperty(result, 'status')
+  if (actualStatus !== expectedStatus) {
+    throw new Error(
+      `Expected devcontainer status ${expectedStatus}, received ${JSON.stringify(result)}`,
+    )
+  }
+}
 
 export const name = 'devcontainer.javascript-node-24'
 
@@ -9,20 +32,20 @@ export const test: Test = async ({ Command, Workspace }) => {
   await Workspace.setPath(workspaceUri)
 
   try {
-    AssertResult.ok(
+    assertOk(
       await Command.execute(
         'ExtensionHost.executeCommand',
         'devcontainer.start',
       ),
     )
-    AssertResult.status(
+    assertStatus(
       await Command.execute(
         'ExtensionHost.executeCommand',
         'devcontainer.getState',
       ),
       'running',
     )
-    AssertResult.ok(
+    assertOk(
       await Command.execute(
         'ExtensionHost.executeCommand',
         'devcontainer.exec',
@@ -30,13 +53,13 @@ export const test: Test = async ({ Command, Workspace }) => {
         ['--version'],
       ),
     )
-    AssertResult.ok(
+    assertOk(
       await Command.execute(
         'ExtensionHost.executeCommand',
         'devcontainer.stop',
       ),
     )
-    AssertResult.status(
+    assertStatus(
       await Command.execute(
         'ExtensionHost.executeCommand',
         'devcontainer.getState',
