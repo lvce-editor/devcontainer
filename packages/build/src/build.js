@@ -1,3 +1,4 @@
+import { packageExtension } from '@lvce-editor/package-extension'
 import { execa } from 'execa'
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -109,3 +110,9 @@ await writeFile(
   join(root, '.tmp', 'dist', 'bin', 'devcontainerWorker.js'),
   newContent,
 )
+
+await packageExtension({
+  highestCompression: true,
+  inDir: dist,
+  outFile: join(root, 'extension.tar.br'),
+})

@@ -7,7 +7,6 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
-  id-token: write # Required for OIDC
   contents: write
 
 jobs:
@@ -55,7 +54,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
-          registry-url: 'https://registry.npmjs.org'
       - name: Compute node modules cache key
         id: nodeModulesCacheKey
         run: echo "value=$(node packages/build/src/computeNodeModulesCacheKey.js)" >> $GITHUB_OUTPUT
@@ -72,11 +70,20 @@ jobs:
       - run: npm test
       - run: npm run type-check
       - run: npm run lint
-      - run: npm publish --access public
+      - name: Build release archive
         if: matrix.os == 'ubuntu-24.04'
-        working-directory: ./.tmp/dist
+        shell: bash
+        run: |
+          staging="devcontainer-${{ needs.create-release.outputs.rg_version }}"
+          mv "extension.tar.br" "$staging.tar.br"
+          echo "ASSET=$staging.tar.br" >> "$GITHUB_ENV"
+      - name: Upload release archive
+        if: matrix.os == 'ubuntu-24.04'
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.create-release.outputs.rg_version }}"
+          gh release upload "$VERSION" "$ASSET"
       - name: Publish GitHub release
         if: matrix.os == 'ubuntu-24.04'
         env:
