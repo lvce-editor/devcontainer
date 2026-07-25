@@ -3,6 +3,7 @@
   "name": "Dev Containers",
   "description": "Dev container lifecycle support",
   "browser": "dist/devcontainerMain.js",
+  "contentSecurityPolicy": ["default-src 'none'", "script-src 'self'"],
   "compatibility": {
     "web": false
   },
