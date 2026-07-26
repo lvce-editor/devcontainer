@@ -12,6 +12,9 @@
   "license": "MIT",
   "author": "Lvce Editor",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "main": "packages/devcontainer-worker/src/devcontainerWorkerMain.ts",
   "bin": {
     "devcontainer-worker": "bin/devcontainerWorker.js"
@@ -20,9 +23,8 @@
     "build": "node packages/build/src/build.js",
     "e2e:devcontainer": "npm run e2e:headless --prefix packages/e2e",
     "format": "prettier --write .",
-    "postinstall": "lerna bootstrap --ci",
     "lint": "eslint .",
-    "test": "lerna run test",
+    "test": "npm test --workspaces --if-present",
     "type-check": "tsc -b"
   },
   "prettier": {
@@ -30,11 +32,9 @@
     "singleQuote": true
   },
   "devDependencies": {
-    "@lerna/legacy-package-management": "^8.2.4",
     "@lvce-editor/eslint-config": "^17.5.0",
     "@types/node": "^24.2.0",
     "eslint": "^10.8.0",
-    "lerna": "^8.2.3",
     "prettier": "^3.9.5",
     "typescript": "^6.0.2"
   },
