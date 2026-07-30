@@ -1,4 +1,4 @@
-export type DevContainerStatus = 'error' | 'running' | 'starting' | 'stopped'
+type DevContainerStatus = 'error' | 'running' | 'starting' | 'stopped'
 
 export interface DevContainerState {
   containerId?: string

@@ -16,7 +16,7 @@ const exists = async (path: string) => {
   }
 }
 
-export const getConfigCandidates = (workspaceFolder: string) => {
+const getConfigCandidates = (workspaceFolder: string) => {
   return [
     join(workspaceFolder, '.devcontainer', 'devcontainer.json'),
     join(workspaceFolder, '.devcontainer.json'),

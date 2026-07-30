@@ -1,0 +1,39 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["bin/*.js"],
+      "project": ["*.js", "bin/*.js"],
+      "ignore": ["bin/devcontainerWorker.js"]
+    },
+    "packages/build": {
+      "entry": ["src/build.js", "src/computeNodeModulesCacheKey.js"],
+      "project": ["src/**/*.js"]
+    },
+    "packages/devcontainer-node": {
+      "entry": ["bin/*.js", "src/devcontainerNodeMain.ts", "src/parts/DevContainerCli/DevContainerCli.ts", "test/**/*.test.ts"],
+      "project": ["bin/*.js", "src/**/*.{ts,d.ts}", "test/**/*.ts"]
+    },
+    "packages/devcontainer-worker": {
+      "entry": ["bin/*.js", "src/devcontainerWorkerMain.ts", "src/devcontainerWorkerModule.ts", "test/**/*.test.ts"],
+      "project": ["bin/*.js", "src/**/*.ts", "test/**/*.ts"]
+    },
+    "packages/e2e": {
+      "entry": ["src/**/*.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "packages/extension": {
+      "entry": ["src/devcontainerMain.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "packages/memory": {
+      "entry": ["src/measureMemory.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "packages/server": {
+      "entry": ["src/postinstall.js"],
+      "project": ["src/**/*.js"],
+      "ignoreDependencies": ["@lvce-editor/server"]
+    }
+  }
+}
