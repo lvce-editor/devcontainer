@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import type { ErrorResult } from '../SerializeError/SerializeError.ts'
 import { serializeError } from '../SerializeError/SerializeError.ts'
 
-export interface RunProcessSuccess {
+interface RunProcessSuccess {
   exitCode: number | null
   stderr: string
   stdout: string
