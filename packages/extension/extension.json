@@ -3,11 +3,26 @@
   "name": "Dev Containers",
   "description": "Dev container lifecycle support",
   "browser": "dist/devcontainerMain.js",
+  "isolated": true,
   "contentSecurityPolicy": ["default-src 'none'", "script-src 'self'"],
   "compatibility": {
     "web": false
   },
-  "activation": ["onCommand:devcontainer.start", "onCommand:devcontainer.stop"],
+  "rpc": [
+    {
+      "id": "builtin.devcontainer.node",
+      "type": "node",
+      "name": "Dev Containers",
+      "url": "dist/devcontainerWorkerModule.js"
+    }
+  ],
+  "activation": [
+    "onCommand:devcontainer.start",
+    "onCommand:devcontainer.stop",
+    "onCommand:devcontainer.getState",
+    "onCommand:devcontainer.exec",
+    "onCommand:devcontainer.remove"
+  ],
   "commands": [
     {
       "id": "devcontainer.start",
@@ -16,6 +31,18 @@
     {
       "id": "devcontainer.stop",
       "label": "Dev Containers: Stop Current Workspace"
+    },
+    {
+      "id": "devcontainer.getState",
+      "label": "Dev Containers: Get State"
+    },
+    {
+      "id": "devcontainer.exec",
+      "label": "Dev Containers: Execute Command"
+    },
+    {
+      "id": "devcontainer.remove",
+      "label": "Dev Containers: Remove Current Workspace"
     }
   ]
 }

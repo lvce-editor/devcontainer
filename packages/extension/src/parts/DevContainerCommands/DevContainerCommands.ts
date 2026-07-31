@@ -1,11 +1,11 @@
 import * as Rpc from '../Rpc/Rpc.ts'
 import * as Workspace from '../Workspace/Workspace.ts'
 
-const invokeForCurrentWorkspace = (
+const invokeForCurrentWorkspace = async (
   method: string,
   options: Record<string, unknown> = {},
 ) => {
-  const workspaceFolder = Workspace.getFolder()
+  const workspaceFolder = await Workspace.getFolder()
   return Rpc.invoke(method, {
     ...options,
     workspaceFolder,
