@@ -2,5 +2,8 @@
   "name": "builtin.devcontainer",
   "version": "0.0.0-dev",
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@lvce-editor/api": "^8.74.0"
+  }
 }

@@ -3,10 +3,19 @@
   "name": "Dev Containers",
   "description": "Dev container lifecycle support",
   "browser": "dist/devcontainerMain.js",
+  "isolated": true,
   "contentSecurityPolicy": ["default-src 'none'", "script-src 'self'"],
   "compatibility": {
     "web": false
   },
+  "rpc": [
+    {
+      "id": "builtin.devcontainer.node",
+      "type": "node",
+      "name": "Dev Containers",
+      "url": "dist/devcontainerWorkerModule.js"
+    }
+  ],
   "activation": ["onCommand:devcontainer.start", "onCommand:devcontainer.stop"],
   "commands": [
     {

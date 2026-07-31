@@ -1,4 +1,4 @@
-import * as ExtensionInfo from '../ExtensionInfo/ExtensionInfo.ts'
+import { createNodeRpc } from '@lvce-editor/api'
 
 interface Rpc {
   invoke(method: string, ...params: readonly unknown[]): Promise<unknown>
@@ -7,11 +7,8 @@ interface Rpc {
 let rpcPromise: Promise<Rpc> | undefined
 
 const createRpc = async (): Promise<Rpc> => {
-  const path = `${ExtensionInfo.getPath()}/dist/devcontainerWorkerModule.js`
-  // @ts-ignore
-  return vscode.createNodeRpc({
-    name: 'Dev Containers',
-    path,
+  return createNodeRpc({
+    id: 'builtin.devcontainer.node',
   })
 }
 

@@ -1,3 +1,4 @@
+import { registerCommand } from '@lvce-editor/api'
 import * as DevContainerCommands from '../DevContainerCommands/DevContainerCommands.ts'
 
 const commands = [
@@ -25,7 +26,6 @@ const commands = [
 
 export const registerCommands = () => {
   for (const command of commands) {
-    // @ts-ignore
-    vscode.registerCommand(command)
+    registerCommand(command)
   }
 }
