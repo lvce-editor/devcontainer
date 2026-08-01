@@ -32,8 +32,7 @@
     "singleQuote": true
   },
   "devDependencies": {
-    "@lvce-editor/eslint-config": "^17.6.0",
-    "@lvce-editor/eslint-plugin-github-actions": "^17.6.0",
+    "@lvce-editor/eslint-config": "^18.0.0",
     "@types/node": "^24.2.0",
     "eslint": "^10.8.0",
     "knip": "^6.29.0",

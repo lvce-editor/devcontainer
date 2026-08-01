@@ -1,9 +1,9 @@
+import { defineConfig } from 'eslint/config'
 import * as config from '@lvce-editor/eslint-config'
-import * as actions from '@lvce-editor/eslint-plugin-github-actions'
 
-export default [
+export default defineConfig([
   ...config.default,
-  ...actions.default,
+  ...config.recommendedActions,
   {
     rules: {
       '@typescript-eslint/ban-ts-comment': 'off',
@@ -37,4 +37,4 @@ export default [
       'e2e/no-imports': 'off',
     },
   },
-]
+])
