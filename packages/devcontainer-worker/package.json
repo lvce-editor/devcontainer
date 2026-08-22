@@ -42,7 +42,7 @@
     "@lvce-editor/command": "^2.0.0",
     "@lvce-editor/devcontainer-node": "0.0.0-dev",
     "@lvce-editor/pretty-error": "^2.0.0",
-    "@lvce-editor/rpc": "^6.4.0"
+    "@lvce-editor/rpc": "^6.19.1"
   },
   "devDependencies": {
     "@jest/globals": "^30.4.1",

@@ -11,11 +11,22 @@
       "project": ["src/**/*.js"]
     },
     "packages/devcontainer-node": {
-      "entry": ["bin/*.js", "src/devcontainerNodeMain.ts", "src/parts/DevContainerCli/DevContainerCli.ts", "test/**/*.test.ts"],
+      "entry": [
+        "bin/*.js",
+        "src/devcontainerNodeMain.ts",
+        "src/parts/DevContainerCli/DevContainerCli.ts",
+        "test/**/*.test.ts"
+      ],
       "project": ["bin/*.js", "src/**/*.{ts,d.ts}", "test/**/*.ts"]
     },
     "packages/devcontainer-worker": {
-      "entry": ["bin/*.js", "src/devcontainerWorkerMain.ts", "src/devcontainerWorkerModule.ts", "test/**/*.test.ts"],
+      "entry": [
+        "bin/*.js",
+        "src/devcontainerProcess.ts",
+        "src/devcontainerWorkerMain.ts",
+        "src/devcontainerWorkerModule.ts",
+        "test/**/*.test.ts"
+      ],
       "project": ["bin/*.js", "src/**/*.ts", "test/**/*.ts"]
     },
     "packages/e2e": {

@@ -11,9 +11,9 @@
   "rpc": [
     {
       "id": "builtin.devcontainer.node",
-      "type": "node",
+      "type": "node-process",
       "name": "Dev Containers",
-      "url": "dist/devcontainerWorkerModule.js"
+      "url": "dist/devcontainerProcess.js"
     }
   ],
   "activation": [
