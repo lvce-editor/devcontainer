@@ -7,7 +7,11 @@ import { rollup } from 'rollup'
 import { root } from './root.js'
 
 /** @returns {import('rollup').RollupOptions} */
-const createOptions = ({ input, output }) => ({
+const createOptions = ({
+  external = ['electron', 'execa', 'ws', 'debug'],
+  input,
+  output,
+}) => ({
   input,
   preserveEntrySignatures: 'strict',
   treeshake: {
@@ -23,7 +27,7 @@ const createOptions = ({ input, output }) => ({
     },
     inlineDynamicImports: true,
   },
-  external: ['electron', 'execa', 'ws', 'debug'],
+  external,
   plugins: [
     babel({
       babelHelpers: 'bundled',
@@ -59,6 +63,16 @@ export const bundleJs = async () => {
         'packages/devcontainer-worker/src/devcontainerWorkerModule.ts',
       ),
       output: join(root, '.tmp/dist/dist/devcontainerWorkerModule.js'),
+    }),
+  )
+  await bundle(
+    createOptions({
+      external: ['electron', 'execa', 'debug'],
+      input: join(
+        root,
+        'packages/devcontainer-worker/src/devcontainerProcess.ts',
+      ),
+      output: join(root, '.tmp/dist/dist/devcontainerProcess.js'),
     }),
   )
   await bundle(
