@@ -21,12 +21,20 @@ export const cleanupContainers = async (workspacesPath) => {
     if (!workspace.isDirectory()) {
       continue
     }
-    const { stdout } = await execFileAsync('docker', [
-      'ps',
-      '-aq',
-      '--filter',
-      `label=devcontainer.local_folder=${join(workspacesPath, workspace.name)}`,
-    ])
+    let stdout
+    try {
+      ;({ stdout } = await execFileAsync('docker', [
+        'ps',
+        '-aq',
+        '--filter',
+        `label=devcontainer.local_folder=${join(workspacesPath, workspace.name)}`,
+      ]))
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return
+      }
+      throw error
+    }
     for (const containerId of stdout.trim().split('\n').filter(Boolean)) {
       await execFileAsync('docker', ['rm', '-f', containerId])
     }

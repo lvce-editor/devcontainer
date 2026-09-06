@@ -17,6 +17,7 @@
     }
   ],
   "activation": [
+    "onCommand:devcontainer.setDockerPath",
     "onCommand:devcontainer.start",
     "onCommand:devcontainer.stop",
     "onCommand:devcontainer.getState",
@@ -24,6 +25,10 @@
     "onCommand:devcontainer.remove"
   ],
   "commands": [
+    {
+      "id": "devcontainer.setDockerPath",
+      "internal": true
+    },
     {
       "id": "devcontainer.start",
       "label": "Dev Containers: Start Current Workspace"

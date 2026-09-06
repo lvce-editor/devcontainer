@@ -31,3 +31,7 @@ export const exec = (command: string, args: readonly string[] = []) => {
 export const remove = () => {
   return invokeForCurrentWorkspace('DevContainer.remove')
 }
+
+export const setDockerPath = (path: string) => {
+  return Rpc.invoke('DevContainer.setDockerPath', path)
+}

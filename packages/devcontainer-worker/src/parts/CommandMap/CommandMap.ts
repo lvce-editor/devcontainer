@@ -1,3 +1,4 @@
+import { setDockerPath } from '@lvce-editor/devcontainer-node/devcontainer-cli'
 import * as DevContainer from '../DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from '../DevContainerCommandType/DevContainerCommandType.ts'
 import * as HandleElectronMessagePort from '../HandleElectronMessagePort/HandleElectronMessagePort.ts'
@@ -11,6 +12,7 @@ export const commandMap = {
   [DevContainerCommandType.DevContainerReadConfiguration]:
     DevContainer.readConfiguration,
   [DevContainerCommandType.DevContainerRemove]: DevContainer.remove,
+  [DevContainerCommandType.DevContainerSetDockerPath]: setDockerPath,
   [DevContainerCommandType.DevContainerStop]: DevContainer.stop,
   [DevContainerCommandType.DevContainerUp]: DevContainer.up,
   [DevContainerCommandType.HandleElectronMessagePort]:

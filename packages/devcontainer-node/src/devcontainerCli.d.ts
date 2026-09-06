@@ -20,3 +20,5 @@ export function dockerRemoveContainer(
   options: ContainerOptions,
 ): Promise<unknown>
 export function dockerStopContainer(options: ContainerOptions): Promise<unknown>
+
+export function setDockerPath(path: string): void
