@@ -13,9 +13,10 @@ export const getWorkspaceUri = async (
   const source = toFileUri(
     new URL(import.meta.resolve(`../fixtures/${fixture}`)),
   )
+  const id = crypto.randomUUID()
   const workspace = toFileUri(
     new URL(
-      import.meta.resolve(`../.tmp/fixtures/${fixture}-${crypto.randomUUID()}`),
+      import.meta.resolve(`../.tmp/fixtures/${fixture}-${id}`),
     ),
   )
   await Command.execute('FileSystem.copy', source, workspace)
