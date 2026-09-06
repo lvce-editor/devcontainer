@@ -11,7 +11,6 @@ const invoke = (
 
 export const fileSystem: FileSystemProvider = {
   id: 'devcontainers',
-  pathSeparator: '/',
   isReadonly: () => false,
   readDirWithFileTypes: async (uri): Promise<readonly FileSystemDirent[]> => {
     return (await invoke(
