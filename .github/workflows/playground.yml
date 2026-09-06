@@ -10,6 +10,8 @@ concurrency:
   group: playground-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  full-stack:
+    uses: ./.github/workflows/full-stack-playground.yml
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
@@ -49,13 +51,31 @@ jobs:
           path: |
             packages/playground/playwright-report
             packages/playground/test-results
+  package:
+    needs: [build, full-stack]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/download-artifact@v8
+        with:
+          name: playground-site
+          path: .tmp/playground
+      - uses: actions/download-artifact@v8
+        with:
+          name: full-stack-site
+          path: .tmp/playground/full-stack
+      - name: Check combined Pages size
+        run: node packages/playground/scripts/measure-site.js
       - uses: actions/upload-pages-artifact@v5
         if: github.ref == 'refs/heads/main'
         with:
           path: .tmp/playground
   deploy:
     if: github.ref == 'refs/heads/main'
-    needs: build
+    needs: package
     runs-on: ubuntu-24.04
     permissions:
       pages: write

@@ -70,3 +70,43 @@ npm run serve --workspace=packages/playground
 ```
 
 Open `http://127.0.0.1:4173/devcontainer/`. The server deliberately omits isolation headers to exercise the Pages service-worker bootstrap. `npm run test:browser --workspace=packages/playground` runs real VM acceptance tests after installing Playwright's Chromium and Firefox browsers. CI records runtime asset size and measured cold-start times in its job summary. Generated runtime assets stay in `.tmp`, outside Git.
+
+### Full startup experiment
+
+[Run the full startup test](https://lvce-editor.github.io/devcontainer/full-stack/)
+to exercise the real backend: shared lifecycle orchestration forks the actual
+`devcontainer-node` service over Node IPC, which launches the locked
+`@devcontainers/cli` package against Docker inside browser Linux.
+
+The automatic test detects the bundled configuration, runs `read-configuration`
+and `up`, verifies `initializeCommand` and `postCreateCommand`, checks real stdout,
+stderr, exit status and file persistence through separate CLI `exec` processes,
+then stops and removes the container. Each run asserts a fresh workspace. Stop
+terminates the whole VM; running again starts from the original image.
+
+This larger, experimental environment uses 512 MiB of guest RAM and may take
+several minutes. Browser memory usage also includes the emulator and filesystem.
+Docker uses VFS storage and a preloaded Alpine image with guest networking
+disabled. No host Docker socket, registry, arbitrary Dockerfile, Compose, or editor
+UI is involved. The lightweight shell playground remains available separately.
+
+CI first runs the same image natively with Docker-in-Docker, then converts it with
+container2wasm’s QEMU/Emscripten backend and tests Chromium and Firefox on the
+project subpath without isolation headers. Both demos must pass before deployment;
+the combined static site is capped at 900 MiB. Runtime assets are cached using the
+backend source, guest fixture, build scripts, and dependency lockfile.
+
+To build this experiment locally with the same prerequisites:
+
+```sh
+bash packages/playground/full-stack/build-image.sh
+node packages/playground/full-stack/build-site.js
+mkdir -p .tmp/playground
+cp -r .tmp/full-stack/site .tmp/playground/full-stack
+npm run serve --workspace=packages/playground
+```
+
+Visit `http://127.0.0.1:4173/devcontainer/full-stack/`. Run browser acceptance with
+`npx playwright test --config full-stack/playwright.config.ts` from
+`packages/playground`. To verify an already hosted copy, set
+`PLAYGROUND_BASE_URL` to its URL including the trailing slash.

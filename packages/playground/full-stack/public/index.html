@@ -1,50 +1,76 @@
 <!doctype html>
 <html lang="en">
-  <meta charset="utf-8" /><meta
-    name="viewport"
-    content="width=device-width,initial-scale=1"
-  />
-  <title>Full devcontainer startup test</title>
-  <style>
-    body {
-      max-width: 1000px;
-      margin: 48px auto;
-      padding: 0 24px;
-      background: #101813;
-      color: #e0eee2;
-      font: 16px system-ui;
-    }
-    button {
-      padding: 12px 20px;
-      margin-right: 12px;
-    }
-    pre {
-      padding: 24px;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      background: #061009;
-      min-height: 250px;
-    }
-    a {
-      color: #bee487;
-    }
-  </style>
-  <script src="./isolation.js"></script>
-  <script src="./coi-serviceworker.js"></script>
-  <script type="module" src="./app.js"></script>
-  <a href="../">← Linux playground</a>
-  <h1>Test the real devcontainer startup</h1>
-  <p>
-    Boot Linux, fork the extension’s Node process, and run the real
-    devcontainers CLI against Docker inside your browser.
-  </p>
-  <p>
-    This experiment downloads a larger environment. It can take several minutes.
-    No host Docker or registry connection is used.
-  </p>
-  <button id="start" disabled>Run full startup test</button
-  ><button id="stop" disabled>Stop</button>
-  <p id="status" role="status">Preparing browser isolation…</p>
-  <p id="size"></p>
-  <pre id="output" role="log" aria-label="Test output"></pre>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Run the real LVCE devcontainer Node service, devcontainers CLI, and Docker entirely in browser Linux."
+    />
+    <title>Full startup test · LVCE Editor</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./isolation.js"></script>
+    <script src="./coi-serviceworker.js"></script>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="../">LVCE EDITOR <span>/ DEVCONTAINERS</span></a>
+        <span class="tag">Full startup experiment</span>
+      </header>
+      <section class="intro">
+        <p class="eyebrow">THE WHOLE STARTUP. IN YOUR BROWSER.</p>
+        <h1>Real Node. Real CLI.<br />A real devcontainer.</h1>
+        <p>
+          Boot Linux, fork the extension’s Node service, and let the official
+          devcontainers CLI start Docker.<br />This automatic test runs entirely
+          on your device. Allow several minutes on a desktop browser.
+        </p>
+      </section>
+      <div class="workspace">
+        <aside>
+          <h2>01 <span>The startup test</span></h2>
+          <p class="filename">.devcontainer/devcontainer.json</p>
+          <pre id="config"></pre>
+          <div class="controls">
+            <button id="start" disabled>Run full startup test</button>
+            <button id="stop" disabled>Stop</button>
+          </div>
+          <p id="status" role="status">Preparing browser isolation…</p>
+          <p id="size" class="muted"></p>
+          <h2>02 <span>What it verifies</span></h2>
+          <p class="footnote">
+            Configuration detection → Node IPC → CLI up → startup hooks → CLI
+            exec → file persistence → Docker stop and remove.
+          </p>
+          <p class="footnote">
+            Each run starts fresh. Stop discards the entire VM. The test reports
+            real stdout, stderr, and exit codes.
+          </p>
+        </aside>
+        <section class="console" aria-label="Devcontainer startup test">
+          <div class="console-header">
+            <span><i></i> Linux / Node / devcontainers CLI / Docker</span>
+          </div>
+          <pre id="output" role="log" aria-label="Test output" tabindex="0">
+Click Run full startup test to download the environment and follow the startup process.</pre>
+        </section>
+      </div>
+      <footer>
+        <a href="../">← Interactive Linux playground</a>
+        <a href="../notices.html">Open-source notices</a>
+        <a
+          href="https://github.com/lvce-editor/devcontainer/tree/main/packages/playground/full-stack"
+          >Test source</a
+        >
+      </footer>
+      <p class="footnote">
+        Docker runs inside a disposable Linux VM with a bundled Alpine image.
+        Guest networking is disabled. This experiment tests the startup backend;
+        custom images, Compose, and the full editor UI are outside its scope.
+        Nothing connects to Docker on your computer.
+      </p>
+    </main>
+  </body>
 </html>

@@ -1,13 +1,18 @@
 import { NodeForkedProcessRpcParent } from '@lvce-editor/rpc'
 import assert from 'node:assert/strict'
 import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
 import { access, readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
+import { promisify } from 'node:util'
 import { createDevContainer } from '../../../devcontainer-worker/src/parts/CreateDevContainer/CreateDevContainer.ts'
 import * as DevContainerConfig from '../../../devcontainer-worker/src/parts/DevContainerConfig/DevContainerConfig.ts'
 
 const phase = (message: string) => console.log(`FULL_STACK_PHASE ${message}`)
+const report = (result: any) => {
+  console.log(`${result.commandName}: exit ${result.exitCode}`)
+  if (result.stdout) console.log(`stdout:\n${result.stdout}`)
+  if (result.stderr) console.log(`stderr:\n${result.stderr}`)
+}
 let rpc:
   Awaited<ReturnType<typeof NodeForkedProcessRpcParent.create>> | undefined
 let lifecycle: ReturnType<typeof createDevContainer> | undefined
@@ -57,11 +62,11 @@ try {
   const configuration: any = await lifecycle.readConfiguration({
     workspaceFolder,
   })
-  console.log(JSON.stringify(configuration))
+  report(configuration)
   assert.equal(configuration.ok, true)
   phase('Running the real CLI up command')
   const started: any = await lifecycle.up({ workspaceFolder })
-  console.log(JSON.stringify(started))
+  report(started)
   assert.equal(started.ok, true)
   assert.match(started.json.containerId, /^[a-f0-9]{64}$/)
   const running = await lifecycle.getState({ workspaceFolder })
@@ -80,7 +85,7 @@ try {
   const output = await execute(
     'pwd; sh hello.sh; cat created.txt; printf " separate stderr" >&2; exit 7',
   )
-  console.log(JSON.stringify(output))
+  report(output)
   assert.equal(output.exitCode, 7)
   assert.equal(
     output.stdout,

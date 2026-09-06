@@ -9,13 +9,17 @@ export default defineConfig({
   testDir: './test',
   timeout: 950_000,
   use: {
-    baseURL: 'http://127.0.0.1:4173/devcontainer/',
+    baseURL:
+      process.env.PLAYGROUND_BASE_URL ||
+      'http://127.0.0.1:4173/devcontainer/full-stack/',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },
-  webServer: {
-    command: 'node ../scripts/serve.js',
-    url: 'http://127.0.0.1:4173/devcontainer/',
-  },
+  webServer: process.env.PLAYGROUND_BASE_URL
+    ? undefined
+    : {
+        command: 'node ../scripts/serve.js',
+        url: 'http://127.0.0.1:4173/devcontainer/',
+      },
   workers: 1,
 })

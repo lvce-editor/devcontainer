@@ -1,13 +1,23 @@
 import { build } from 'esbuild'
-import { cp, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
+import {
+  cp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../../../', import.meta.url))
 const output = `${root}.tmp/full-stack/site`
+await rm(output, { recursive: true, force: true })
 await mkdir(output, { recursive: true })
 await cp(`${root}.tmp/full-stack/image`, `${output}/runtime`, {
   recursive: true,
 })
+await cp(new URL('../public/style.css', import.meta.url), `${output}/style.css`)
 await cp(new URL('./public', import.meta.url), output, { recursive: true })
 await cp(
   new URL('../public/isolation.js', import.meta.url),
@@ -46,3 +56,7 @@ console.log(
   'Full stack assets:',
   assets.reduce((size, asset) => size + asset.bytes, 0),
 )
+
+if (assets.reduce((size, asset) => size + asset.bytes, 0) > 750 * 1024 * 1024) {
+  throw new Error('Full stack runtime exceeds its 750 MiB Pages budget')
+}

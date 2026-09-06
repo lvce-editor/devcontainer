@@ -23,7 +23,8 @@ createServer(async (request, response) => {
   }
   const file = resolve(
     root,
-    path.slice('/devcontainer/'.length) || 'index.html',
+    path.slice('/devcontainer/'.length) +
+      (path.endsWith('/') ? 'index.html' : ''),
   )
   if (!file.startsWith(root)) {
     response.writeHead(403).end()

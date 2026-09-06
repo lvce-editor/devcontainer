@@ -1,7 +1,7 @@
 name: Full stack playground
+# eslint-disable github-actions/on -- workflow_call is a supported reusable-workflow event
 on:
-  pull_request:
-    branches: [main]
+  workflow_call: {}
 permissions:
   contents: read
 concurrency:
@@ -20,14 +20,23 @@ jobs:
       - uses: docker/setup-buildx-action@v3
       - uses: crazy-max/ghaction-github-runtime@v3
       - run: npm ci
+      - name: Restore prepared full stack assets
+        uses: actions/cache@v6
+        id: runtime-cache
+        with:
+          path: .tmp/full-stack/image
+          key: full-stack-runtime-${{ runner.os }}-${{ hashFiles('packages/devcontainer-node/src/**', 'packages/devcontainer-worker/src/**', 'packages/playground/full-stack/image/**', 'packages/playground/full-stack/workspace/**', 'packages/playground/full-stack/src/probe.ts', 'packages/playground/full-stack/build-bundle.js', 'packages/playground/full-stack/build-image.sh', 'packages/playground/full-stack/prepare-converter.js', 'package-lock.json') }}
       - name: Build and test the real startup stack
+        if: steps.runtime-cache.outputs.cache-hit != 'true'
         run: bash packages/playground/full-stack/build-image.sh
       - run: node packages/playground/full-stack/build-site.js
       - uses: actions/upload-artifact@v7
         with:
           name: full-stack-site
           path: .tmp/full-stack/site
-      - run: cp -r .tmp/full-stack/site .tmp/playground
+      - run: |
+          mkdir -p .tmp/playground
+          cp -r .tmp/full-stack/site .tmp/playground/full-stack
       - run: npx playwright install --with-deps chromium firefox
         working-directory: packages/playground
       - name: Run the startup cycle in both browsers
@@ -38,5 +47,5 @@ jobs:
         with:
           name: full-stack-results
           path: |
-            packages/playground/test-results
+            packages/playground/full-stack/test-results
             .tmp/full-stack/native.log

@@ -1,7 +1,14 @@
+import configuration from '../workspace/.devcontainer/devcontainer.json' with { type: 'json' }
+
 const start = document.querySelector<HTMLButtonElement>('#start')!
 const stop = document.querySelector<HTMLButtonElement>('#stop')!
 const status = document.querySelector<HTMLParagraphElement>('#status')!
 const output = document.querySelector<HTMLPreElement>('#output')!
+document.querySelector('#config')!.textContent = JSON.stringify(
+  configuration,
+  null,
+  2,
+)
 let worker: Worker | undefined
 let timer: ReturnType<typeof setTimeout> | undefined
 const finish = (message: string) => {
@@ -37,8 +44,16 @@ start.onclick = () => {
   }, 900_000)
   current.onmessage = ({ data }) => {
     if (worker !== current) return
-    if (data.type === 'progress' && data.message)
-      status.textContent = data.message
+    if (data.type === 'progress' && data.message) {
+      const download = /Downloading data\.\.\. \((\d+)\/(\d+)\)/.exec(
+        data.message,
+      )
+      status.textContent = download
+        ? `Downloading Linux: ${(Number(download[1]) / 1024 / 1024).toFixed(1)} / ${(Number(download[2]) / 1024 / 1024).toFixed(1)} MiB`
+        : data.message === 'Running...'
+          ? 'Booting Linux…'
+          : data.message
+    }
     if (data.type === 'log') {
       output.textContent = (output.textContent + data.message + '\n').slice(
         -100_000,
