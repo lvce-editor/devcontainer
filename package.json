@@ -21,6 +21,8 @@
   },
   "scripts": {
     "build": "node packages/build/src/build.ts",
+    "build:watch": "npm run build:watch --workspace=packages/build",
+    "dev": "node packages/build/src/dev.ts",
     "e2e:devcontainer": "npm run e2e:headless --prefix packages/e2e",
     "format": "prettier --write .",
     "lint": "eslint . && knip --no-config-hints",

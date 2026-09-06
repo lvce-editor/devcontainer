@@ -3,6 +3,9 @@
   "version": "0.0.0-dev",
   "main": "src/build.ts",
   "type": "module",
+  "scripts": {
+    "build:watch": "esbuild --platform=node --format=esm --bundle --external:electron --external:execa --external:ws --external:debug --watch ../devcontainer-worker/src/devcontainerWorkerMain.ts ../devcontainer-worker/src/devcontainerWorkerModule.ts ../devcontainer-worker/src/devcontainerProcess.ts ../extension/src/devcontainerMain.ts --outdir=../../.tmp/dist/dist --outbase=.. --entry-names=[name]"
+  },
   "keywords": [],
   "author": "",
   "license": "MIT",
@@ -10,10 +13,11 @@
     "@babel/preset-typescript": "^7.29.7",
     "@lvce-editor/package-extension": "^3.7.0",
     "@rollup/plugin-babel": "^7.1.0",
+    "@rollup/plugin-commonjs": "29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@types/node": "^24.2.0",
+    "esbuild": "^0.28.2",
     "execa": "^10.0.1",
-    "rollup": "^4.63.1",
-    "@rollup/plugin-commonjs": "29.0.3"
+    "rollup": "^4.63.1"
   }
 }

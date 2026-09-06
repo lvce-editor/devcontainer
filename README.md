@@ -2,6 +2,10 @@
 
 Devcontainer lifecycle support for Lvce Editor.
 
+For local development, run `npm ci` and `npm run dev`. This builds the extension,
+starts the development server with the local extension, and watches its JavaScript
+bundles for changes, following the `about-view` development workflow.
+
 - `packages/devcontainer-worker` owns editor-facing orchestration, config detection, lifecycle state, and typed RPC commands.
 - `packages/devcontainer-node` wraps host capabilities: the official `@devcontainers/cli` package and Docker teardown commands.
 
