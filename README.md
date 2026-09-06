@@ -85,7 +85,7 @@ then stops and removes the container. Each run asserts a fresh workspace. Stop
 terminates the whole VM; running again starts from the original image.
 
 This larger, experimental environment uses 1 GiB of guest RAM and may take
-up to 30 minutes. Browser memory usage also includes the emulator and filesystem.
+up to 45 minutes. Browser memory usage also includes the emulator and filesystem.
 Node’s compile cache is session-only; the fixed shell environment disables
 interactive environment probing. Docker uses VFS storage and a preloaded Alpine image with guest networking
 disabled. No host Docker socket, registry, arbitrary Dockerfile, Compose, or editor
@@ -102,8 +102,8 @@ To build this experiment locally with the same prerequisites:
 ```sh
 bash packages/playground/full-stack/build-image.sh
 node packages/playground/full-stack/build-site.js
-mkdir -p .tmp/playground
-cp -r .tmp/full-stack/site .tmp/playground/full-stack
+mkdir -p .tmp/playground/full-stack
+cp -r .tmp/full-stack/site/. .tmp/playground/full-stack/
 npm run serve --workspace=packages/playground
 ```
 

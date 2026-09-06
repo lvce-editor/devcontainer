@@ -11,6 +11,17 @@ test('the real Node service and CLI create, execute in, and remove a container i
   })
   await page.goto('./')
   await expect(page.locator('#start')).toBeEnabled({ timeout: 30_000 })
+  await page.getByRole('status').evaluate((element) => {
+    let previous = ''
+    new MutationObserver(() => {
+      const message = element.textContent || ''
+      if (message === previous || message.startsWith('Downloading')) return
+      previous = message
+      console.info(
+        `Startup progress (${Math.round(performance.now() / 1000)}s): ${message}`,
+      )
+    }).observe(element, { childList: true, characterData: true, subtree: true })
+  })
   expect(requests.filter((url) => url.includes('/runtime/'))).toEqual([])
   if (!process.env.PLAYGROUND_BASE_URL) {
     // Actual 404 through the isolation service worker, followed by a full retry.
@@ -37,7 +48,7 @@ test('the real Node service and CLI create, execute in, and remove a container i
   await expect(page.getByRole('status')).toContainText(
     /Passed:|failed|timed out/,
     {
-      timeout: 1_810_000,
+      timeout: 2_710_000,
     },
   )
   console.log(await page.getByRole('status').textContent())

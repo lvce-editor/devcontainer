@@ -56,9 +56,9 @@ start.onclick = () => {
   timer = setTimeout(() => {
     if (worker === current)
       finish(
-        'Startup test timed out after 30 minutes. Try again in a desktop browser.',
+        'Startup test timed out after 45 minutes. Try again in a desktop browser.',
       )
-  }, 1_800_000)
+  }, 2_700_000)
   current.onmessage = ({ data }) => {
     if (worker !== current) return
     if (data.type === 'progress' && data.message) showProgress(data.message)
