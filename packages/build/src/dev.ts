@@ -1,5 +1,5 @@
 import { execa } from 'execa'
-import { root } from './root.js'
+import { root } from './root.ts'
 
 await execa('npm', ['run', 'build'], {
   cwd: root,

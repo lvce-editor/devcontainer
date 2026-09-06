@@ -1,7 +1,7 @@
 {
   "name": "build",
   "version": "0.0.0-dev",
-  "main": "src/build.js",
+  "main": "src/build.ts",
   "type": "module",
   "scripts": {
     "build:watch": "esbuild --platform=node --format=esm --bundle --external:electron --external:execa --external:ws --external:debug --watch ../devcontainer-worker/src/devcontainerWorkerMain.ts ../devcontainer-worker/src/devcontainerWorkerModule.ts ../devcontainer-worker/src/devcontainerProcess.ts ../extension/src/devcontainerMain.ts --outdir=../../.tmp/dist/dist --outbase=.. --entry-names=[name]"
