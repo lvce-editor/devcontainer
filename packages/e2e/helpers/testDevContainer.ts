@@ -26,6 +26,28 @@ const assertProperty = (
   }
 }
 
+const waitForStatus = async (
+  Command: Parameters<Test>[0]['Command'],
+  expectedStatus: string,
+): Promise<unknown> => {
+  const deadline = Date.now() + 120_000
+  let state: unknown
+  while (Date.now() < deadline) {
+    state = await Command.executeExtensionCommand('devcontainer.getState')
+    const status = getProperty(state, 'status')
+    if (status === expectedStatus) {
+      return state
+    }
+    if (status === 'error') {
+      throw new Error(`Devcontainer failed: ${JSON.stringify(state)}`)
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+  throw new Error(
+    `Timed out waiting for ${expectedStatus}: ${JSON.stringify(state)}`,
+  )
+}
+
 export const testDevContainer = async (
   {
     Command,
@@ -63,9 +85,15 @@ export const testDevContainer = async (
   await expect(output).toHaveCount(0)
 
   try {
-    await QuickPick.executeCommand('Dev Containers: Start Current Workspace')
-    const state = await Command.executeExtensionCommand('devcontainer.getState')
-    assertProperty(state, 'status', 'running')
+    await QuickPick.open()
+    await QuickPick.setValue('>Dev Containers: Start Current Workspace')
+    const startCommand = Locator('.QuickPickItem', {
+      hasText: 'Dev Containers: Start Current Workspace',
+    })
+    await expect(startCommand).toHaveCount(1)
+    await QuickPick.selectItem('Dev Containers: Start Current Workspace')
+    // Quick Pick closes before executing extension commands asynchronously.
+    const state = await waitForStatus(Command, 'running')
     const containerId = getProperty(state, 'containerId')
     if (typeof containerId !== 'string' || !containerId) {
       throw new Error(`Missing container id: ${JSON.stringify(state)}`)
@@ -119,12 +147,14 @@ export const testDevContainer = async (
     assertProperty(reread, 'ok', true)
     assertProperty(reread, 'stdout', editedContent)
 
-    await QuickPick.executeCommand('Dev Containers: Stop Current Workspace')
-    assertProperty(
-      await Command.executeExtensionCommand('devcontainer.getState'),
-      'status',
-      'stopped',
-    )
+    await QuickPick.open()
+    await QuickPick.setValue('>Dev Containers: Stop Current Workspace')
+    const stopCommand = Locator('.QuickPickItem', {
+      hasText: 'Dev Containers: Stop Current Workspace',
+    })
+    await expect(stopCommand).toHaveCount(1)
+    await QuickPick.selectItem('Dev Containers: Stop Current Workspace')
+    await waitForStatus(Command, 'stopped')
     const stoppedExec = await Command.executeExtensionCommand(
       'devcontainer.exec',
       'cat',
