@@ -14,10 +14,15 @@ cleanup() {
 }
 trap cleanup EXIT
 mkdir -p /var/lib/docker /run/docker
+# Fail early with a useful diagnostic if the prepared OCI mount regresses.
+if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
+  printf '\nFULL_STACK_PHASE The guest requires a writable cgroup v2 mount\n'
+  exit 1
+fi
 # Start containerd independently: Docker's managed-child startup deadline is
 # shorter than a cold Go process can take under browser CPU emulation.
 printf '\nFULL_STACK_PHASE Starting containerd inside Linux\n'
-containerd >/tmp/containerd.log 2>&1 &
+containerd --config /opt/playground/containerd.toml >/tmp/containerd.log 2>&1 &
 containerd_pid=$!
 attempt=0
 until [ -S /run/containerd/containerd.sock ]; do

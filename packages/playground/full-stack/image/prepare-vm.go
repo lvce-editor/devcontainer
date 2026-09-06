@@ -19,12 +19,21 @@ func main() {
  delete(linux, "maskedPaths")
  delete(linux, "readonlyPaths")
  linux["resources"] = map[string]interface{}{"devices": []interface{}{map[string]interface{}{"allow":true,"access":"rwm"}}}
+ mounts := []interface{}{}
  for _, value := range spec["mounts"].([]interface{}) {
    mount := value.(map[string]interface{})
-   if mount["destination"] == "/sys" || mount["destination"] == "/sys/fs/cgroup" {
+   if mount["destination"] == "/sys/fs/cgroup" { continue }
+   if mount["destination"] == "/sys" {
      mount["options"] = []string{"rw","nosuid","noexec","nodev"}
    }
+   mounts = append(mounts, mount)
  }
+ // containerd's default OCI spec has no cgroup mount. Expose the VM's
+ // unified hierarchy explicitly so Docker can manage its nested containers.
+ spec["mounts"] = append(mounts, map[string]interface{}{
+   "destination": "/sys/fs/cgroup", "type": "cgroup2", "source": "none",
+   "options": []string{"rw", "nosuid", "noexec", "nodev"},
+ })
  data, err = json.MarshalIndent(spec, "", "  "); if err != nil { panic(err) }
  if err = os.WriteFile(os.Args[1], data, 0644); err != nil { panic(err) }
 }
