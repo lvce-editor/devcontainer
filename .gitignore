@@ -136,3 +136,4 @@ dist
 # Browser acceptance artifacts
 packages/playground/test-results/
 packages/playground/playwright-report/
+packages/playground/full-stack/test-results/

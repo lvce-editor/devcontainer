@@ -41,6 +41,7 @@ export default defineConfig([
   {
     files: [
       'packages/playground/image/workspace/.devcontainer/devcontainer.json',
+      'packages/playground/full-stack/workspace/.devcontainer/devcontainer.json',
     ],
     rules: {
       // This downloadable browser fixture intentionally uses a minimal shell image.

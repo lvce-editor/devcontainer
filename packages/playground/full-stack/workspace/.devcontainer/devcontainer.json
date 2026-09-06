@@ -1,0 +1,10 @@
+{
+  "name": "Full startup test",
+  "image": "lvce-playground-alpine:3.23.3",
+  "workspaceFolder": "/workspaces/playground",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/playground,type=bind",
+  "runArgs": ["--network=none", "--security-opt=seccomp=unconfined"],
+  "initializeCommand": "printf initialized > /workspace/initialized.txt",
+  "postCreateCommand": "printf created > /workspaces/playground/created.txt",
+  "userEnvProbe": "none"
+}

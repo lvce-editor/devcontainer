@@ -53,9 +53,21 @@
         "scripts/*.js",
         "test/**/*.ts",
         "playwright.config.ts",
-        "public/isolation.js"
+        "public/isolation.js",
+        "full-stack/*.js",
+        "full-stack/playwright.config.ts",
+        "full-stack/src/*.ts",
+        "full-stack/test/*.ts",
+        "hosting.config.ts"
       ],
-      "project": ["src/**/*.ts", "scripts/*.js", "test/**/*.ts", "public/*.js"],
+      "project": [
+        "src/**/*.ts",
+        "scripts/*.js",
+        "test/**/*.ts",
+        "public/*.js",
+        "full-stack/**/*.ts",
+        "full-stack/*.js"
+      ],
       "ignoreDependencies": ["coi-serviceworker"],
       "playwright": false
     }

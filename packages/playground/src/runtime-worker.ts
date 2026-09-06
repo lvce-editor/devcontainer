@@ -76,7 +76,15 @@ const boot = async () => {
     } catch {
       /* Generated loader may create it first. */
     }
-    mod.FS.writeFile('/pack/info', `t:${Math.round(Date.now() / 1000)}\n`)
+    // A quiet VM may never collect enough device entropy for Linux getrandom.
+    // Supply a fresh browser CSPRNG seed on every boot, never in the snapshot.
+    const seed = Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
+      byte.toString(16).padStart(2, '0'),
+    ).join('')
+    mod.FS.writeFile(
+      '/pack/info',
+      `t:${Math.round(Date.now() / 1000)}\nenv:LVCE_RANDOM_SEED=${seed}\n`,
+    )
     const callbacks = new Set<any>()
     slave.onReadable(() => {
       const ready = [...callbacks]
