@@ -53,3 +53,20 @@ open. The existing execution, stop, and remove commands also work from the
 container workspace.
 
 Connection metadata survives the extension runtime restart during workspace changes. Restoring a connection checks whether its container is still running.
+
+## Browser playground
+
+[Try the Linux playground](https://lvce-editor.github.io/devcontainer/): boot a prepared Alpine environment and execute real shell commands entirely in your browser. Files are temporary and reset when you stop the environment. Guest networking, custom images, and interactive terminal programs are outside this demo's scope.
+
+The playground uses the same lifecycle module as the desktop extension, with injected browser host capabilities. The desktop backend continues to use Docker and the official devcontainers CLI. GitHub Actions builds the pinned image with container2wasm and tests it in Chromium and Firefox before publishing to Pages.
+
+To build locally (Linux amd64, Docker with Buildx, Node from `.nvmrc`):
+
+```sh
+npm ci
+npm run build:image --workspace=packages/playground
+npm run build --workspace=packages/playground
+npm run serve --workspace=packages/playground
+```
+
+Open `http://127.0.0.1:4173/devcontainer/`. The server deliberately omits isolation headers to exercise the Pages service-worker bootstrap. `npm run test:browser --workspace=packages/playground` runs real VM acceptance tests after installing Playwright's Chromium and Firefox browsers. CI records runtime asset size and measured cold-start times in its job summary. Generated runtime assets stay in `.tmp`, outside Git.

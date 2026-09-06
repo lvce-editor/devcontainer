@@ -37,4 +37,14 @@ export default defineConfig([
       'e2e/no-imports': 'off',
     },
   },
+  {
+    files: [
+      'packages/playground/image/workspace/.devcontainer/devcontainer.json',
+    ],
+    rules: {
+      // This downloadable browser fixture intentionally uses a minimal shell image.
+      'devcontainer/require-desktop-lite-feature': 'off',
+      'devcontainer/allowed-image': 'off',
+    },
+  },
 ])

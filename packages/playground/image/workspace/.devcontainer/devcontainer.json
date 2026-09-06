@@ -1,0 +1,5 @@
+{
+  "name": "Alpine Linux playground",
+  "image": "alpine:3.23.3",
+  "workspaceFolder": "/workspace"
+}

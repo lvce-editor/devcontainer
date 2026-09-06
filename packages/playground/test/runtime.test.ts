@@ -1,0 +1,129 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import { createBrowserDevContainer, workspaceFolder } from '../src/browser.ts'
+import { Runtime } from '../src/runtime.ts'
+
+class FakeWorker {
+  onmessage: (event: { data: any }) => void = () => {}
+  onerror: (event: any) => void = () => {}
+  sent: any[] = []
+  terminated = false
+  postMessage(message: any) {
+    this.sent.push(message)
+  }
+  terminate() {
+    this.terminated = true
+  }
+  emit(data: any) {
+    this.onmessage({ data })
+  }
+}
+const tick = () => new Promise((resolve) => setImmediate(resolve))
+const setup = () => {
+  const workers: FakeWorker[] = []
+  const runtime = new Runtime(
+    () => {},
+    () => {
+      const worker = new FakeWorker()
+      workers.push(worker)
+      return worker as unknown as Worker
+    },
+  )
+  return {
+    lifecycle: createBrowserDevContainer(() => {}, runtime),
+    runtime,
+    workers,
+  }
+}
+
+test('stop during boot settles startup and ignores stale readiness; retry boots a new worker', async () => {
+  const { lifecycle, workers } = setup()
+  const pending = lifecycle.up({ workspaceFolder })
+  await tick()
+  assert.equal(
+    (await lifecycle.getState({ workspaceFolder })).status,
+    'starting',
+  )
+  assert.deepEqual(await lifecycle.up({ workspaceFolder }), {
+    errorCode: 'DEVCONTAINER_ALREADY_STARTED',
+    ok: false,
+  })
+  await lifecycle.stop({ workspaceFolder })
+  workers[0].emit({ type: 'ready' })
+  assert.equal(((await pending) as any).ok, false)
+  assert.equal(workers[0].terminated, true)
+  assert.equal(
+    (await lifecycle.getState({ workspaceFolder })).status,
+    'stopped',
+  )
+  const retry = lifecycle.up({ workspaceFolder })
+  await tick()
+  workers[1].emit({ type: 'ready' })
+  assert.equal(((await retry) as any).ok, true)
+  await lifecycle.stop({ workspaceFolder })
+})
+
+test('queued commands are sequential; Stop settles active and queued commands', async () => {
+  const { runtime, workers } = setup()
+  const boot = runtime.start()
+  workers[0].emit({ type: 'ready' })
+  await boot
+  const first = runtime.exec('printf one')
+  const second = runtime.exec('printf two')
+  await tick()
+  assert.equal(
+    workers[0].sent.filter((message) => message.type === 'exec').length,
+    1,
+  )
+  workers[0].emit({
+    exitCode: 7,
+    id: 1,
+    stderr: btoa('error'),
+    stdout: btoa('one'),
+    type: 'result',
+  })
+  assert.deepEqual(await first, {
+    exitCode: 7,
+    ok: false,
+    stderr: 'error',
+    stdout: 'one',
+  })
+  await tick()
+  assert.equal(
+    workers[0].sent.filter((message) => message.type === 'exec').length,
+    2,
+  )
+  const third = runtime.exec('printf three')
+  runtime.stop()
+  assert.equal((await second).ok, false)
+  assert.equal((await third).ok, false)
+})
+
+test('failed boot returns an error and permits retry', async () => {
+  const { runtime, workers } = setup()
+  const boot = runtime.start()
+  workers[0].emit({ message: 'missing image', type: 'error' })
+  assert.match((await boot).errorMessage!, /missing image/)
+  const retry = runtime.start()
+  workers[1].emit({ type: 'ready' })
+  assert.equal((await retry).ok, true)
+  runtime.stop()
+})
+
+test('only the prepared workspace is supported; commands require a running environment', async () => {
+  const { lifecycle } = setup()
+  assert.equal(
+    ((await lifecycle.up({ workspaceFolder: '/other' })) as any).errorCode,
+    'DEVCONTAINER_BROWSER_UNSUPPORTED',
+  )
+  assert.equal(
+    (
+      (await lifecycle.exec({
+        args: ['-lc', 'true'],
+        command: 'sh',
+        workspaceFolder,
+      })) as any
+    ).errorCode,
+    'DEVCONTAINER_NOT_RUNNING',
+  )
+})
