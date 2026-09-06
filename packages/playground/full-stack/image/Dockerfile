@@ -1,5 +1,5 @@
 FROM alpine:3.23.3@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659 AS seed-builder
-RUN apk add --no-cache build-base
+RUN apk add --no-cache build-base linux-headers
 COPY image/seed-random.c /seed-random.c
 RUN cc -Os -Wall -Wextra -Werror /seed-random.c -o /seed-random
 
