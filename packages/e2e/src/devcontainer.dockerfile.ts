@@ -1,13 +1,13 @@
 import type { Test } from '@lvce-editor/test-with-playwright'
 import { testDevContainer } from '../helpers/testDevContainer.ts'
 
-export const name = 'devcontainer.ubuntu-24.04'
+export const name = 'devcontainer.dockerfile'
 
 export const test: Test = async (context) => {
   await testDevContainer(context, {
-    fixture: 'ubuntu-24.04',
-    runtimeArgs: ['/etc/os-release'],
+    fixture: 'dockerfile',
+    runtimeArgs: ['/etc/devcontainer-e2e-build'],
     runtimeCommand: 'cat',
-    runtimeOutput: /VERSION_ID="24.04"/,
+    runtimeOutput: /^built from the fixture Dockerfile\s*$/,
   })
 }

@@ -31,7 +31,7 @@
     },
     "packages/e2e": {
       "entry": ["src/**/*.ts"],
-      "project": ["src/**/*.ts"]
+      "project": ["src/**/*.ts", "helpers/**/*.ts"]
     },
     "packages/extension": {
       "entry": ["src/devcontainerMain.ts"],
