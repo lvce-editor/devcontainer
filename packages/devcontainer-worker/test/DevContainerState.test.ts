@@ -66,3 +66,24 @@ test('restores the URI connection after the workspace disposes its extension run
     WorkspaceFolder.toPath('devcontainers:///abc123'),
   ).rejects.toThrow('no longer available')
 })
+
+
+test('does not redirect an old URI to a replacement container', async () => {
+  const workspaceFolder = join(directory, 'workspace')
+  DevContainerState.set(workspaceFolder, {
+    containerId: 'abc123',
+    remoteWorkspaceFolder: '/original',
+    status: 'running',
+  })
+  await DevContainerState.persist(workspaceFolder)
+  DevContainerState.set(workspaceFolder, {
+    containerId: 'replacement456',
+    remoteWorkspaceFolder: '/replacement',
+    status: 'running',
+  })
+
+  await expect(
+    WorkspaceFolder.toPath('devcontainers:///abc123/file.txt'),
+  ).rejects.toThrow('no longer available')
+  expect(DevContainerState.get(workspaceFolder)?.containerId).toBe('replacement456')
+})

@@ -41,7 +41,7 @@ export const getWorkspaceFolder = async (uri: string): Promise<string> => {
     }
   }
   const restored = await restore(id)
-  if (restored) {
+  if (restored && state.get(restored)?.containerId === id) {
     return restored
   }
   throw new Error(

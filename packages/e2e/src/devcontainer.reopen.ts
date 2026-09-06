@@ -34,6 +34,14 @@ export const test: Test = async ({
     )
     await expect(containerFile).toBeVisible()
     await expect(hostFile).toHaveCount(0)
+    const blob = await Command.execute(
+      'FileSystem.getBlob',
+      `${workspaceUri}/binary.bin`,
+    )
+    const bytes = new Uint8Array(await blob.arrayBuffer())
+    if (bytes.join(',') !== '0,255,128,65') {
+      throw new Error('Container file reads did not preserve binary bytes')
+    }
     await Explorer.reveal(`${workspaceUri}/container-only.txt`)
     await Explorer.clickCurrent()
     await Editor.shouldHaveText('built inside the devcontainer\n')

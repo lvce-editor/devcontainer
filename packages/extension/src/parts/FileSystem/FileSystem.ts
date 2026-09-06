@@ -21,17 +21,17 @@ export const fileSystem: FileSystemProvider = {
       uri,
     )) as readonly FileSystemDirent[]
   },
-  readFile: async (uri): Promise<string> => {
+  readFile: async (uri): Promise<Blob> => {
     const result = await invoke('readFile', uri)
     if (typeof result !== 'string') {
       throw new TypeError('Invalid devcontainer file content')
     }
-    return new TextDecoder().decode(
+    return new Blob([
       Uint8Array.from(
         atob(result),
         (character) => character.codePointAt(0) || 0,
       ),
-    )
+    ])
   },
   remove: async (uri): Promise<void> => {
     await invoke('remove', uri)
