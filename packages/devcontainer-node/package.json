@@ -44,16 +44,16 @@
     }
   },
   "dependencies": {
-    "@devcontainers/cli": "^0.87.0",
-    "@lvce-editor/assert": "^1.5.1",
+    "@devcontainers/cli": "^0.89.0",
+    "@lvce-editor/assert": "^1.9.0",
     "@lvce-editor/command": "^2.0.0",
     "@lvce-editor/pretty-error": "^2.0.0",
-    "@lvce-editor/rpc": "^6.4.0"
+    "@lvce-editor/rpc": "^6.19.3"
   },
   "devDependencies": {
-    "@jest/globals": "^30.4.1",
+    "@jest/globals": "^30.5.1",
     "@types/jest": "^30.0.0",
-    "jest": "^30.4.2",
-    "ts-jest": "^29.4.11"
+    "jest": "^30.5.1",
+    "ts-jest": "^29.4.12"
   }
 }
