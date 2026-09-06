@@ -1,0 +1,1 @@
+javascript-node-24 workspace fixture

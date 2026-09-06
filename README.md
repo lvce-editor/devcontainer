@@ -12,4 +12,19 @@ The desktop extension contributes these commands for the active workspace:
 - `Dev Containers: Start Current Workspace`
 - `Dev Containers: Stop Current Workspace`
 
-Docker-backed end-to-end tests cover the official JavaScript/Node 24 and Ubuntu 24.04 devcontainer images on the Ubuntu CI runner.
+Docker-backed end-to-end tests run on Ubuntu for every pull request and push to `main`. They cover the official JavaScript/Node 24 and Ubuntu 24.04 images, plus a Dockerfile build with a custom workspace mount.
+
+Each test opens a fresh copy of a workspace fixture, starts the container through Quick Pick, checks its runtime and reads the fixture inside the container. It then writes a file from inside Docker and verifies the file in Explorer and its contents in the editor. A subsequent workspace edit must be readable inside the container. Finally, the test stops the container through Quick Pick and verifies that execution is rejected while stopped.
+
+These assertions cover the extension's command connection and shared workspace mount. Explorer currently browses the local mounted workspace; the tests do not assert remote filesystem browsing outside that mount.
+
+To run locally with Node from `.nvmrc` and a running Docker daemon:
+
+```sh
+npm ci
+npm run build
+npm run install:chromium --prefix packages/e2e
+npm run e2e:devcontainer
+```
+
+The runner allows three minutes per test and removes containers belonging to its copied fixtures even after a failed test. Fixture sources remain unchanged, so repeated runs cannot pass on stale generated files. Run one suite at a time per checkout.

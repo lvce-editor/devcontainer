@@ -49,7 +49,9 @@ jobs:
           docker pull mcr.microsoft.com/devcontainers/javascript-node:24
           docker pull mcr.microsoft.com/devcontainers/base:ubuntu24.04
         if: matrix.os == 'ubuntu-24.04'
-      - run: npm run e2e:devcontainer
+      - name: Devcontainer Quick Pick and Explorer e2e
+        timeout-minutes: 15
+        run: npm run e2e:devcontainer
         if: matrix.os == 'ubuntu-24.04'
       - run: npm run type-check
       - run: npm run lint
