@@ -55,7 +55,17 @@ const boot = async () => {
     preRun: [],
     printErr: (message: string) => send({ message, type: 'log' }),
     pty: slave,
-    setStatus: (message: string) => send({ message, type: 'progress' }),
+    setStatus: (message: string) => {
+      const download = /Downloading data\.\.\. \((\d+)\/\d+\)/.exec(message)
+      // Compression can make the reported total differ from decoded bytes.
+      // Show received bytes without comparing the two quantities.
+      send({
+        message: download
+          ? `Downloading Linux: ${(Number(download[1]) / 1024 / 1024).toFixed(1)} MiB received`
+          : message,
+        type: 'progress',
+      })
+    },
   }
   scope.Module = module
   await import(new URL('runtime/load.js', scope.location.href).href)

@@ -22,12 +22,7 @@ const finish = (message: string) => {
   stop.disabled = true
 }
 const showProgress = (message: string) => {
-  const download = /Downloading data\.\.\. \((\d+)\/(\d+)\)/.exec(message)
-  if (download) {
-    status.textContent = `Downloading Linux: ${(Number(download[1]) / 1024 / 1024).toFixed(1)} / ${(Number(download[2]) / 1024 / 1024).toFixed(1)} MiB`
-  } else {
-    status.textContent = message === 'Running...' ? 'Booting Linux…' : message
-  }
+  status.textContent = message === 'Running...' ? 'Booting Linux…' : message
 }
 start.onclick = () => {
   if (worker) return
