@@ -2,6 +2,10 @@
 
 Devcontainer lifecycle support for Lvce Editor.
 
+For local development, run `npm ci` and `npm run dev`. This builds the extension,
+starts the development server with the local extension, and watches its JavaScript
+bundles for changes, following the `about-view` development workflow.
+
 - `packages/devcontainer-worker` owns editor-facing orchestration, config detection, lifecycle state, and typed RPC commands.
 - `packages/devcontainer-node` wraps host capabilities: the official `@devcontainers/cli` package and Docker teardown commands.
 
@@ -29,10 +33,10 @@ npm run install:chromium --prefix packages/e2e
 npm run e2e:devcontainer
 ```
 
-To run a test by visiting its URL, start the development server after installing dependencies and building:
+To run a test by visiting its URL, start the development server after installing dependencies:
 
 ```sh
-npm run dev --prefix packages/server
+npm run dev
 ```
 
 Open `http://localhost:3000/tests/devcontainer.javascript-node-24.html`, `http://localhost:3000/tests/devcontainer.ubuntu-24.04.html`, or `http://localhost:3000/tests/devcontainer.dockerfile.html`. Each visit runs the test and shows its result at the bottom of the editor. Reloading runs it again with a new workspace copy. Docker must be running for these tests too.

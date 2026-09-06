@@ -21,6 +21,8 @@
   },
   "scripts": {
     "build": "node packages/build/src/build.ts",
+    "build:watch": "npm run build:watch --workspace=packages/build",
+    "dev": "node packages/build/src/dev.ts",
     "e2e:devcontainer": "npm run e2e:headless --prefix packages/e2e",
     "format": "prettier --write .",
     "lint": "eslint . && knip --no-config-hints",
@@ -32,11 +34,11 @@
     "singleQuote": true
   },
   "devDependencies": {
-    "@lvce-editor/eslint-config": "^18.4.0",
+    "@lvce-editor/eslint-config": "^18.9.0",
     "@types/node": "^24.2.0",
-    "eslint": "^10.8.1",
-    "knip": "^6.29.0",
-    "prettier": "^3.9.5",
+    "eslint": "^10.10.0",
+    "knip": "^6.34.0",
+    "prettier": "^3.9.6",
     "typescript": "^6.0.2"
   },
   "engines": {

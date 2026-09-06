@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   use: { baseURL: 'http://localhost:3000' },
   webServer: {
-    command: 'npm run dev --prefix ../server',
+    command: 'npm run dev --prefix ../..',
     url: 'http://localhost:3000',
     reuseExistingServer: false,
   },
