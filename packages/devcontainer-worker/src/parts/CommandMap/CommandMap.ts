@@ -1,3 +1,4 @@
+import * as ContainerFileSystem from '../ContainerFileSystem/ContainerFileSystem.ts'
 import * as DevContainer from '../DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from '../DevContainerCommandType/DevContainerCommandType.ts'
 import * as HandleElectronMessagePort from '../HandleElectronMessagePort/HandleElectronMessagePort.ts'
@@ -5,6 +6,9 @@ import * as HandleNodeMessagePort from '../HandleNodeMessagePort/HandleNodeMessa
 import * as HandleWebSocket from '../HandleWebSocket/HandleWebSocket.ts'
 
 export const commandMap = {
+  [DevContainerCommandType.DevContainerOpenWorkspace]:
+    DevContainer.openWorkspace,
+  [DevContainerCommandType.DevContainerFileSystem]: ContainerFileSystem.invoke,
   [DevContainerCommandType.DevContainerDetect]: DevContainer.detect,
   [DevContainerCommandType.DevContainerExec]: DevContainer.exec,
   [DevContainerCommandType.DevContainerGetState]: DevContainer.getState,

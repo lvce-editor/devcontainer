@@ -3,6 +3,10 @@ import * as DevContainerCommands from '../DevContainerCommands/DevContainerComma
 
 const commands = [
   {
+    execute: DevContainerCommands.openWorkspace,
+    id: 'devcontainer.openWorkspace',
+  },
+  {
     execute: DevContainerCommands.start,
     id: 'devcontainer.start',
   },

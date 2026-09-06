@@ -30,3 +30,11 @@ npm run e2e:devcontainer
 ```
 
 The runner allows three minutes per test and removes containers belonging to its copied fixtures even after a failed test. Fixture sources remain unchanged, so repeated runs cannot pass on stale generated files. Run one suite at a time per checkout.
+
+Use **Dev Containers: Reopen in Container** to build/start the current workspace's
+configuration and open its configured `workspaceFolder` at
+`devcontainers:///<containerId>`. Explorer and file editing use Docker inside the
+container as `remoteUser`; the local bind mount is not used as a substitute for
+the container filesystem. A failed build or connection leaves the local workspace
+open. The existing execution, stop, and remove commands also work from the
+container workspace.

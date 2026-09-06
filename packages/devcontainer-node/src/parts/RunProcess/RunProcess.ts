@@ -15,6 +15,7 @@ export interface RunProcessOptions {
   args: readonly string[]
   command: string
   cwd?: string
+  input?: string
 }
 
 const toPath = (pathOrUri: string | undefined) => {
@@ -32,6 +33,7 @@ export const runProcess = async ({
   args,
   command,
   cwd,
+  input,
 }: RunProcessOptions): Promise<RunProcessResult> => {
   try {
     const { promise, resolve } = Promise.withResolvers<RunProcessResult>()
@@ -73,6 +75,12 @@ export const runProcess = async ({
       })
     }
 
+    childProcess.stdin.on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code !== 'EPIPE') {
+        handleError(error)
+      }
+    })
+    childProcess.stdin.end(input)
     childProcess.stdout.on('data', handleStdoutData)
     childProcess.stderr.on('data', handleStderrData)
     childProcess.on('error', handleError)

@@ -185,3 +185,44 @@ export const remove = async ({
   }
   return result
 }
+
+const opening = new Map<string, Promise<unknown>>()
+
+const connectWorkspace = async (workspaceFolder: string) => {
+  const result = await up({ workspaceFolder })
+  if (!isOk(result) || !result.ok) {
+    return result
+  }
+  const state = DevContainerState.get(workspaceFolder)
+  if (!state?.containerId || !state.remoteWorkspaceFolder?.startsWith('/')) {
+    throw new Error(
+      'Devcontainer did not return a container id and absolute workspace folder',
+    )
+  }
+  // Verify the connection before changing the editor workspace.
+  await DevContainerNodeClient.containerFileSystem({
+    containerId: state.containerId,
+    remoteUser: state.remoteUser,
+    remoteWorkspaceFolder: state.remoteWorkspaceFolder,
+    operation: 'readDirWithFileTypes',
+    path: state.remoteWorkspaceFolder,
+  })
+  return { ok: true, workspaceUri: `devcontainers:///${state.containerId}` }
+}
+
+export const openWorkspace = ({
+  workspaceFolder,
+}: {
+  workspaceFolder: string
+}): Promise<unknown> => {
+  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  const existing = opening.get(workspaceFolder)
+  if (existing) {
+    return existing
+  }
+  const promise = connectWorkspace(workspaceFolder).finally(() =>
+    opening.delete(workspaceFolder),
+  )
+  opening.set(workspaceFolder, promise)
+  return promise
+}

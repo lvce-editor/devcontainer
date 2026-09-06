@@ -223,3 +223,5 @@ export const dockerRemoveContainer = (options: ContainerOptions) => {
     getDockerRemoveArgs(options),
   )
 }
+
+export { run as containerFileSystem } from '../ContainerFileSystem/ContainerFileSystem.ts'

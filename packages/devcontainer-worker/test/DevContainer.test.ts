@@ -187,3 +187,85 @@ test('remove - clears state after docker remove', async () => {
     status: 'stopped',
   })
 })
+
+test('openWorkspace builds, checks the remote folder, and resolves lifecycle commands from its URI', async () => {
+  const workspaceFolder = await createWorkspace()
+  const operations: string[] = []
+  DevContainerNodeClient.setNodeApi({
+    cliExec: async () => ({ ok: true }),
+    cliReadConfiguration: async () => ({ ok: true }),
+    cliUp: async () => {
+      operations.push('build')
+      return {
+        ok: true,
+        json: {
+          containerId: 'abc123',
+          remoteUser: 'vscode',
+          remoteWorkspaceFolder: '/container-only',
+        },
+      }
+    },
+    containerFileSystem: async (options) => {
+      expect(options).toMatchObject({
+        containerId: 'abc123',
+        remoteUser: 'vscode',
+        path: '/container-only',
+        operation: 'readDirWithFileTypes',
+      })
+      operations.push('connect')
+      return []
+    },
+    dockerStopContainer: async ({ containerId }) => ({
+      ok: containerId === 'abc123',
+    }),
+    dockerRemoveContainer: async () => ({ ok: true }),
+  })
+  const [first, second] = await Promise.all([
+    DevContainer.openWorkspace({ workspaceFolder }),
+    DevContainer.openWorkspace({ workspaceFolder }),
+  ])
+  expect(first).toEqual({ ok: true, workspaceUri: 'devcontainers:///abc123' })
+  expect(second).toEqual(first)
+  expect(operations).toEqual(['build', 'connect'])
+  expect(
+    await DevContainer.stop({ workspaceFolder: 'devcontainers:///abc123' }),
+  ).toEqual({ ok: true })
+})
+
+test('openWorkspace does not connect after a failed build', async () => {
+  const workspaceFolder = await createWorkspace()
+  DevContainerNodeClient.setNodeApi({
+    cliExec: async () => ({ ok: true }),
+    cliReadConfiguration: async () => ({ ok: true }),
+    cliUp: async () => ({ ok: false, errorMessage: 'build failed' }),
+    containerFileSystem: async () => {
+      throw new Error('must not connect')
+    },
+    dockerStopContainer: async () => ({ ok: true }),
+    dockerRemoveContainer: async () => ({ ok: true }),
+  })
+  expect(await DevContainer.openWorkspace({ workspaceFolder })).toEqual({
+    ok: false,
+    errorMessage: 'build failed',
+  })
+})
+
+test('openWorkspace rejects an inaccessible remote workspace', async () => {
+  const workspaceFolder = await createWorkspace()
+  DevContainerNodeClient.setNodeApi({
+    cliExec: async () => ({ ok: true }),
+    cliReadConfiguration: async () => ({ ok: true }),
+    cliUp: async () => ({
+      ok: true,
+      json: { containerId: 'abc123', remoteWorkspaceFolder: '/missing' },
+    }),
+    containerFileSystem: async () => {
+      throw new Error('workspace missing')
+    },
+    dockerStopContainer: async () => ({ ok: true }),
+    dockerRemoveContainer: async () => ({ ok: true }),
+  })
+  await expect(DevContainer.openWorkspace({ workspaceFolder })).rejects.toThrow(
+    'workspace missing',
+  )
+})

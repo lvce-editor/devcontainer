@@ -1,3 +1,4 @@
+import * as ContainerFileSystem from './parts/ContainerFileSystem/ContainerFileSystem.ts'
 import * as DevContainerCli from '@lvce-editor/devcontainer-node/devcontainer-cli'
 import * as DevContainer from './parts/DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from './parts/DevContainerCommandType/DevContainerCommandType.ts'
@@ -44,7 +45,21 @@ const up = (options: Parameters<typeof DevContainer.up>[0]) => {
   return DevContainer.up(options)
 }
 
+const openWorkspace = (
+  options: Parameters<typeof DevContainer.openWorkspace>[0],
+) => {
+  initialize()
+  return DevContainer.openWorkspace(options)
+}
+
+const fileSystem = (...args: Parameters<typeof ContainerFileSystem.invoke>) => {
+  initialize()
+  return ContainerFileSystem.invoke(...args)
+}
+
 export const commandMap = {
+  [DevContainerCommandType.DevContainerOpenWorkspace]: openWorkspace,
+  [DevContainerCommandType.DevContainerFileSystem]: fileSystem,
   [DevContainerCommandType.DevContainerDetect]: detect,
   [DevContainerCommandType.DevContainerExec]: exec,
   [DevContainerCommandType.DevContainerGetState]: getState,

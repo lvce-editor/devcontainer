@@ -21,9 +21,15 @@
     "onCommand:devcontainer.stop",
     "onCommand:devcontainer.getState",
     "onCommand:devcontainer.exec",
-    "onCommand:devcontainer.remove"
+    "onCommand:devcontainer.remove",
+    "onCommand:devcontainer.openWorkspace",
+    "onFileSystem:devcontainers"
   ],
   "commands": [
+    {
+      "id": "devcontainer.openWorkspace",
+      "label": "Dev Containers: Reopen in Container"
+    },
     {
       "id": "devcontainer.start",
       "label": "Dev Containers: Start Current Workspace"
@@ -43,6 +49,11 @@
     {
       "id": "devcontainer.remove",
       "label": "Dev Containers: Remove Current Workspace"
+    }
+  ],
+  "fileSystemProviders": [
+    {
+      "id": "devcontainers"
     }
   ]
 }

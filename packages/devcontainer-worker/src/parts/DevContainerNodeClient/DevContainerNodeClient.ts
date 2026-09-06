@@ -1,4 +1,15 @@
+export interface FileSystemOptions {
+  containerId: string
+  remoteUser?: string
+  remoteWorkspaceFolder: string
+  operation: string
+  path: string
+  newPath?: string
+  content?: string
+}
+
 export interface NodeApi {
+  containerFileSystem?(options: FileSystemOptions): Promise<unknown>
   cliExec(options: {
     args?: readonly string[]
     command: string
@@ -58,4 +69,13 @@ export const dockerStopContainer = (options: { containerId: string }) => {
 
 export const dockerRemoveContainer = (options: { containerId: string }) => {
   return nodeApi.dockerRemoveContainer(options)
+}
+
+export const containerFileSystem = (
+  options: FileSystemOptions,
+): Promise<unknown> => {
+  if (!nodeApi.containerFileSystem) {
+    return missingNodeApi()
+  }
+  return nodeApi.containerFileSystem(options)
 }
