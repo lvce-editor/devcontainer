@@ -45,6 +45,19 @@
       "entry": ["src/postinstall.js"],
       "project": ["src/**/*.js"],
       "ignoreDependencies": ["@lvce-editor/server"]
+    },
+    "packages/playground": {
+      "entry": [
+        "src/app.ts",
+        "src/runtime-worker.ts",
+        "scripts/*.js",
+        "test/**/*.ts",
+        "playwright.config.ts",
+        "public/isolation.js"
+      ],
+      "project": ["src/**/*.ts", "scripts/*.js", "test/**/*.ts", "public/*.js"],
+      "ignoreDependencies": ["coi-serviceworker"],
+      "playwright": false
     }
   }
 }

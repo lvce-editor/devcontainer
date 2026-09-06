@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Start a real Alpine Linux environment in your browser. An LVCE Editor devcontainer playground."
+    />
+    <title>Linux playground · LVCE Editor</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./isolation.js"></script>
+    <script src="./coi-serviceworker.js"></script>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="https://github.com/lvce-editor/devcontainer"
+          >LVCE EDITOR <span>/ DEVCONTAINERS</span></a
+        ><span class="tag">Browser playground</span>
+      </header>
+      <section class="intro">
+        <p class="eyebrow">A LITTLE LINUX. RIGHT HERE.</p>
+        <h1>Your next environment <br />starts in a browser.</h1>
+        <p>
+          Boot Alpine Linux, explore its filesystem, and run a shell script.
+          <br />Everything runs on your device. Nothing to install.
+        </p>
+      </section>
+      <div class="workspace">
+        <aside>
+          <h2>01 <span>The environment</span></h2>
+          <p class="filename">.devcontainer/devcontainer.json</p>
+          <pre id="config"></pre>
+          <div class="controls">
+            <button id="start" disabled>
+              Start Linux <span aria-hidden="true">↗</span></button
+            ><button id="stop" disabled>Stop</button>
+          </div>
+          <p id="status" role="status" aria-live="polite">
+            Checking browser support…
+          </p>
+          <p id="download" class="muted"></p>
+          <h2>02 <span>Try a command</span></h2>
+          <div class="examples">
+            <button data-command="uname -a">
+              Meet your Linux <code>uname -a</code>
+            </button>
+            <button data-command="ls -la; cat README.txt">
+              Explore the workspace <code>ls -la; cat README.txt</code>
+            </button>
+            <button data-command="sh hello.sh">
+              Run the sample <code>sh hello.sh</code>
+            </button>
+            <button
+              data-command="printf '\n echo Edited in the browser!\n' >> hello.sh; sh hello.sh"
+            >
+              Make it yours <code>Edit and run hello.sh</code>
+            </button>
+          </div>
+        </aside>
+        <section class="console" aria-label="Linux command console">
+          <div class="console-header">
+            <span><i></i> alpine / workspace</span
+            ><button id="clear">Clear output</button>
+          </div>
+          <pre id="output" role="log" aria-label="Command output" tabindex="0">
+Welcome to your Linux playground.
+
+Click Start Linux to prepare the environment.
+</pre>
+          <form id="command-form">
+            <label for="command" class="prompt" aria-label="Shell command"
+              >$</label
+            ><input
+              id="command"
+              aria-label="Shell command"
+              placeholder="Run a command…"
+              autocomplete="off"
+              spellcheck="false"
+              maxlength="8192"
+              disabled
+            /><button id="run" disabled>Run ↵</button>
+          </form>
+          <p class="console-note">
+            Commands start in /workspace. Files last until you stop Linux.
+          </p>
+        </section>
+      </div>
+      <footer>
+        <span
+          >Real Linux · Powered by
+          <a href="https://github.com/container2wasm/container2wasm"
+            >container2wasm</a
+          ></span
+        ><span
+          >Prepared environment · No guest networking ·
+          <a href="./notices.html">Open-source notices</a></span
+        >
+      </footer>
+      <p class="footnote">
+        This demo runs a prepared container image using WebAssembly. Custom
+        Dockerfiles and interactive programs are not supported. Commands have a
+        30-second time limit and bounded output.
+      </p>
+    </main>
+  </body>
+</html>

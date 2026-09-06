@@ -2,6 +2,7 @@ import { defineConfig } from 'eslint/config'
 import * as config from '@lvce-editor/eslint-config'
 
 export default defineConfig([
+  { ignores: ['**/playwright-report/**', '**/test-results/**'] },
   ...config.default,
   ...config.recommendedActions,
   {
@@ -35,6 +36,16 @@ export default defineConfig([
     files: ['packages/e2e/**/*.ts'],
     rules: {
       'e2e/no-imports': 'off',
+    },
+  },
+  {
+    files: [
+      'packages/playground/image/workspace/.devcontainer/devcontainer.json',
+    ],
+    rules: {
+      // This downloadable browser fixture intentionally uses a minimal shell image.
+      'devcontainer/require-desktop-lite-feature': 'off',
+      'devcontainer/allowed-image': 'off',
     },
   },
 ])
