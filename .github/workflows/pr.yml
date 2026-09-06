@@ -49,9 +49,16 @@ jobs:
         run: |
           docker pull mcr.microsoft.com/devcontainers/javascript-node:24
           docker pull mcr.microsoft.com/devcontainers/base:ubuntu24.04
+          docker pull gcc:14-bookworm
+          docker pull golang:1.24-bookworm
+          docker pull perl:5.40-slim-bookworm
+          docker pull php:8.4-cli-bookworm
+          docker pull python:3.13-slim-bookworm
+          docker pull ruby:3.4-slim-bookworm
+          docker pull rust:1.85-slim-bookworm
         if: matrix.os == 'ubuntu-24.04'
       - name: Devcontainer Quick Pick and Explorer e2e
-        timeout-minutes: 15
+        timeout-minutes: 30
         run: npm run e2e:devcontainer
         if: matrix.os == 'ubuntu-24.04'
       - run: npm run type-check

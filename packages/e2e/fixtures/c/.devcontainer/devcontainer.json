@@ -1,0 +1,4 @@
+{
+  "name": "c",
+  "image": "gcc:14-bookworm"
+}
