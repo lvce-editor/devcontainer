@@ -12,6 +12,7 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@lvce-editor/rpc": "^6.19.3",
     "@playwright/test": "^1.63.0",
     "coi-serviceworker": "0.1.7",
     "esbuild": "^0.28.2",

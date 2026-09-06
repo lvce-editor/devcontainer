@@ -1,0 +1,42 @@
+name: Full stack playground
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: full-stack-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  full-stack:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: docker/setup-buildx-action@v3
+      - uses: crazy-max/ghaction-github-runtime@v3
+      - run: npm ci
+      - name: Build and test the real startup stack
+        run: bash packages/playground/full-stack/build-image.sh
+      - run: node packages/playground/full-stack/build-site.js
+      - uses: actions/upload-artifact@v7
+        with:
+          name: full-stack-site
+          path: .tmp/full-stack/site
+      - run: cp -r .tmp/full-stack/site .tmp/playground
+      - run: npx playwright install --with-deps chromium firefox
+        working-directory: packages/playground
+      - name: Run the startup cycle in both browsers
+        run: npx playwright test --config full-stack/playwright.config.ts
+        working-directory: packages/playground
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: full-stack-results
+          path: |
+            packages/playground/test-results
+            .tmp/full-stack/native.log

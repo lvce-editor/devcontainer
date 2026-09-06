@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  />
+  <title>Full devcontainer startup test</title>
+  <style>
+    body {
+      max-width: 1000px;
+      margin: 48px auto;
+      padding: 0 24px;
+      background: #101813;
+      color: #e0eee2;
+      font: 16px system-ui;
+    }
+    button {
+      padding: 12px 20px;
+      margin-right: 12px;
+    }
+    pre {
+      padding: 24px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #061009;
+      min-height: 250px;
+    }
+    a {
+      color: #bee487;
+    }
+  </style>
+  <script src="./isolation.js"></script>
+  <script src="./coi-serviceworker.js"></script>
+  <script type="module" src="./app.js"></script>
+  <a href="../">← Linux playground</a>
+  <h1>Test the real devcontainer startup</h1>
+  <p>
+    Boot Linux, fork the extension’s Node process, and run the real
+    devcontainers CLI against Docker inside your browser.
+  </p>
+  <p>
+    This experiment downloads a larger environment. It can take several minutes.
+    No host Docker or registry connection is used.
+  </p>
+  <button id="start" disabled>Run full startup test</button
+  ><button id="stop" disabled>Stop</button>
+  <p id="status" role="status">Preparing browser isolation…</p>
+  <p id="size"></p>
+  <pre id="output" role="log" aria-label="Test output"></pre>
+</html>
