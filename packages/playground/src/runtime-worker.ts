@@ -60,6 +60,16 @@ const boot = async () => {
   scope.Module = module
   await import(new URL('runtime/load.js', scope.location.href).href)
   await import(new URL('runtime/arg-module.js', scope.location.href).href)
+  // Preserve the snapshot's NIC while keeping it on an isolated virtual hub.
+  // The converter's default socket backend otherwise connects to localhost.
+  const network = module.arguments.indexOf('-netdev')
+  if (
+    network === -1 ||
+    module.arguments[network + 1] !== 'socket,id=vmnic,connect=127.0.0.1:8888'
+  ) {
+    throw new Error('Unexpected network configuration in the prepared runtime')
+  }
+  module.arguments[network + 1] = 'hubport,id=vmnic,hubid=0'
   module.preRun.push((mod: any) => {
     try {
       mod.FS.mkdir('/pack')
