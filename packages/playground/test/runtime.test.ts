@@ -127,3 +127,26 @@ void test('only the prepared workspace is supported; commands require a running 
     'DEVCONTAINER_NOT_RUNNING',
   )
 })
+
+void test('boot timeout settles startup and destroys the worker', async (context) => {
+  context.mock.timers.enable({ apis: ['setTimeout'] })
+  const { runtime, workers } = setup()
+  const boot = runtime.start()
+  context.mock.timers.tick(120_000)
+  const result = await boot
+  assert.match(result.errorMessage!, /120 seconds/)
+  assert.equal(workers[0].terminated, true)
+})
+
+void test('malformed command responses settle the command and terminate the environment', async () => {
+  const { runtime, workers } = setup()
+  const boot = runtime.start()
+  workers[0].emit({ type: 'ready' })
+  await boot
+  const command = runtime.exec('true')
+  await tick()
+  workers[0].emit({ exitCode: 0, id: 1, stderr: '', stdout: '%invalid', type: 'result' })
+  const result = await command
+  assert.equal(result.ok, false)
+  assert.equal(workers[0].terminated, true)
+})

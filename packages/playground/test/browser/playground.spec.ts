@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { appendFile } from 'node:fs/promises'
+import { appendFile, rename } from 'node:fs/promises'
 
 test('real Linux commands, filesystem lifetime, and cancellation on the Pages subpath', async ({
   page,
@@ -59,12 +59,17 @@ test('missing runtime asset fails visibly and can retry', async ({ page }) => {
   await page.goto('./')
   const start = page.getByRole('button', { name: 'Start Linux' })
   await expect(start).toBeEnabled()
-  // Service workers fetch the asset themselves; block the worker entrypoint instead.
-  await page.route('**/runtime-worker.js', (route) => route.abort())
-  await start.click()
-  await expect(page.getByRole('status')).toContainText('failed')
-  await expect(start).toBeEnabled()
-  await page.unroute('**/runtime-worker.js')
+  // Remove a generated asset so the actual service-worker fetch receives a 404.
+  const asset = new URL('../../../../.tmp/playground/runtime/out.js', import.meta.url)
+  const missing = new URL('../../../../.tmp/playground/runtime/out.js.disabled', import.meta.url)
+  await rename(asset, missing)
+  try {
+    await start.click()
+    await expect(page.getByRole('status')).toContainText('failed')
+    await expect(start).toBeEnabled()
+  } finally {
+    await rename(missing, asset)
+  }
   await start.click()
   await expect(page.getByRole('status')).toContainText('Linux is ready')
   await page.getByRole('button', { exact: true, name: 'Stop' }).click()

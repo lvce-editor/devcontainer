@@ -10,6 +10,7 @@ curl --fail --location --retry 3 "$base/SHA256SUMS" -o ../../.tmp/c2w/SHA256SUMS
 (cd ../../.tmp/c2w && sha256sum --check --ignore-missing SHA256SUMS && tar -xzf "$archive")
 docker build --platform linux/amd64 -t lvce-playground:build image
 ../../.tmp/c2w/c2w --to-js --build-arg VM_MEMORY_SIZE_MB=128 \
+  --build-arg SOURCE_REPO=https://github.com/container2wasm/container2wasm \
   --extra-flag=--cache-from=type=gha,scope=playground-c2w \
   --extra-flag=--cache-to=type=gha,mode=max,scope=playground-c2w \
   lvce-playground:build ../../.tmp/playground-image/
