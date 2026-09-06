@@ -8,7 +8,7 @@ concurrency:
   group: full-stack-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  full-stack:
+  build-runtime:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -42,18 +42,37 @@ jobs:
         with:
           name: full-stack-site
           path: .tmp/full-stack/site
-      - run: |
-          mkdir -p .tmp/playground
-          cp -r .tmp/full-stack/site .tmp/playground/full-stack
-      - run: npx playwright install --with-deps chromium firefox
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: full-stack-native-results
+          path: .tmp/full-stack/native.log
+  browser:
+    needs: build-runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - uses: actions/download-artifact@v8
+        with:
+          name: full-stack-site
+          path: .tmp/playground/full-stack
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
         working-directory: packages/playground
-      - name: Run the startup cycle in both browsers
-        run: npx playwright test --config full-stack/playwright.config.ts
+      - name: Run the real startup cycle
+        run: npx playwright test --config full-stack/playwright.config.ts --project ${{ matrix.browser }}
         working-directory: packages/playground
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: full-stack-results
-          path: |
-            packages/playground/full-stack/test-results
-            .tmp/full-stack/native.log
+          name: full-stack-${{ matrix.browser }}-results
+          path: packages/playground/full-stack/test-results

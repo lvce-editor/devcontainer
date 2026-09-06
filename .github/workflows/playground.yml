@@ -67,6 +67,17 @@ jobs:
         with:
           name: full-stack-site
           path: .tmp/playground/full-stack
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium firefox
+        working-directory: packages/playground
+      - name: Test navigation and isolation across both demos
+        run: npx playwright test --config hosting.config.ts
+        working-directory: packages/playground
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: playground-hosting-results
+          path: packages/playground/test-results
       - name: Check combined Pages size
         run: node packages/playground/scripts/measure-site.js
       - uses: actions/upload-pages-artifact@v5

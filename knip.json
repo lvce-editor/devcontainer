@@ -57,7 +57,8 @@
         "full-stack/*.js",
         "full-stack/playwright.config.ts",
         "full-stack/src/*.ts",
-        "full-stack/test/*.ts"
+        "full-stack/test/*.ts",
+        "hosting.config.ts"
       ],
       "project": [
         "src/**/*.ts",

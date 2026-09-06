@@ -16,6 +16,7 @@
     "playwright.config.ts",
     "full-stack/src",
     "full-stack/test",
-    "full-stack/playwright.config.ts"
+    "full-stack/playwright.config.ts",
+    "hosting.config.ts"
   ]
 }
