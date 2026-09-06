@@ -48,11 +48,12 @@ start.onclick = () => {
       const download = /Downloading data\.\.\. \((\d+)\/(\d+)\)/.exec(
         data.message,
       )
-      status.textContent = download
-        ? `Downloading Linux: ${(Number(download[1]) / 1024 / 1024).toFixed(1)} / ${(Number(download[2]) / 1024 / 1024).toFixed(1)} MiB`
-        : data.message === 'Running...'
-          ? 'Booting Linux…'
-          : data.message
+      if (download) {
+        status.textContent = `Downloading Linux: ${(Number(download[1]) / 1024 / 1024).toFixed(1)} / ${(Number(download[2]) / 1024 / 1024).toFixed(1)} MiB`
+      } else {
+        status.textContent =
+          data.message === 'Running...' ? 'Booting Linux…' : data.message
+      }
     }
     if (data.type === 'log') {
       output.textContent = (output.textContent + data.message + '\n').slice(
