@@ -56,7 +56,8 @@
         "public/isolation.js"
       ],
       "project": ["src/**/*.ts", "scripts/*.js", "test/**/*.ts", "public/*.js"],
-      "ignoreDependencies": ["coi-serviceworker"]
+      "ignoreDependencies": ["coi-serviceworker"],
+      "playwright": false
     }
   }
 }
