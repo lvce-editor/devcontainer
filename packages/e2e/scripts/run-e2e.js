@@ -86,6 +86,7 @@ try {
       `--only-extension=${extensionPath}`,
       '--test-path=.',
       '--timeout=180000',
+      '--trace-renderer-worker',
       ...process.argv.slice(2),
     ],
     {
