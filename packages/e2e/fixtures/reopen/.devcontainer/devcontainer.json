@@ -1,0 +1,9 @@
+{
+  "name": "Reopen container workspace",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/host-workspace,type=bind",
+  "workspaceFolder": "/container-workspace",
+  "remoteUser": "root"
+}

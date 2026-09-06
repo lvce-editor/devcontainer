@@ -1,5 +1,9 @@
 /* eslint-disable unicorn/no-top-level-side-effects */
-import { activate as activateExtensionApi } from '@lvce-editor/api'
+import {
+  activate as activateExtensionApi,
+  registerFileSystemProvider,
+} from '@lvce-editor/api'
+import { fileSystem } from './parts/FileSystem/FileSystem.ts'
 import * as RegisterCommands from './parts/RegisterCommands/RegisterCommands.ts'
 
 const state = {
@@ -12,6 +16,7 @@ export const activate = async (): Promise<void> => {
   }
   state.isActivated = true
   await activateExtensionApi()
+  registerFileSystemProvider(fileSystem)
   RegisterCommands.registerCommands()
 }
 

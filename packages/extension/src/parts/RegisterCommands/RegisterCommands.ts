@@ -7,6 +7,10 @@ const commands = [
     id: 'devcontainer.setDockerPath',
   },
   {
+    execute: DevContainerCommands.openWorkspace,
+    id: 'devcontainer.openWorkspace',
+  },
+  {
     execute: DevContainerCommands.start,
     id: 'devcontainer.start',
   },

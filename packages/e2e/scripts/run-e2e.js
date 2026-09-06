@@ -73,6 +73,7 @@ try {
       env: {
         ...process.env,
         BUILTIN_EXTENSIONS_PATH: builtinExtensionsPath,
+        LVCE_DEVCONTAINER_CONNECTIONS_DIR: join(workspacesPath, '.connections'),
       },
       stdio: 'inherit',
     },

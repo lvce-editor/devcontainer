@@ -32,13 +32,17 @@ const isOk = (result: unknown): result is CliLikeResult => {
   return Boolean(result && typeof result === 'object' && 'ok' in result)
 }
 
-export const detect = (options: { workspaceFolder: string }) => {
-  const workspaceFolder = WorkspaceFolder.toPath(options.workspaceFolder)
+export const detect = async (options: { workspaceFolder: string }) => {
+  const workspaceFolder = await WorkspaceFolder.toPath(options.workspaceFolder)
   return DevContainerConfig.detect({ workspaceFolder })
 }
 
-export const getState = ({ workspaceFolder }: { workspaceFolder: string }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+export const getState = async ({
+  workspaceFolder,
+}: {
+  workspaceFolder: string
+}) => {
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   return (
     DevContainerState.get(workspaceFolder) ?? {
       status: 'stopped',
@@ -51,7 +55,7 @@ export const readConfiguration = async ({
 }: {
   workspaceFolder: string
 }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const detected = await detect({ workspaceFolder })
   if (!detected.found) {
     return configNotFound(workspaceFolder)
@@ -60,7 +64,7 @@ export const readConfiguration = async ({
 }
 
 export const up = async ({ workspaceFolder }: { workspaceFolder: string }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const detected = await detect({ workspaceFolder })
   if (!detected.found) {
     return configNotFound(workspaceFolder)
@@ -106,7 +110,7 @@ export const exec = async ({
   command: string
   workspaceFolder: string
 }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const currentState = DevContainerState.get(workspaceFolder)
   if (!currentState || currentState.status !== 'running') {
     return {
@@ -125,7 +129,7 @@ export const stop = async ({
 }: {
   workspaceFolder: string
 }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const currentState = DevContainerState.get(workspaceFolder)
   if (!currentState?.containerId) {
     return {
@@ -160,7 +164,7 @@ export const remove = async ({
 }: {
   workspaceFolder: string
 }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const currentState = DevContainerState.get(workspaceFolder)
   if (!currentState?.containerId) {
     return {
@@ -175,6 +179,7 @@ export const remove = async ({
     containerId: currentState.containerId,
   })
   if (isOk(result) && result.ok) {
+    await DevContainerState.forget(workspaceFolder)
     DevContainerState.remove(workspaceFolder)
   } else {
     DevContainerState.set(workspaceFolder, {
@@ -184,4 +189,48 @@ export const remove = async ({
     })
   }
   return result
+}
+
+const opening = new Map<string, Promise<unknown>>()
+
+const connectWorkspace = async (workspaceFolder: string) => {
+  const result = await up({ workspaceFolder })
+  if (!isOk(result) || !result.ok) {
+    return result
+  }
+  const state = DevContainerState.get(workspaceFolder)
+  if (!state?.containerId || !state.remoteWorkspaceFolder?.startsWith('/')) {
+    throw new Error(
+      'Devcontainer did not return a container id and absolute workspace folder',
+    )
+  }
+  // Verify the connection before changing the editor workspace.
+  await DevContainerNodeClient.containerFileSystem({
+    containerId: state.containerId,
+    operation: 'readDirWithFileTypes',
+    path: state.remoteWorkspaceFolder,
+    remoteUser: state.remoteUser,
+    remoteWorkspaceFolder: state.remoteWorkspaceFolder,
+  })
+  await DevContainerState.persist(workspaceFolder)
+  return { ok: true, workspaceUri: `devcontainers:///${state.containerId}` }
+}
+
+export const openWorkspace = async ({
+  workspaceFolder,
+}: {
+  workspaceFolder: string
+}): Promise<unknown> => {
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
+  const existing = opening.get(workspaceFolder)
+  if (existing) {
+    return existing
+  }
+  const promise = connectWorkspace(workspaceFolder)
+  opening.set(workspaceFolder, promise)
+  try {
+    return await promise
+  } finally {
+    opening.delete(workspaceFolder)
+  }
 }
