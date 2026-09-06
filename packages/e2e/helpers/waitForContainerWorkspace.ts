@@ -18,7 +18,6 @@ export const waitForContainerWorkspace = async ({
     if (state.status === 'error') {
       throw new Error(`Devcontainer failed: ${JSON.stringify(state)}`)
     }
-    await new Promise((resolve) => setTimeout(resolve, 100))
   }
   throw new Error(
     `Timed out reopening workspace: ${workspaceUri}; state: ${JSON.stringify(await Devcontainer.getState())}`,

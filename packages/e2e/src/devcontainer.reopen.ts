@@ -21,7 +21,12 @@ export const test: Test = async ({
   const hostFile = Locator('.Explorer .TreeItem[aria-label="host-only.txt"]')
   await expect(hostFile).toBeVisible()
   try {
-    await QuickPick.executeCommand('Dev Containers: Reopen in Container')
+    const label = 'Dev Containers: Reopen in Container'
+    await QuickPick.open()
+    await QuickPick.setValue(`>${label}`)
+    const command = Locator('.QuickPickItem', { hasText: label })
+    await expect(command).toHaveCount(1)
+    await QuickPick.selectItem(label)
     const workspaceUri = await waitForContainerWorkspace({
       Command,
       Devcontainer,
