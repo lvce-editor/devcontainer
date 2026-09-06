@@ -1,0 +1,17 @@
+{
+  "name": "devcontainer",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
+  "features": {
+    "ghcr.io/devcontainers/features/desktop-lite:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {}
+  },
+  "postCreateCommand": "npm ci",
+  "postStartCommand": "npm run dev --workspace=packages/server",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    }
+  },
+  "forwardPorts": [3000],
+  "remoteUser": "node"
+}
