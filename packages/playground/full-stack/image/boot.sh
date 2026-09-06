@@ -13,6 +13,8 @@ cleanup() {
   if [ -n "$containerd_pid" ]; then kill "$containerd_pid" 2>/dev/null || true; fi
 }
 trap cleanup EXIT
+/opt/playground/seed-random
+unset LVCE_RANDOM_SEED
 mkdir -p /var/lib/docker /run/docker
 # Fail early with a useful diagnostic if the prepared OCI mount regresses.
 if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
