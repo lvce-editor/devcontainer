@@ -6,21 +6,21 @@ import * as DevContainerState from '../src/parts/DevContainerState/DevContainerS
 const setup = () => {
   DevContainerState.set('/local', {
     containerId: 'abc123',
-    status: 'running',
     remoteUser: 'vscode',
     remoteWorkspaceFolder: '/remote',
+    status: 'running',
   })
   const received: DevContainerNodeClient.FileSystemOptions[] = []
   DevContainerNodeClient.setNodeApi({
     cliExec: async () => ({}),
     cliReadConfiguration: async () => ({}),
     cliUp: async () => ({}),
-    dockerRemoveContainer: async () => ({}),
-    dockerStopContainer: async () => ({}),
     containerFileSystem: async (options) => {
       received.push(options)
       return ''
     },
+    dockerRemoveContainer: async () => ({}),
+    dockerStopContainer: async () => ({}),
   })
   return received
 }
@@ -40,12 +40,12 @@ test('routes encoded paths and content to the container workspace and remote use
   expect(received).toEqual([
     {
       containerId: 'abc123',
-      remoteUser: 'vscode',
-      remoteWorkspaceFolder: '/remote',
-      operation: 'writeFile',
-      path: '/remote/a b/✓.txt',
       content: 'hello — world',
       newPath: undefined,
+      operation: 'writeFile',
+      path: '/remote/a b/✓.txt',
+      remoteUser: 'vscode',
+      remoteWorkspaceFolder: '/remote',
     },
   ])
 })

@@ -12,6 +12,9 @@ const invoke = (
 export const fileSystem: FileSystemProvider = {
   id: 'devcontainers',
   isReadonly: () => false,
+  mkdir: async (uri): Promise<void> => {
+    await invoke('mkdir', uri)
+  },
   readDirWithFileTypes: async (uri): Promise<readonly FileSystemDirent[]> => {
     return (await invoke(
       'readDirWithFileTypes',
@@ -24,19 +27,19 @@ export const fileSystem: FileSystemProvider = {
       throw new TypeError('Invalid devcontainer file content')
     }
     return new TextDecoder().decode(
-      Uint8Array.from(atob(result), (character) => character.charCodeAt(0)),
+      Uint8Array.from(
+        atob(result),
+        (character) => character.codePointAt(0) || 0,
+      ),
     )
-  },
-  writeFile: async (uri, content): Promise<void> => {
-    await invoke('writeFile', uri, content)
-  },
-  mkdir: async (uri): Promise<void> => {
-    await invoke('mkdir', uri)
   },
   remove: async (uri): Promise<void> => {
     await invoke('remove', uri)
   },
   rename: async (oldUri, newUri): Promise<void> => {
     await invoke('rename', oldUri, newUri)
+  },
+  writeFile: async (uri, content): Promise<void> => {
+    await invoke('writeFile', uri, content)
   },
 }

@@ -18,9 +18,8 @@ export const test: Test = async ({
 }) => {
   const localUri = getWorkspaceUri('reopen')
   await Workspace.setPath(localUri)
-  await expect(
-    Locator('.Explorer .TreeItem[aria-label="host-only.txt"]'),
-  ).toBeVisible()
+  const hostFile = Locator('.Explorer .TreeItem[aria-label="host-only.txt"]')
+  await expect(hostFile).toBeVisible()
   try {
     await QuickPick.executeCommand('Dev Containers: Reopen in Container')
     const workspaceUri = await waitForContainerWorkspace({
@@ -32,9 +31,7 @@ export const test: Test = async ({
       '.Explorer .TreeItem[aria-label="container-only.txt"]',
     )
     await expect(containerFile).toBeVisible()
-    await expect(
-      Locator('.Explorer .TreeItem[aria-label="host-only.txt"]'),
-    ).toHaveCount(0)
+    await expect(hostFile).toHaveCount(0)
     await Explorer.reveal(`${workspaceUri}/container-only.txt`)
     await Explorer.clickCurrent()
     await Editor.shouldHaveText('built inside the devcontainer\n')
@@ -55,9 +52,8 @@ export const test: Test = async ({
       'created remotely\n',
     )
     await Explorer.refresh()
-    await expect(
-      Locator('.Explorer .TreeItem[aria-label="new file.txt"]'),
-    ).toBeVisible()
+    const newFile = Locator('.Explorer .TreeItem[aria-label="new file.txt"]')
+    await expect(newFile).toBeVisible()
     // Lifecycle commands must still target the original local configuration.
     await Devcontainer.stop()
     await Devcontainer.shouldFailToExec(

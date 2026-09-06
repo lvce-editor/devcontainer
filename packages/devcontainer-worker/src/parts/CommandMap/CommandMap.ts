@@ -6,12 +6,12 @@ import * as HandleNodeMessagePort from '../HandleNodeMessagePort/HandleNodeMessa
 import * as HandleWebSocket from '../HandleWebSocket/HandleWebSocket.ts'
 
 export const commandMap = {
-  [DevContainerCommandType.DevContainerOpenWorkspace]:
-    DevContainer.openWorkspace,
-  [DevContainerCommandType.DevContainerFileSystem]: ContainerFileSystem.invoke,
   [DevContainerCommandType.DevContainerDetect]: DevContainer.detect,
   [DevContainerCommandType.DevContainerExec]: DevContainer.exec,
+  [DevContainerCommandType.DevContainerFileSystem]: ContainerFileSystem.invoke,
   [DevContainerCommandType.DevContainerGetState]: DevContainer.getState,
+  [DevContainerCommandType.DevContainerOpenWorkspace]:
+    DevContainer.openWorkspace,
   [DevContainerCommandType.DevContainerReadConfiguration]:
     DevContainer.readConfiguration,
   [DevContainerCommandType.DevContainerRemove]: DevContainer.remove,

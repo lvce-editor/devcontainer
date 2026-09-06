@@ -2,17 +2,18 @@ import * as RunProcess from '../RunProcess/RunProcess.ts'
 
 export interface Options {
   containerId: string
-  remoteUser?: string
-  remoteWorkspaceFolder: string
+  content?: string
+  newPath?: string
   operation: string
   path: string
-  newPath?: string
-  content?: string
+  remoteUser?: string
+  remoteWorkspaceFolder: string
 }
 
 // Paths are positional arguments, never interpolated into shell source. NUL
 // separators preserve spaces, newlines, and non-ASCII file names.
 const scripts: Record<string, string> = {
+  mkdir: 'mkdir -- "$1"',
   readDirWithFileTypes: `test -d "$1" || exit 44
 for entry in "$1"/* "$1"/.[!.]* "$1"/..?*; do
   if [ ! -e "$entry" ] && [ ! -L "$entry" ]; then continue; fi
@@ -20,28 +21,26 @@ for entry in "$1"/* "$1"/.[!.]* "$1"/..?*; do
   printf '%s\\0%s\\0' "$type" "\${entry##*/}"
 done`,
   readFile: 'test -e "$1" || exit 44; base64 < "$1"',
-  writeFile: 'cat > "$1"',
-  mkdir: 'mkdir -- "$1"',
   remove: 'rm -rf -- "$1"',
   rename: 'if [ -e "$2" ] || [ -L "$2" ]; then exit 45; fi; mv -- "$1" "$2"',
+  writeFile: 'cat > "$1"',
 }
 
 export const run = async (options: Options): Promise<unknown> => {
   const {
     containerId,
-    remoteUser,
-    remoteWorkspaceFolder,
+    content,
+    newPath,
     operation,
     path,
-    newPath,
-    content,
+    remoteUser,
+    remoteWorkspaceFolder,
   } = options
   const script = scripts[operation]
   if (!script) {
     throw new Error(`Unsupported container file operation: ${operation}`)
   }
   const result = await RunProcess.runProcess({
-    command: 'docker',
     args: [
       'exec',
       '-i',
@@ -56,6 +55,7 @@ export const run = async (options: Options): Promise<unknown> => {
       path,
       ...(newPath ? [newPath] : []),
     ],
+    command: 'docker',
     input: operation === 'writeFile' ? content : undefined,
   })
   if ('errorMessage' in result) {
@@ -65,14 +65,8 @@ export const run = async (options: Options): Promise<unknown> => {
     const error = new Error(
       result.stderr || `Container file operation failed (${result.exitCode})`,
     )
-    Object.assign(error, {
-      code:
-        result.exitCode === 44
-          ? 'ENOENT'
-          : result.exitCode === 45
-            ? 'EEXIST'
-            : 'EIO',
-    })
+    const errorCodes: Record<number, string> = { 44: 'ENOENT', 45: 'EEXIST' }
+    Object.assign(error, { code: errorCodes[result.exitCode ?? -1] || 'EIO' })
     throw error
   }
   if (operation === 'readDirWithFileTypes') {

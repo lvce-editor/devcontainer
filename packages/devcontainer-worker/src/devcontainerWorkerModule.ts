@@ -1,5 +1,5 @@
-import * as ContainerFileSystem from './parts/ContainerFileSystem/ContainerFileSystem.ts'
 import * as DevContainerCli from '@lvce-editor/devcontainer-node/devcontainer-cli'
+import * as ContainerFileSystem from './parts/ContainerFileSystem/ContainerFileSystem.ts'
 import * as DevContainer from './parts/DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from './parts/DevContainerCommandType/DevContainerCommandType.ts'
 import * as DevContainerNodeClient from './parts/DevContainerNodeClient/DevContainerNodeClient.ts'
@@ -58,11 +58,11 @@ const fileSystem = (...args: Parameters<typeof ContainerFileSystem.invoke>) => {
 }
 
 export const commandMap = {
-  [DevContainerCommandType.DevContainerOpenWorkspace]: openWorkspace,
-  [DevContainerCommandType.DevContainerFileSystem]: fileSystem,
   [DevContainerCommandType.DevContainerDetect]: detect,
   [DevContainerCommandType.DevContainerExec]: exec,
+  [DevContainerCommandType.DevContainerFileSystem]: fileSystem,
   [DevContainerCommandType.DevContainerGetState]: getState,
+  [DevContainerCommandType.DevContainerOpenWorkspace]: openWorkspace,
   [DevContainerCommandType.DevContainerReadConfiguration]: readConfiguration,
   [DevContainerCommandType.DevContainerRemove]: remove,
   [DevContainerCommandType.DevContainerStop]: stop,

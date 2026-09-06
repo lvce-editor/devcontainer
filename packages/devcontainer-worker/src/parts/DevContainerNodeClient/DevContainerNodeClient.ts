@@ -1,15 +1,14 @@
 export interface FileSystemOptions {
   containerId: string
-  remoteUser?: string
-  remoteWorkspaceFolder: string
+  content?: string
+  newPath?: string
   operation: string
   path: string
-  newPath?: string
-  content?: string
+  remoteUser?: string
+  remoteWorkspaceFolder: string
 }
 
 export interface NodeApi {
-  containerFileSystem?(options: FileSystemOptions): Promise<unknown>
   cliExec(options: {
     args?: readonly string[]
     command: string
@@ -17,6 +16,7 @@ export interface NodeApi {
   }): Promise<unknown>
   cliReadConfiguration(options: { workspaceFolder: string }): Promise<unknown>
   cliUp(options: { workspaceFolder: string }): Promise<unknown>
+  containerFileSystem?(options: FileSystemOptions): Promise<unknown>
   dockerRemoveContainer(options: { containerId: string }): Promise<unknown>
   dockerStopContainer(options: { containerId: string }): Promise<unknown>
 }

@@ -197,28 +197,28 @@ test('openWorkspace builds, checks the remote folder, and resolves lifecycle com
     cliUp: async () => {
       operations.push('build')
       return {
-        ok: true,
         json: {
           containerId: 'abc123',
           remoteUser: 'vscode',
           remoteWorkspaceFolder: '/container-only',
         },
+        ok: true,
       }
     },
     containerFileSystem: async (options) => {
       expect(options).toMatchObject({
         containerId: 'abc123',
-        remoteUser: 'vscode',
-        path: '/container-only',
         operation: 'readDirWithFileTypes',
+        path: '/container-only',
+        remoteUser: 'vscode',
       })
       operations.push('connect')
       return []
     },
+    dockerRemoveContainer: async () => ({ ok: true }),
     dockerStopContainer: async ({ containerId }) => ({
       ok: containerId === 'abc123',
     }),
-    dockerRemoveContainer: async () => ({ ok: true }),
   })
   const [first, second] = await Promise.all([
     DevContainer.openWorkspace({ workspaceFolder }),
@@ -237,16 +237,16 @@ test('openWorkspace does not connect after a failed build', async () => {
   DevContainerNodeClient.setNodeApi({
     cliExec: async () => ({ ok: true }),
     cliReadConfiguration: async () => ({ ok: true }),
-    cliUp: async () => ({ ok: false, errorMessage: 'build failed' }),
+    cliUp: async () => ({ errorMessage: 'build failed', ok: false }),
     containerFileSystem: async () => {
       throw new Error('must not connect')
     },
-    dockerStopContainer: async () => ({ ok: true }),
     dockerRemoveContainer: async () => ({ ok: true }),
+    dockerStopContainer: async () => ({ ok: true }),
   })
   expect(await DevContainer.openWorkspace({ workspaceFolder })).toEqual({
-    ok: false,
     errorMessage: 'build failed',
+    ok: false,
   })
 })
 
@@ -256,14 +256,14 @@ test('openWorkspace rejects an inaccessible remote workspace', async () => {
     cliExec: async () => ({ ok: true }),
     cliReadConfiguration: async () => ({ ok: true }),
     cliUp: async () => ({
-      ok: true,
       json: { containerId: 'abc123', remoteWorkspaceFolder: '/missing' },
+      ok: true,
     }),
     containerFileSystem: async () => {
       throw new Error('workspace missing')
     },
-    dockerStopContainer: async () => ({ ok: true }),
     dockerRemoveContainer: async () => ({ ok: true }),
+    dockerStopContainer: async () => ({ ok: true }),
   })
   await expect(DevContainer.openWorkspace({ workspaceFolder })).rejects.toThrow(
     'workspace missing',

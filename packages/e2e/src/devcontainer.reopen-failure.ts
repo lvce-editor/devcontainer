@@ -19,7 +19,6 @@ export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
   if (uri !== localUri) {
     throw new Error(`Failed build changed the workspace to ${uri}`)
   }
-  await expect(
-    Locator('.Explorer .TreeItem[aria-label="host-only.txt"]'),
-  ).toBeVisible()
+  const hostFile = Locator('.Explorer .TreeItem[aria-label="host-only.txt"]')
+  await expect(hostFile).toBeVisible()
 }

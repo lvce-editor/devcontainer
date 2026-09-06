@@ -202,15 +202,15 @@ const connectWorkspace = async (workspaceFolder: string) => {
   // Verify the connection before changing the editor workspace.
   await DevContainerNodeClient.containerFileSystem({
     containerId: state.containerId,
-    remoteUser: state.remoteUser,
-    remoteWorkspaceFolder: state.remoteWorkspaceFolder,
     operation: 'readDirWithFileTypes',
     path: state.remoteWorkspaceFolder,
+    remoteUser: state.remoteUser,
+    remoteWorkspaceFolder: state.remoteWorkspaceFolder,
   })
   return { ok: true, workspaceUri: `devcontainers:///${state.containerId}` }
 }
 
-export const openWorkspace = ({
+export const openWorkspace = async ({
   workspaceFolder,
 }: {
   workspaceFolder: string
@@ -220,9 +220,11 @@ export const openWorkspace = ({
   if (existing) {
     return existing
   }
-  const promise = connectWorkspace(workspaceFolder).finally(() =>
-    opening.delete(workspaceFolder),
-  )
+  const promise = connectWorkspace(workspaceFolder)
   opening.set(workspaceFolder, promise)
-  return promise
+  try {
+    return await promise
+  } finally {
+    opening.delete(workspaceFolder)
+  }
 }

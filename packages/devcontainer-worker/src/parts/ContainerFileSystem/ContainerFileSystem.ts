@@ -36,11 +36,11 @@ export const invoke = async (
   }
   return DevContainerNodeClient.containerFileSystem({
     containerId: state.containerId,
-    remoteUser: state.remoteUser,
-    remoteWorkspaceFolder: state.remoteWorkspaceFolder,
+    content: operation === 'writeFile' ? value : undefined,
+    newPath,
     operation,
     path: posix.join(state.remoteWorkspaceFolder, location.path),
-    newPath,
-    content: operation === 'writeFile' ? value : undefined,
+    remoteUser: state.remoteUser,
+    remoteWorkspaceFolder: state.remoteWorkspaceFolder,
   })
 }

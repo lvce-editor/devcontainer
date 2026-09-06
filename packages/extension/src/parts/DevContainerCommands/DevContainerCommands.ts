@@ -1,4 +1,4 @@
-import { setWorkspaceUri, showNotification } from '@lvce-editor/api'
+import { executeCommand, showNotification } from '@lvce-editor/api'
 import * as Rpc from '../Rpc/Rpc.ts'
 import * as Workspace from '../Workspace/Workspace.ts'
 
@@ -57,7 +57,7 @@ export const openWorkspace = async (): Promise<void> => {
     // Workspace refresh reads this extension's provider. Let the originating
     // command return before re-entering its RPC with filesystem requests.
     setTimeout(() => {
-      void setWorkspaceUri(workspaceUri).catch((error: unknown) => {
+      void executeCommand('Workspace.setUri', workspaceUri, '/').catch((error: unknown) => {
         void showNotification(
           'error',
           `Failed to open devcontainer workspace: ${String(error)}`,
