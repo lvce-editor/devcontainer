@@ -20,7 +20,7 @@
     "devcontainer-worker": "bin/devcontainerWorker.js"
   },
   "scripts": {
-    "build": "node packages/build/src/build.js",
+    "build": "node packages/build/src/build.ts",
     "e2e:devcontainer": "npm run e2e:headless --prefix packages/e2e",
     "format": "prettier --write .",
     "lint": "eslint . && knip --no-config-hints",

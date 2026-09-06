@@ -1,7 +1,7 @@
 {
   "name": "build",
   "version": "0.0.0-dev",
-  "main": "src/build.js",
+  "main": "src/build.ts",
   "type": "module",
   "keywords": [],
   "author": "",

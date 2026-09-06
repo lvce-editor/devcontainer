@@ -7,8 +7,8 @@
       "ignore": ["bin/devcontainerWorker.js"]
     },
     "packages/build": {
-      "entry": ["src/build.js", "src/computeNodeModulesCacheKey.js"],
-      "project": ["src/**/*.js"]
+      "entry": ["src/build.ts", "src/computeNodeModulesCacheKey.ts"],
+      "project": ["src/**/*.ts"]
     },
     "packages/devcontainer-node": {
       "entry": [

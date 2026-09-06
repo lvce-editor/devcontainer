@@ -1,17 +1,27 @@
 import pluginTypeScript from '@babel/preset-typescript'
 import { babel } from '@rollup/plugin-babel'
-import { default as commonjs } from '@rollup/plugin-commonjs'
+import commonjs from '@rollup/plugin-commonjs'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
-import { join } from 'path'
+import { join } from 'node:path'
 import { rollup } from 'rollup'
-import { root } from './root.js'
+import type { OutputOptions, RollupOptions } from 'rollup'
+import { root } from './root.ts'
 
-/** @returns {import('rollup').RollupOptions} */
+interface BundleOptions extends RollupOptions {
+  output: OutputOptions
+}
+
+interface CreateOptions {
+  readonly external?: string[]
+  readonly input: string
+  readonly output: string
+}
+
 const createOptions = ({
   external = ['electron', 'execa', 'ws', 'debug'],
   input,
   output,
-}) => ({
+}: CreateOptions): BundleOptions => ({
   input,
   preserveEntrySignatures: 'strict',
   treeshake: {
@@ -35,18 +45,17 @@ const createOptions = ({
       presets: [pluginTypeScript],
     }),
     nodeResolve(),
-    // @ts-ignore
+    // @ts-expect-error The plugin declares CommonJS types for its ESM default export.
     commonjs(),
   ],
 })
 
-const bundle = async (options) => {
+const bundle = async (options: BundleOptions): Promise<void> => {
   const input = await rollup(options)
-  // @ts-ignore
   await input.write(options.output)
 }
 
-export const bundleJs = async () => {
+export const bundleJs = async (): Promise<void> => {
   await bundle(
     createOptions({
       input: join(
