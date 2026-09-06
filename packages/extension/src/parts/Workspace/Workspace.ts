@@ -1,7 +1,7 @@
-import { getWorkspaceFolder } from '@lvce-editor/api'
+import { getWorkspaceUri } from '@lvce-editor/api'
 
 export const getFolder = async (): Promise<string> => {
-  const workspaceFolder = await getWorkspaceFolder()
+  const workspaceFolder = await getWorkspaceUri()
   if (!workspaceFolder) {
     throw new Error('No workspace folder is open')
   }

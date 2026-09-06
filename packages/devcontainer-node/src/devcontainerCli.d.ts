@@ -20,3 +20,9 @@ export function dockerRemoveContainer(
   options: ContainerOptions,
 ): Promise<unknown>
 export function dockerStopContainer(options: ContainerOptions): Promise<unknown>
+
+export { run as containerFileSystem } from './parts/ContainerFileSystem/ContainerFileSystem.ts'
+
+export function dockerInspectContainer(
+  options: ContainerOptions,
+): Promise<boolean>
