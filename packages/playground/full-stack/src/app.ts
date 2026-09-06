@@ -19,6 +19,14 @@ const finish = (message: string) => {
   start.disabled = false
   stop.disabled = true
 }
+const showProgress = (message: string) => {
+  const download = /Downloading data\.\.\. \((\d+)\/(\d+)\)/.exec(message)
+  if (download) {
+    status.textContent = `Downloading Linux: ${(Number(download[1]) / 1024 / 1024).toFixed(1)} / ${(Number(download[2]) / 1024 / 1024).toFixed(1)} MiB`
+  } else {
+    status.textContent = message === 'Running...' ? 'Booting Linux…' : message
+  }
+}
 start.onclick = () => {
   if (worker) return
   output.textContent = ''
@@ -44,17 +52,7 @@ start.onclick = () => {
   }, 900_000)
   current.onmessage = ({ data }) => {
     if (worker !== current) return
-    if (data.type === 'progress' && data.message) {
-      const download = /Downloading data\.\.\. \((\d+)\/(\d+)\)/.exec(
-        data.message,
-      )
-      if (download) {
-        status.textContent = `Downloading Linux: ${(Number(download[1]) / 1024 / 1024).toFixed(1)} / ${(Number(download[2]) / 1024 / 1024).toFixed(1)} MiB`
-      } else {
-        status.textContent =
-          data.message === 'Running...' ? 'Booting Linux…' : data.message
-      }
-    }
+    if (data.type === 'progress' && data.message) showProgress(data.message)
     if (data.type === 'log') {
       output.textContent = (output.textContent + data.message + '\n').slice(
         -100_000,
