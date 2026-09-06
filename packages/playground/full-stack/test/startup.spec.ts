@@ -20,7 +20,7 @@ test('the real Node service and CLI create, execute in, and remove a container i
       console.info(
         `Startup progress (${Math.round(performance.now() / 1000)}s): ${message}`,
       )
-    }).observe(element, { childList: true, characterData: true, subtree: true })
+    }).observe(element, { characterData: true, childList: true, subtree: true })
   })
   expect(requests.filter((url) => url.includes('/runtime/'))).toEqual([])
   if (!process.env.PLAYGROUND_BASE_URL) {
