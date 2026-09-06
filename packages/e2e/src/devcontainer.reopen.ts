@@ -1,5 +1,6 @@
 import type { Test } from '@lvce-editor/test-worker'
 import { getWorkspaceUri } from '../helpers/getWorkspaceUri.ts'
+import { waitForContainerWorkspace } from '../helpers/waitForContainerWorkspace.ts'
 
 export const name = 'devcontainer.reopen'
 
@@ -22,6 +23,10 @@ export const test: Test = async ({
   ).toBeVisible()
   try {
     await QuickPick.executeCommand('Dev Containers: Reopen in Container')
+    const workspaceUri = await waitForContainerWorkspace({
+      Command,
+      Devcontainer,
+    })
     // This directory and file were created by the Dockerfile, outside the bind mount.
     const containerFile = Locator(
       '.Explorer .TreeItem[aria-label="container-only.txt"]',
@@ -30,15 +35,6 @@ export const test: Test = async ({
     await expect(
       Locator('.Explorer .TreeItem[aria-label="host-only.txt"]'),
     ).toHaveCount(0)
-    const workspaceUri = await Command.execute('Workspace.getUri')
-    if (
-      typeof workspaceUri !== 'string' ||
-      !/^devcontainers:\/\/\/[a-f0-9]+$/.test(workspaceUri)
-    ) {
-      throw new Error(
-        `Expected a devcontainers workspace URI, got ${workspaceUri}`,
-      )
-    }
     await Explorer.reveal(`${workspaceUri}/container-only.txt`)
     await Explorer.clickCurrent()
     await Editor.shouldHaveText('built inside the devcontainer\n')
