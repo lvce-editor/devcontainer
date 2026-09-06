@@ -37,6 +37,17 @@ const fixturesPath = join(root, 'packages', 'e2e', 'fixtures')
 const workspacesPath = join(root, 'packages', 'e2e', '.tmp', 'fixtures')
 const fixtures = await readdir(fixturesPath)
 const execFileAsync = promisify(execFile)
+const testWorkerPath = join(
+  staticServerRoot,
+  'static',
+  assetDir,
+  'packages',
+  'test-worker',
+  'dist',
+  'testWorkerMain.js',
+)
+const originalTestWorker = await readFile(testWorkerPath)
+const installedTestWorkerPath = require.resolve('@lvce-editor/test-worker')
 
 // Also remove containers left by a failed startup before an id reached extension state.
 // Restrict every Docker operation to the copied workspaces owned by this runner.
@@ -61,6 +72,8 @@ try {
   await mkdir(builtinExtensionsPath, { recursive: true })
   await rm(extensionPath, { force: true, recursive: true })
   await cp(sourceExtensionPath, extensionPath, { recursive: true })
+  // Use the page objects from our declared dependency instead of the editor's bundled version.
+  await cp(installedTestWorkerPath, testWorkerPath)
 
   staticServerConfig.files[extensionBrowserUrl] =
     staticServerConfig.files[existingJavaScriptUrl]
@@ -95,6 +108,7 @@ try {
     await cleanupContainers()
   } finally {
     await writeFile(staticServerConfigPath, originalStaticServerConfig)
+    await writeFile(testWorkerPath, originalTestWorker)
     await rm(extensionPath, { force: true, recursive: true })
     await rm(workspacesPath, { force: true, recursive: true })
   }
