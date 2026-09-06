@@ -81,7 +81,7 @@ test('boot failure settles the session and retry creates a new worker', async ({
 test('a hung boot times out and can retry', async ({ page }) => {
   await page.clock.install()
   await page.locator('#start').click()
-  await page.clock.fastForward(900_001)
+  await page.clock.fastForward(1_800_001)
   await expect(page.getByRole('status')).toContainText('timed out')
   await expect(page.locator('#start')).toBeEnabled()
   await expect(page.locator('#stop')).toBeDisabled()

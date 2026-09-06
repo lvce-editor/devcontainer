@@ -85,8 +85,9 @@ then stops and removes the container. Each run asserts a fresh workspace. Stop
 terminates the whole VM; running again starts from the original image.
 
 This larger, experimental environment uses 1 GiB of guest RAM and may take
-several minutes. Browser memory usage also includes the emulator and filesystem.
-Docker uses VFS storage and a preloaded Alpine image with guest networking
+up to 30 minutes. Browser memory usage also includes the emulator and filesystem.
+Node’s compile cache is session-only; the fixed shell environment disables
+interactive environment probing. Docker uses VFS storage and a preloaded Alpine image with guest networking
 disabled. No host Docker socket, registry, arbitrary Dockerfile, Compose, or editor
 UI is involved. The lightweight shell playground remains available separately.
 

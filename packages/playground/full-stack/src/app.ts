@@ -11,10 +11,12 @@ document.querySelector('#config')!.textContent = JSON.stringify(
 )
 let worker: Worker | undefined
 let timer: ReturnType<typeof setTimeout> | undefined
+let elapsedTimer: ReturnType<typeof setInterval> | undefined
 const finish = (message: string) => {
   worker?.terminate()
   worker = undefined
   clearTimeout(timer)
+  clearInterval(elapsedTimer)
   status.textContent = message
   start.disabled = false
   stop.disabled = true
@@ -44,12 +46,19 @@ start.onclick = () => {
     return
   }
   worker = current
+  document.querySelector('#elapsed')!.textContent = 'Elapsed 0:00'
+  elapsedTimer = setInterval(() => {
+    if (worker !== current) return
+    const seconds = Math.floor((performance.now() - began) / 1000)
+    document.querySelector('#elapsed')!.textContent =
+      `Elapsed ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+  }, 1000)
   timer = setTimeout(() => {
     if (worker === current)
       finish(
-        'Startup test timed out after 15 minutes. Try again in a desktop browser.',
+        'Startup test timed out after 30 minutes. Try again in a desktop browser.',
       )
-  }, 900_000)
+  }, 1_800_000)
   current.onmessage = ({ data }) => {
     if (worker !== current) return
     if (data.type === 'progress' && data.message) showProgress(data.message)

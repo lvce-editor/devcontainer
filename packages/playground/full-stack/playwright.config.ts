@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: 'list',
   retries: 0,
   testDir: './test',
-  timeout: 950_000,
+  timeout: 1_850_000,
   use: {
     baseURL:
       process.env.PLAYGROUND_BASE_URL ||

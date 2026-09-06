@@ -62,4 +62,6 @@ done
 printf '\nFULL_STACK_PHASE Loading the bundled Alpine image\n'
 docker load --quiet -i /opt/playground/alpine.tar
 printf '\nFULL_STACK_PHASE Starting the real Node process and CLI\n'
+# Reuse Node bytecode between real CLI child processes within this VM session.
+export NODE_COMPILE_CACHE=/tmp/lvce-node-compile-cache
 node /opt/playground/probe.mjs

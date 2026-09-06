@@ -37,7 +37,7 @@ test('the real Node service and CLI create, execute in, and remove a container i
   await expect(page.getByRole('status')).toContainText(
     /Passed:|failed|timed out/,
     {
-      timeout: 910_000,
+      timeout: 1_810_000,
     },
   )
   console.log(await page.getByRole('status').textContent())

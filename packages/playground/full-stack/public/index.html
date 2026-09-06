@@ -25,7 +25,7 @@
         <p>
           Boot Linux, fork the extension’s Node service, and let the official
           devcontainers CLI start Docker.<br />This automatic test runs entirely
-          on your device. Allow several minutes on a desktop browser.
+          on your device. Allow up to 30 minutes on a desktop browser.
         </p>
       </section>
       <div class="workspace">
@@ -38,6 +38,7 @@
             <button id="stop" disabled>Stop</button>
           </div>
           <p id="status" role="status">Preparing browser isolation…</p>
+          <p id="elapsed" class="filename"></p>
           <p id="size" class="muted"></p>
           <h2>02 <span>What it verifies</span></h2>
           <p class="footnote">
