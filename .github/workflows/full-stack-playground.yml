@@ -21,7 +21,7 @@ jobs:
       - uses: crazy-max/ghaction-github-runtime@v3
       - run: npm ci
       - name: Restore prepared full stack assets
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         id: runtime-cache
         with:
           path: .tmp/full-stack/image
@@ -29,6 +29,12 @@ jobs:
       - name: Build and test the real startup stack
         if: steps.runtime-cache.outputs.cache-hit != 'true'
         run: bash packages/playground/full-stack/build-image.sh
+      - name: Cache the built runtime before browser testing
+        if: steps.runtime-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .tmp/full-stack/image
+          key: ${{ steps.runtime-cache.outputs.cache-primary-key }}
       - run: node packages/playground/full-stack/build-site.js
       - uses: actions/upload-artifact@v7
         with:

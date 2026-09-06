@@ -15,11 +15,11 @@ test('the real Node service and CLI create, execute in, and remove a container i
   if (!process.env.PLAYGROUND_BASE_URL) {
     // Actual 404 through the isolation service worker, followed by a full retry.
     const asset = new URL(
-      '../../../../../.tmp/playground/full-stack/runtime/load.js',
+      '../../../../.tmp/playground/full-stack/runtime/load.js',
       import.meta.url,
     )
     const missing = new URL(
-      '../../../../../.tmp/playground/full-stack/runtime/load.js.disabled',
+      '../../../../.tmp/playground/full-stack/runtime/load.js.disabled',
       import.meta.url,
     )
     await rename(asset, missing)
