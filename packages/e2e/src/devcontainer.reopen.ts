@@ -16,7 +16,7 @@ export const test: Test = async ({
   QuickPick,
   Workspace,
 }) => {
-  const localUri = getWorkspaceUri('reopen')
+  const localUri = await getWorkspaceUri({ Command }, 'reopen')
   await Workspace.setPath(localUri)
   const hostFile = Locator('.Explorer .TreeItem[aria-label="host-only.txt"]')
   await expect(hostFile).toBeVisible()

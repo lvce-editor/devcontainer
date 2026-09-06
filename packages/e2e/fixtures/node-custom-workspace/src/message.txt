@@ -1,0 +1,1 @@
+node-custom-workspace workspace fixture

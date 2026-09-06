@@ -4,7 +4,7 @@ import { getWorkspaceUri } from '../helpers/getWorkspaceUri.ts'
 export const name = 'devcontainer.reopen-failure'
 
 export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
-  const localUri = getWorkspaceUri('reopen-invalid')
+  const localUri = await getWorkspaceUri({ Command }, 'reopen-invalid')
   await Workspace.setPath(localUri)
   let failed = false
   try {

@@ -1,6 +1,23 @@
-export const getWorkspaceUri = (fixture: string): string => {
-  const url = new URL(import.meta.resolve(`../.tmp/fixtures/${fixture}`))
+import type { Test } from '@lvce-editor/test-worker'
+
+const toFileUri = (url: URL): string => {
   return url.protocol === 'file:'
     ? url.href
     : `file://${url.pathname.slice('/remote'.length)}`
+}
+
+export const getWorkspaceUri = async (
+  { Command }: Pick<Parameters<Test>[0], 'Command'>,
+  fixture: string,
+): Promise<string> => {
+  const source = toFileUri(
+    new URL(import.meta.resolve(`../fixtures/${fixture}`)),
+  )
+  const workspace = toFileUri(
+    new URL(
+      import.meta.resolve(`../.tmp/fixtures/${fixture}-${crypto.randomUUID()}`),
+    ),
+  )
+  await Command.execute('FileSystem.copy', source, workspace)
+  return workspace
 }

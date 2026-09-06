@@ -1,0 +1,4 @@
+{
+  "name": "rust",
+  "image": "rust:1.85-slim-bookworm"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "python-post-create",
+  "image": "python:3.13-slim-bookworm",
+  "postCreateCommand": [
+    "python",
+    "-c",
+    "from pathlib import Path; Path(\"created-by-lifecycle.txt\").write_text(Path(\"src/message.txt\").read_text())"
+  ]
+}

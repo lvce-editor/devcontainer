@@ -15,5 +15,13 @@ const createRpc = async (): Promise<Rpc> => {
 export const invoke = async (method: string, ...params: readonly unknown[]) => {
   rpcPromise ||= createRpc()
   const rpc = await rpcPromise
-  return rpc.invoke(method, ...params)
+  console.info('[DEBUG-devcontainer-reopen] request', method, JSON.stringify(params))
+  try {
+    const result = await rpc.invoke(method, ...params)
+    console.info('[DEBUG-devcontainer-reopen] response', method, JSON.stringify(result))
+    return result
+  } catch (error) {
+    console.info('[DEBUG-devcontainer-reopen] error', method, String(error))
+    throw error
+  }
 }
