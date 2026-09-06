@@ -7,14 +7,15 @@
   "scripts": {
     "e2e": "node ./scripts/run-e2e.js",
     "e2e:headless": "node ./scripts/run-e2e.js --headless",
-    "e2e:local-url": "playwright test",
-    "install:chromium": "playwright install --with-deps chromium",
+    "e2e:local-url": "node ../../node_modules/@playwright/test/cli.js test",
+    "install:chromium": "node ../../node_modules/@playwright/test/cli.js install --with-deps chromium",
     "type-check": "tsc"
   },
   "devDependencies": {
     "@lvce-editor/static-server": "^0.113.12",
     "@lvce-editor/test-with-playwright": "^22.31.0",
     "@lvce-editor/test-worker": "^17.20.0",
+    "@playwright/test": "^1.62.1",
     "playwright": "^1.63.0"
   }
 }

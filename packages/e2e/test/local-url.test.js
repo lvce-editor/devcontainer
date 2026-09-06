@@ -1,4 +1,4 @@
-import { expect, test } from 'playwright/test'
+import { expect, test } from '@playwright/test'
 
 for (const fixture of ['javascript-node-24', 'ubuntu-24.04', 'dockerfile']) {
   test(`${fixture} runs by visiting its URL and reloading`, async ({
