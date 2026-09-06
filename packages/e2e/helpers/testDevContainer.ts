@@ -9,6 +9,7 @@ interface Options {
 
 export const testDevContainer = async (
   {
+    Command,
     Devcontainer,
     Editor,
     expect,
@@ -19,13 +20,21 @@ export const testDevContainer = async (
   }: Parameters<Test>[0],
   { fixture, runtimeArgs, runtimeCommand, runtimeOutput }: Options,
 ): Promise<void> => {
-  // The runner copies fixtures for each run so stale container output cannot pass a test.
-  const fixtureUrl = new URL(import.meta.resolve(`../.tmp/fixtures/${fixture}`))
+  // Prepare the workspace on every URL visit, including reloads after a completed test.
+  const fixtureUrl = new URL(
+    import.meta.resolve(`../.tmp/fixtures/${fixture}-${crypto.randomUUID()}`),
+  )
+  const sourceUrl = new URL(import.meta.resolve(`../fixtures/${fixture}`))
   // Browser test modules are served under /remote, but Explorer needs a file URI.
   const workspaceUri =
     fixtureUrl.protocol === 'file:'
       ? fixtureUrl.href
       : `file://${fixtureUrl.pathname.slice('/remote'.length)}`
+  const sourceUri =
+    sourceUrl.protocol === 'file:'
+      ? sourceUrl.href
+      : `file://${sourceUrl.pathname.slice('/remote'.length)}`
+  await Command.execute('FileSystem.copy', sourceUri, workspaceUri)
   const fixtureContent = `${fixture} workspace fixture\n`
   await FileSystem.shouldHaveFile(
     `${workspaceUri}/src/message.txt`,

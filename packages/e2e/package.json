@@ -7,6 +7,7 @@
   "scripts": {
     "e2e": "node ./scripts/run-e2e.js",
     "e2e:headless": "node ./scripts/run-e2e.js --headless",
+    "e2e:local-url": "playwright test",
     "install:chromium": "playwright install --with-deps chromium",
     "type-check": "tsc"
   },
