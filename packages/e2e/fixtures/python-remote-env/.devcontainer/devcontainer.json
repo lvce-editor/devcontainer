@@ -1,0 +1,7 @@
+{
+  "name": "python-remote-env",
+  "image": "python:3.13-slim-bookworm",
+  "remoteEnv": {
+    "DEVCONTAINER_E2E_MESSAGE": "python-remote-env workspace fixture"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "node-dockerfile-build-arg",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "E2E_MESSAGE": "node-dockerfile-build-arg workspace fixture"
+    }
+  }
+}

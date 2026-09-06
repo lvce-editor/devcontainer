@@ -1,0 +1,4 @@
+{
+  "name": "php",
+  "image": "php:8.4-cli-bookworm"
+}

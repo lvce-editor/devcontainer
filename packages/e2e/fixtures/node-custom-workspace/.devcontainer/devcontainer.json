@@ -1,0 +1,6 @@
+{
+  "name": "node-custom-workspace",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/language-workspace,type=bind",
+  "workspaceFolder": "/language-workspace"
+}
