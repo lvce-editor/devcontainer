@@ -4,8 +4,14 @@ import { appendFile, rename } from 'node:fs/promises'
 test('real Linux commands, filesystem lifetime, and cancellation on the Pages subpath', async ({
   page,
 }, testInfo) => {
+  page.on('console', (message) => console.log(`[browser] ${message.text()}`))
+  page.on('pageerror', (error) =>
+    console.log(`[browser error] ${error.message}`),
+  )
   const requests: string[] = []
-  page.on('request', (request) => { requests.push(request.url()) })
+  page.on('request', (request) => {
+    requests.push(request.url())
+  })
   await page.goto('./')
   const start = page.getByRole('button', { name: 'Start Linux' })
   await expect(start).toBeEnabled()
@@ -60,8 +66,14 @@ test('missing runtime asset fails visibly and can retry', async ({ page }) => {
   const start = page.getByRole('button', { name: 'Start Linux' })
   await expect(start).toBeEnabled()
   // Remove a generated asset so the actual service-worker fetch receives a 404.
-  const asset = new URL('../../../../.tmp/playground/runtime/out.js', import.meta.url)
-  const missing = new URL('../../../../.tmp/playground/runtime/out.js.disabled', import.meta.url)
+  const asset = new URL(
+    '../../../../.tmp/playground/runtime/out.js',
+    import.meta.url,
+  )
+  const missing = new URL(
+    '../../../../.tmp/playground/runtime/out.js.disabled',
+    import.meta.url,
+  )
   await rename(asset, missing)
   try {
     await start.click()

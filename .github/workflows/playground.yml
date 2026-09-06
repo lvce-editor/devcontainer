@@ -42,10 +42,6 @@ jobs:
           path: |
             packages/playground/playwright-report
             packages/playground/test-results
-      - uses: actions/upload-artifact@v7
-        with:
-          name: playground-site
-          path: .tmp/playground
       - uses: actions/upload-pages-artifact@v5
         if: github.ref == 'refs/heads/main'
         with:

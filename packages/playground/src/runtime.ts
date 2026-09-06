@@ -65,7 +65,14 @@ export class Runtime {
           if (this.worker !== worker) return
           switch (data.type) {
             case 'error': {
-              this.fail(`Linux failed: ${String(data.message).slice(0, 500)}`)
+              console.error('[Linux]', data.message)
+              this.fail(
+                'Linux failed to load or stopped unexpectedly. Check your connection and try Start again.',
+              )
+              break
+            }
+            case 'log': {
+              console.debug('[Linux]', data.message)
               break
             }
             case 'ready': {
@@ -113,11 +120,13 @@ export class Runtime {
     })
   }
 
-
-
   exec(command: string): Promise<Result> {
-    if (command.length > 8192)
-      return Promise.resolve(failure('Commands are limited to 8 KiB'))
+    if (new TextEncoder().encode(command).byteLength > 8192)
+      return Promise.resolve({
+        errorCode: 'DEVCONTAINER_COMMAND_TOO_LONG',
+        errorMessage: 'Commands are limited to 8 KiB',
+        ok: false,
+      })
     const { worker } = this
     const run = async (): Promise<Result> => {
       if (!worker || this.worker !== worker)
@@ -129,7 +138,11 @@ export class Runtime {
           () => this.fail('Command timed out. Start again to reset Linux.'),
           45_000,
         )
-        worker.postMessage({ command: encode(command), id, type: 'exec' })
+        try {
+          worker.postMessage({ command: encode(command), id, type: 'exec' })
+        } catch {
+          this.fail('Unable to send the command. Start again to reset Linux.')
+        }
       })
     }
     const previous = this.queue
@@ -141,8 +154,6 @@ export class Runtime {
     this.queue = result
     return result
   }
-
-
 
   stop(message = 'The environment was stopped'): Result {
     this.worker?.terminate()

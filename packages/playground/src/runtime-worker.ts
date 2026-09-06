@@ -22,8 +22,12 @@ const boot = async () => {
     },
     write(bytes: Uint8Array, done: () => void) {
       output += decoder.decode(bytes, { stream: true })
-      if (output.length > 6 * 1024 * 1024)
-        throw new Error('Guest output exceeded the limit')
+      if (output.length > 6 * 1024 * 1024) {
+        output = ''
+        send({ message: 'Guest output exceeded the limit', type: 'error' })
+        done()
+        return
+      }
       let newline: number
       while ((newline = output.indexOf('\n')) !== -1) {
         const line = output.slice(0, newline).replaceAll('\r', '')
@@ -38,7 +42,7 @@ const boot = async () => {
             stdout,
             type: 'result',
           })
-        }
+        } else if (line) send({ message: line.slice(0, 500), type: 'log' })
       }
       done()
     },
@@ -65,8 +69,9 @@ const boot = async () => {
     mod.FS.writeFile('/pack/info', `t:${Math.round(Date.now() / 1000)}\n`)
     const callbacks = new Set<any>()
     slave.onReadable(() => {
-      for (const callback of callbacks) callback()
+      const ready = [...callbacks]
       callbacks.clear()
+      for (const callback of ready) callback()
     })
     mod.TTY.stream_ops.poll = (
       _stream: unknown,
@@ -89,6 +94,15 @@ const boot = async () => {
 
 scope.onmessage = async ({ data }: MessageEvent) => {
   if (data.type === 'boot') {
-    try { await boot() } catch (error) { send({ message: String(error), type: 'error' }) }
+    try {
+      await boot()
+    } catch (error) {
+      send({ message: String(error), type: 'error' })
+    }
   } else if (data.type === 'exec') input?.(`${data.id} ${data.command}\n`)
+}
+
+scope.onunhandledrejection = (event: PromiseRejectionEvent) => {
+  event.preventDefault()
+  send({ message: String(event.reason), type: 'error' })
 }

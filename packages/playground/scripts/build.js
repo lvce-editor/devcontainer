@@ -9,7 +9,7 @@ import {
   writeFile,
 } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 
 const root = fileURLToPath(new URL('../../../', import.meta.url))
 const playground = join(root, 'packages/playground')
@@ -29,6 +29,21 @@ await cp(
   join(output, 'coi-serviceworker.js'),
 )
 await cp(join(root, 'LICENSE'), join(output, 'LICENSE.txt'))
+await mkdir(join(output, 'licenses'))
+for (const [name, license] of [
+  ['xterm-pty', 'LICENSE.txt'],
+  ['coi-serviceworker', 'LICENSE'],
+]) {
+  const entry =
+    name === 'coi-serviceworker'
+      ? 'coi-serviceworker/coi-serviceworker.js'
+      : name
+  await cp(
+    join(dirname(fileURLToPath(import.meta.resolve(entry))), license),
+    join(output, 'licenses', `${name}.txt`),
+  )
+}
+
 const result = await build({
   entryPoints: [
     join(playground, 'src/app.ts'),

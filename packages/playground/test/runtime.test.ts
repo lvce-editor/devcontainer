@@ -102,7 +102,7 @@ void test('failed boot returns an error and permits retry', async () => {
   const boot = runtime.start()
   workers[0].emit({ message: 'missing image', type: 'error' })
   const bootResult = await boot
-  assert.match(bootResult.errorMessage!, /missing image/)
+  assert.match(bootResult.errorMessage!, /Linux failed/)
   const retry = runtime.start()
   workers[1].emit({ type: 'ready' })
   const retryResult = await retry
@@ -145,8 +145,32 @@ void test('malformed command responses settle the command and terminate the envi
   await boot
   const command = runtime.exec('true')
   await tick()
-  workers[0].emit({ exitCode: 0, id: 1, stderr: '', stdout: '%invalid', type: 'result' })
+  workers[0].emit({
+    exitCode: 0,
+    id: 1,
+    stderr: '',
+    stdout: '%invalid',
+    type: 'result',
+  })
   const result = await command
   assert.equal(result.ok, false)
   assert.equal(workers[0].terminated, true)
+})
+
+void test('a worker transport failure settles the command and allows a fresh start', async () => {
+  const { runtime, workers } = setup()
+  const boot = runtime.start()
+  workers[0].emit({ type: 'ready' })
+  await boot
+  workers[0].postMessage = () => {
+    throw new Error('Worker transport closed')
+  }
+  const result = await runtime.exec('true')
+  assert.equal(result.ok, false)
+  assert.equal(workers[0].terminated, true)
+  const retry = runtime.start()
+  workers[1].emit({ type: 'ready' })
+  const retried = await retry
+  assert.equal(retried.ok, true)
+  runtime.stop()
 })

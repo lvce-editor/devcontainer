@@ -82,9 +82,11 @@ element('command-form').onsubmit = async (event) => {
   })) as Result
   if (current !== session) return
   const error = result.errorMessage ? result.errorMessage + '\n' : ''
-  append(`${result.stdout || ''}${result.stderr || ''}${error}[exit ${result.exitCode ?? 'unavailable'}]\n`)
+  append(
+    `${result.stdout || ''}${result.stderr || ''}${error}[exit ${result.exitCode ?? 'unavailable'}]\n`,
+  )
   busy = false
-  if (result.exitCode === undefined && !result.ok) {
+  if (result.exitCode === undefined && !result.ok && !result.errorCode) {
     await lifecycle.stop({ workspaceFolder })
     running = false
     status.textContent = 'The environment stopped. Start again to retry.'
@@ -124,8 +126,11 @@ try {
   const response = await fetch('./assets.json')
   if (!response.ok) throw new Error('Asset manifest unavailable')
   const assets: { bytes: number }[] = await response.json()
-  const mib = assets.reduce((total, asset) => total + asset.bytes, 0) / 1024 / 1024
-  element('download').textContent = `Environment assets: ${mib.toFixed(1)} MiB · first start may take a moment`
+  const mib =
+    assets.reduce((total, asset) => total + asset.bytes, 0) / 1024 / 1024
+  element('download').textContent =
+    `Environment assets: ${mib.toFixed(1)} MiB · first start may take a moment`
 } catch {
-  element('download').textContent = 'Asset information unavailable. Reload to retry.'
+  element('download').textContent =
+    'Asset information unavailable. Reload to retry.'
 }
