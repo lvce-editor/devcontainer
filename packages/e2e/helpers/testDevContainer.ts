@@ -40,7 +40,17 @@ export const testDevContainer = async (
   { fixture, runtimeArgs, runtimeCommand, runtimeOutput }: Options,
 ): Promise<void> => {
   // The runner copies fixtures for each run so stale container output cannot pass a test.
-  const workspaceUri = import.meta.resolve(`../.tmp/fixtures/${fixture}`)
+  const fixtureUrl = new URL(import.meta.resolve(`../.tmp/fixtures/${fixture}`))
+  // Browser test modules are served under /remote, but Explorer needs a file URI.
+  const workspaceUri =
+    fixtureUrl.protocol === 'file:'
+      ? fixtureUrl.href
+      : `file://${fixtureUrl.pathname.slice('/remote'.length)}`
+  const fixtureContent = `${fixture} workspace fixture\n`
+  await FileSystem.shouldHaveFile(
+    `${workspaceUri}/src/message.txt`,
+    fixtureContent,
+  )
   await Workspace.setPath(workspaceUri)
   const sourceFolder = Locator('.Explorer .TreeItem[aria-label="src"]')
   await expect(sourceFolder).toBeVisible()
@@ -74,7 +84,6 @@ export const testDevContainer = async (
       )
     }
 
-    const fixtureContent = `${fixture} workspace fixture\n`
     const read = await Command.executeExtensionCommand(
       'devcontainer.exec',
       'cat',
