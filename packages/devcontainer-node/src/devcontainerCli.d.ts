@@ -21,6 +21,7 @@ export function dockerRemoveContainer(
 ): Promise<unknown>
 export function dockerStopContainer(options: ContainerOptions): Promise<unknown>
 
+export function setDockerPath(path: string): void
 export { run as containerFileSystem } from './parts/ContainerFileSystem/ContainerFileSystem.ts'
 
 export function dockerInspectContainer(

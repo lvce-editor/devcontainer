@@ -65,6 +65,8 @@ export const commandMap = {
   [DevContainerCommandType.DevContainerOpenWorkspace]: openWorkspace,
   [DevContainerCommandType.DevContainerReadConfiguration]: readConfiguration,
   [DevContainerCommandType.DevContainerRemove]: remove,
+  [DevContainerCommandType.DevContainerSetDockerPath]:
+    DevContainerCli.setDockerPath,
   [DevContainerCommandType.DevContainerStop]: stop,
   [DevContainerCommandType.DevContainerUp]: up,
 }

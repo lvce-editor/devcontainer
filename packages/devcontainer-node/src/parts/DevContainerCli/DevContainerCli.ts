@@ -47,6 +47,12 @@ export interface ContainerOptions {
 
 const require = createRequire(import.meta.url)
 
+let dockerPath = 'docker'
+
+export const setDockerPath = (path: string): void => {
+  dockerPath = path
+}
+
 const isErrorResult = (
   result: RunProcess.RunProcessResult,
 ): result is ErrorResult => {
@@ -64,7 +70,14 @@ export const getCliReadConfigurationArgs = ({
 }
 
 export const getCliUpArgs = ({ workspaceFolder }: WorkspaceOptions) => {
-  return ['up', '--workspace-folder', workspaceFolder, '--no-lockfile']
+  return [
+    'up',
+    '--workspace-folder',
+    workspaceFolder,
+    '--no-lockfile',
+    '--docker-path',
+    dockerPath,
+  ]
 }
 
 export const getCliExecArgs = ({
@@ -72,7 +85,15 @@ export const getCliExecArgs = ({
   command,
   workspaceFolder,
 }: ExecOptions) => {
-  return ['exec', '--workspace-folder', workspaceFolder, command, ...args]
+  return [
+    'exec',
+    '--workspace-folder',
+    workspaceFolder,
+    '--docker-path',
+    dockerPath,
+    command,
+    ...args,
+  ]
 }
 
 export const getDockerStopArgs = ({ containerId }: ContainerOptions) => {
@@ -174,7 +195,7 @@ const runDocker = async (
 ): Promise<DockerCommandResult> => {
   const result = await RunProcess.runProcess({
     args,
-    command: 'docker',
+    command: dockerPath,
     cwd: process.cwd(),
   })
   if (isErrorResult(result) || result.exitCode) {

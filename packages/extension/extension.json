@@ -17,6 +17,7 @@
     }
   ],
   "activation": [
+    "onCommand:devcontainer.setDockerPath",
     "onCommand:devcontainer.start",
     "onCommand:devcontainer.stop",
     "onCommand:devcontainer.getState",
@@ -26,6 +27,10 @@
     "onFileSystem:devcontainers"
   ],
   "commands": [
+    {
+      "id": "devcontainer.setDockerPath",
+      "internal": true
+    },
     {
       "id": "devcontainer.openWorkspace",
       "label": "Dev Containers: Reopen in Container"

@@ -33,6 +33,10 @@ export const remove = () => {
   return invokeForCurrentWorkspace('DevContainer.remove')
 }
 
+export const setDockerPath = (path: string) => {
+  return Rpc.invoke('DevContainer.setDockerPath', path)
+}
+
 export const openWorkspace = async (): Promise<void> => {
   try {
     const originalWorkspace = await Workspace.getFolder()

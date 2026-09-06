@@ -17,6 +17,7 @@ await Promise.all([
       'node_modules/@lvce-editor/server/bin/server.js',
       '--only-extension=.tmp/dist',
       '--test-path=packages/e2e',
+      '--link=node_modules/@lvce-editor/test-worker',
     ],
     {
       cwd: root,
