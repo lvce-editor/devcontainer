@@ -1,6 +1,8 @@
 import { NodeForkedProcessRpcParent } from '@lvce-editor/rpc'
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
+import { access, readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { createDevContainer } from '../../../devcontainer-worker/src/parts/CreateDevContainer/CreateDevContainer.ts'
 import * as DevContainerConfig from '../../../devcontainer-worker/src/parts/DevContainerConfig/DevContainerConfig.ts'
@@ -10,7 +12,10 @@ let rpc:
   Awaited<ReturnType<typeof NodeForkedProcessRpcParent.create>> | undefined
 let lifecycle: ReturnType<typeof createDevContainer> | undefined
 const workspaceFolder = '/workspace'
+const docker = (args: string[]) => promisify(execFile)('docker', args)
 try {
+  await assert.rejects(access('/workspace/test.txt'), { code: 'ENOENT' })
+  await assert.rejects(access('/workspace/created.txt'), { code: 'ENOENT' })
   phase(`Forking devcontainer-node with Node ${process.version}`)
   rpc = await NodeForkedProcessRpcParent.create({
     commandMap: {},
@@ -89,9 +94,17 @@ try {
   assert.equal(read.stdout, 'persisted')
   phase('Stopping and removing the real Docker container')
   assert.equal(((await lifecycle.stop({ workspaceFolder })) as any).ok, true)
+  const inspected = await docker([
+    'inspect',
+    '--format={{.State.Running}}',
+    started.json.containerId,
+  ])
+  assert.equal(inspected.stdout.trim(), 'false')
   assert.equal(((await lifecycle.remove({ workspaceFolder })) as any).ok, true)
   const stopped = await lifecycle.getState({ workspaceFolder })
   assert.equal(stopped.status, 'stopped')
+  const remaining = await docker(['ps', '-aq'])
+  assert.equal(remaining.stdout.trim(), '')
   phase('Disposing the Node process')
   await rpc.dispose()
   rpc = undefined

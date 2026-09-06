@@ -17,8 +17,9 @@ docker tag "$alpine" lvce-playground-alpine:3.23.3
 docker save lvce-playground-alpine:3.23.3 -o .tmp/full-stack/context/alpine.tar
 docker build --platform linux/amd64 -t lvce-full-stack:build -f packages/playground/full-stack/image/Dockerfile .tmp/full-stack/context
 # Catch package, IPC and CLI issues before paying the emulation build cost.
-timeout 180 docker run --rm --privileged --cgroupns=host --network none lvce-full-stack:build | tee .tmp/full-stack/native.log
-rg '^FULL_STACK_PASS$' .tmp/full-stack/native.log
+trap 'docker rm -f lvce-full-stack-native >/dev/null 2>&1 || true' EXIT
+timeout 180 docker run --name lvce-full-stack-native --rm --privileged --cgroupns=host --network none lvce-full-stack:build | tee .tmp/full-stack/native.log
+grep -q '^FULL_STACK_PASS$' .tmp/full-stack/native.log
 cache_flags=()
 if [[ -n "${ACTIONS_RUNTIME_TOKEN:-}" ]]; then
   cache_flags=(
