@@ -21,6 +21,7 @@ jobs:
       - uses: crazy-max/ghaction-github-runtime@v3
       - run: npm ci
       - name: Restore prepared full stack assets
+        # eslint-disable-next-line github-actions/action-versions -- These sub-actions share the verified actions/cache v6 tag.
         uses: actions/cache/restore@v6
         id: runtime-cache
         with:
@@ -31,6 +32,7 @@ jobs:
         run: bash packages/playground/full-stack/build-image.sh
       - name: Cache the built runtime before browser testing
         if: steps.runtime-cache.outputs.cache-hit != 'true'
+        # eslint-disable-next-line github-actions/action-versions -- These sub-actions share the verified actions/cache v6 tag.
         uses: actions/cache/save@v6
         with:
           path: .tmp/full-stack/image

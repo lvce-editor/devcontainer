@@ -29,6 +29,6 @@ if [[ -n "${ACTIONS_RUNTIME_TOKEN:-}" ]]; then
   )
 fi
 .tmp/c2w/c2w --to-js --dockerfile .tmp/full-stack/c2w.Dockerfile \
-  --build-arg VM_MEMORY_SIZE_MB=512 \
+  --build-arg VM_MEMORY_SIZE_MB=1024 \
   --build-arg SOURCE_REPO=https://github.com/container2wasm/container2wasm \
   "${cache_flags[@]}" lvce-full-stack:build .tmp/full-stack/image/
