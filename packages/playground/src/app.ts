@@ -6,7 +6,7 @@ import {
 } from './browser.ts'
 
 const element = <T extends HTMLElement>(id: string) =>
-  document.getElementById(id) as T
+  document.querySelector(`#${id}`) as T
 const start = element<HTMLButtonElement>('start')
 const stop = element<HTMLButtonElement>('stop')
 const run = element<HTMLButtonElement>('run')
@@ -81,9 +81,8 @@ element('command-form').onsubmit = async (event) => {
     workspaceFolder,
   })) as Result
   if (current !== session) return
-  append(
-    `${result.stdout || ''}${result.stderr || ''}${result.errorMessage ? `${result.errorMessage}\n` : ''}[exit ${result.exitCode ?? 'unavailable'}]\n`,
-  )
+  const error = result.errorMessage ? result.errorMessage + '\n' : ''
+  append(`${result.stdout || ''}${result.stderr || ''}${error}[exit ${result.exitCode ?? 'unavailable'}]\n`)
   busy = false
   if (result.exitCode === undefined && !result.ok) {
     await lifecycle.stop({ workspaceFolder })
@@ -121,15 +120,12 @@ else if (
   status.textContent = 'Ready to start · no download until you click Start'
   render()
 }
-fetch('./assets.json')
-  .then((response) => response.json())
-  .then((assets: { bytes: number }[]) => {
-    const mib =
-      assets.reduce((total, asset) => total + asset.bytes, 0) / 1024 / 1024
-    element('download').textContent =
-      `Environment assets: ${mib.toFixed(1)} MiB · first start may take a moment`
-  })
-  .catch(() => {
-    element('download').textContent =
-      'Asset information unavailable. Reload to retry.'
-  })
+try {
+  const response = await fetch('./assets.json')
+  if (!response.ok) throw new Error('Asset manifest unavailable')
+  const assets: { bytes: number }[] = await response.json()
+  const mib = assets.reduce((total, asset) => total + asset.bytes, 0) / 1024 / 1024
+  element('download').textContent = `Environment assets: ${mib.toFixed(1)} MiB · first start may take a moment`
+} catch {
+  element('download').textContent = 'Asset information unavailable. Reload to retry.'
+}

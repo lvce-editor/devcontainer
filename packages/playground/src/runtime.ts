@@ -9,10 +9,10 @@ export interface Result {
 }
 const failure = (errorMessage: string): Result => ({ errorMessage, ok: false })
 const encode = (value: string) =>
-  btoa(String.fromCharCode(...new TextEncoder().encode(value)))
+  btoa(String.fromCodePoint(...new TextEncoder().encode(value)))
 const decode = (value: string) =>
   new TextDecoder().decode(
-    Uint8Array.from(atob(value), (char) => char.charCodeAt(0)),
+    Uint8Array.from(atob(value), (char) => char.codePointAt(0)!),
   )
 
 export class Runtime {
@@ -34,6 +34,10 @@ export class Runtime {
   ) {
     this.progress = progress
     this.createWorker = createWorker
+  }
+
+  private fail(message: string) {
+    this.stop(message)
   }
 
   start(): Promise<Result> {
@@ -81,7 +85,6 @@ export class Runtime {
             case 'result': {
               clearTimeout(this.commandTimer)
               const finish = this.pending.get(data.id)
-              this.pending.delete(data.id)
               try {
                 finish?.({
                   exitCode: data.exitCode,
@@ -89,6 +92,7 @@ export class Runtime {
                   stderr: decode(data.stderr || ''),
                   stdout: decode(data.stdout || ''),
                 })
+                this.pending.delete(data.id)
               } catch {
                 this.fail(
                   'Linux returned an invalid command response. Start again.',
@@ -109,6 +113,8 @@ export class Runtime {
     })
   }
 
+
+
   exec(command: string): Promise<Result> {
     if (command.length > 8192)
       return Promise.resolve(failure('Commands are limited to 8 KiB'))
@@ -126,14 +132,17 @@ export class Runtime {
         worker.postMessage({ command: encode(command), id, type: 'exec' })
       })
     }
-    const result = this.queue.then(run)
-    this.queue = result.catch(() => {})
+    const previous = this.queue
+    const enqueue = async () => {
+      await previous
+      return run()
+    }
+    const result = enqueue()
+    this.queue = result
     return result
   }
 
-  private fail(message: string) {
-    this.stop(message)
-  }
+
 
   stop(message = 'The environment was stopped'): Result {
     this.worker?.terminate()

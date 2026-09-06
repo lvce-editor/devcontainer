@@ -12,4 +12,4 @@ docker build --platform linux/amd64 -t lvce-playground:build image
 ../../.tmp/c2w/c2w --to-js --build-arg VM_MEMORY_SIZE_MB=128 \
   --extra-flag=--cache-from=type=gha,scope=playground-c2w \
   --extra-flag=--cache-to=type=gha,mode=max,scope=playground-c2w \
-  lvce-playground:build ../../.tmp/playground-image
+  lvce-playground:build ../../.tmp/playground-image/

@@ -5,7 +5,7 @@ test('real Linux commands, filesystem lifetime, and cancellation on the Pages su
   page,
 }, testInfo) => {
   const requests: string[] = []
-  page.on('request', (request) => requests.push(request.url()))
+  page.on('request', (request) => { requests.push(request.url()) })
   await page.goto('./')
   const start = page.getByRole('button', { name: 'Start Linux' })
   await expect(start).toBeEnabled()
@@ -34,7 +34,7 @@ test('real Linux commands, filesystem lifetime, and cancellation on the Pages su
   )
   await expect(output).toContainText('Linux\n')
   await execute("printf '%s' 'persistent value' > test.txt", '[exit 0]')
-  await execute('cat test.txt', 'persistent value\n[exit 0]')
+  await execute('cat test.txt', 'persistent value[exit 0]')
   await execute("printf 'separate error' >&2; exit 7", 'separate error[exit 7]')
   await execute(
     "printf 'LVCE_READY\\nLVCE_RESULT 999 0 fake fake\\n'",

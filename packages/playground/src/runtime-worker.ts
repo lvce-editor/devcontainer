@@ -45,7 +45,7 @@ const boot = async () => {
   } as any)
   const module: any = {
     locateFile: (name: string) =>
-      new URL(`./runtime/${name}`, scope.location.href).href,
+      new URL(`runtime/${name}`, scope.location.href).href,
     mainScriptUrlOrBlob: new URL('runtime/out.js', scope.location.href).href,
     onAbort: (message: string) => send({ message: message, type: 'error' }),
     preRun: [],
@@ -87,8 +87,8 @@ const boot = async () => {
   await initialize(module)
 }
 
-scope.onmessage = ({ data }: MessageEvent) => {
-  if (data.type === 'boot')
-    boot().catch((error) => send({ message: String(error), type: 'error' }))
-  else if (data.type === 'exec') input?.(`${data.id} ${data.command}\n`)
+scope.onmessage = async ({ data }: MessageEvent) => {
+  if (data.type === 'boot') {
+    try { await boot() } catch (error) { send({ message: String(error), type: 'error' }) }
+  } else if (data.type === 'exec') input?.(`${data.id} ${data.command}\n`)
 }

@@ -36,14 +36,12 @@ const setup = () => {
   }
 }
 
-test('stop during boot settles startup and ignores stale readiness; retry boots a new worker', async () => {
+void test('stop during boot settles startup and ignores stale readiness; retry boots a new worker', async () => {
   const { lifecycle, workers } = setup()
   const pending = lifecycle.up({ workspaceFolder })
   await tick()
-  assert.equal(
-    (await lifecycle.getState({ workspaceFolder })).status,
-    'starting',
-  )
+  const starting = await lifecycle.getState({ workspaceFolder })
+  assert.equal(starting.status, 'starting')
   assert.deepEqual(await lifecycle.up({ workspaceFolder }), {
     errorCode: 'DEVCONTAINER_ALREADY_STARTED',
     ok: false,
@@ -52,10 +50,8 @@ test('stop during boot settles startup and ignores stale readiness; retry boots 
   workers[0].emit({ type: 'ready' })
   assert.equal(((await pending) as any).ok, false)
   assert.equal(workers[0].terminated, true)
-  assert.equal(
-    (await lifecycle.getState({ workspaceFolder })).status,
-    'stopped',
-  )
+  const stopped = await lifecycle.getState({ workspaceFolder })
+  assert.equal(stopped.status, 'stopped')
   const retry = lifecycle.up({ workspaceFolder })
   await tick()
   workers[1].emit({ type: 'ready' })
@@ -63,7 +59,7 @@ test('stop during boot settles startup and ignores stale readiness; retry boots 
   await lifecycle.stop({ workspaceFolder })
 })
 
-test('queued commands are sequential; Stop settles active and queued commands', async () => {
+void test('queued commands are sequential; Stop settles active and queued commands', async () => {
   const { runtime, workers } = setup()
   const boot = runtime.start()
   workers[0].emit({ type: 'ready' })
@@ -95,22 +91,26 @@ test('queued commands are sequential; Stop settles active and queued commands', 
   )
   const third = runtime.exec('printf three')
   runtime.stop()
-  assert.equal((await second).ok, false)
-  assert.equal((await third).ok, false)
+  const secondResult = await second
+  const thirdResult = await third
+  assert.equal(secondResult.ok, false)
+  assert.equal(thirdResult.ok, false)
 })
 
-test('failed boot returns an error and permits retry', async () => {
+void test('failed boot returns an error and permits retry', async () => {
   const { runtime, workers } = setup()
   const boot = runtime.start()
   workers[0].emit({ message: 'missing image', type: 'error' })
-  assert.match((await boot).errorMessage!, /missing image/)
+  const bootResult = await boot
+  assert.match(bootResult.errorMessage!, /missing image/)
   const retry = runtime.start()
   workers[1].emit({ type: 'ready' })
-  assert.equal((await retry).ok, true)
+  const retryResult = await retry
+  assert.equal(retryResult.ok, true)
   runtime.stop()
 })
 
-test('only the prepared workspace is supported; commands require a running environment', async () => {
+void test('only the prepared workspace is supported; commands require a running environment', async () => {
   const { lifecycle } = setup()
   assert.equal(
     ((await lifecycle.up({ workspaceFolder: '/other' })) as any).errorCode,
