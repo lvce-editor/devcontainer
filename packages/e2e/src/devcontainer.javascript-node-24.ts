@@ -1,4 +1,4 @@
-import type { Test } from '@lvce-editor/test-with-playwright'
+import type { Test } from '@lvce-editor/test-worker'
 import { testDevContainer } from '../helpers/testDevContainer.ts'
 
 export const name = 'devcontainer.javascript-node-24'

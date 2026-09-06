@@ -16,6 +16,8 @@ Docker-backed end-to-end tests run on Ubuntu for every pull request and push to 
 
 Each test opens a fresh copy of a workspace fixture, starts the container through Quick Pick, checks its runtime and reads the fixture inside the container. It then writes a file from inside Docker and verifies the file in Explorer and its contents in the editor. A subsequent workspace edit must be readable inside the container. Finally, the test stops the container through Quick Pick and verifies that execution is rejected while stopped.
 
+The tests use the `Devcontainer` page object from `@lvce-editor/test-worker` for start, stop, execution, output assertions, and cleanup. The runner loads the declared test-worker dependency into the editor and restores the bundled worker after the run.
+
 These assertions cover the extension's command connection and shared workspace mount. Explorer currently browses the local mounted workspace; the tests do not assert remote filesystem browsing outside that mount.
 
 To run locally with Node from `.nvmrc` and a running Docker daemon:
