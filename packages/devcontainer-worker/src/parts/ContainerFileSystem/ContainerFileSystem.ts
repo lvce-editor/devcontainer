@@ -8,7 +8,7 @@ export const invoke = async (
   uri: string,
   value?: string,
 ): Promise<unknown> => {
-  const workspaceFolder = DevContainerState.getWorkspaceFolder(uri)
+  const workspaceFolder = await DevContainerState.getWorkspaceFolder(uri)
   const state = DevContainerState.get(workspaceFolder)
   if (
     state?.status !== 'running' ||

@@ -1,6 +1,6 @@
 import * as RunProcess from '../RunProcess/RunProcess.ts'
 
-export interface Options {
+interface Options {
   containerId: string
   content?: string
   newPath?: string

@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from '@jest/globals'
+import { afterEach, beforeEach, expect, test } from '@jest/globals'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -20,7 +20,14 @@ const createWorkspace = async ({ withConfig = true } = {}) => {
   return root
 }
 
+beforeEach(async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'devcontainer-connections-'))
+  roots.push(directory)
+  process.env.LVCE_DEVCONTAINER_CONNECTIONS_DIR = directory
+})
+
 afterEach(async () => {
+  delete process.env.LVCE_DEVCONTAINER_CONNECTIONS_DIR
   DevContainerState.reset()
   DevContainerNodeClient.resetNodeApi()
   for (const root of roots.splice(0)) {
@@ -59,7 +66,7 @@ test('up - success stores running state', async () => {
   expect(await DevContainer.up({ workspaceFolder })).toMatchObject({
     ok: true,
   })
-  expect(DevContainer.getState({ workspaceFolder })).toMatchObject({
+  expect(await DevContainer.getState({ workspaceFolder })).toMatchObject({
     containerId: 'container-1',
     remoteUser: 'vscode',
     remoteWorkspaceFolder: '/workspaces/app',
@@ -84,7 +91,7 @@ test('up - failure stores error state', async () => {
     errorMessage: 'boom',
     ok: false,
   })
-  expect(DevContainer.getState({ workspaceFolder })).toMatchObject({
+  expect(await DevContainer.getState({ workspaceFolder })).toMatchObject({
     status: 'error',
   })
 })
@@ -125,7 +132,7 @@ test('stop - stores stopped state after docker stop', async () => {
     ok: true,
   })
   expect(stopped).toEqual(['container-1'])
-  expect(DevContainer.getState({ workspaceFolder })).toMatchObject({
+  expect(await DevContainer.getState({ workspaceFolder })).toMatchObject({
     containerId: 'container-1',
     status: 'stopped',
   })
@@ -154,7 +161,7 @@ test('up - accepts a file workspace uri', async () => {
     ok: true,
   })
   expect(
-    DevContainer.getState({ workspaceFolder: workspaceUri }),
+    await DevContainer.getState({ workspaceFolder: workspaceUri }),
   ).toMatchObject({
     containerId: 'container-1',
     status: 'running',
@@ -183,7 +190,7 @@ test('remove - clears state after docker remove', async () => {
     ok: true,
   })
   expect(removed).toEqual(['container-1'])
-  expect(DevContainer.getState({ workspaceFolder })).toEqual({
+  expect(await DevContainer.getState({ workspaceFolder })).toEqual({
     status: 'stopped',
   })
 })

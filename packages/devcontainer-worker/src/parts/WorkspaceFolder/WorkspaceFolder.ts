@@ -1,10 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import * as DevContainerState from '../DevContainerState/DevContainerState.ts'
 
-export const toPath = (workspaceFolder: string) => {
-  if (workspaceFolder.startsWith('devcontainers:///')) {
-    return DevContainerState.getWorkspaceFolder(workspaceFolder)
-  }
+const normalizePath = (workspaceFolder: string): string => {
   if (workspaceFolder.startsWith('file://')) {
     return fileURLToPath(workspaceFolder)
   }
@@ -18,4 +15,15 @@ export const toPath = (workspaceFolder: string) => {
     }
   }
   return workspaceFolder
+}
+
+export const toPath = async (workspaceFolder: string): Promise<string> => {
+  if (workspaceFolder.startsWith('devcontainers:///')) {
+    return DevContainerState.getWorkspaceFolder(workspaceFolder)
+  }
+  const path = normalizePath(workspaceFolder)
+  if (!DevContainerState.get(path)) {
+    await DevContainerState.restore(path)
+  }
+  return path
 }

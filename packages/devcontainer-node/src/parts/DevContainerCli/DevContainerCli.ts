@@ -225,3 +225,18 @@ export const dockerRemoveContainer = (options: ContainerOptions) => {
 }
 
 export { run as containerFileSystem } from '../ContainerFileSystem/ContainerFileSystem.ts'
+
+export const dockerInspectContainer = async ({
+  containerId,
+}: ContainerOptions) => {
+  const result = await runDocker('DevContainerNode.dockerInspectContainer', [
+    'inspect',
+    '--format',
+    '{{.State.Running}}',
+    containerId,
+  ])
+  if (!result.ok) {
+    throw new Error(result.errorMessage)
+  }
+  return result.stdout.trim() === 'true'
+}

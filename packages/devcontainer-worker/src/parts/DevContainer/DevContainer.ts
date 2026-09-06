@@ -32,13 +32,17 @@ const isOk = (result: unknown): result is CliLikeResult => {
   return Boolean(result && typeof result === 'object' && 'ok' in result)
 }
 
-export const detect = (options: { workspaceFolder: string }) => {
-  const workspaceFolder = WorkspaceFolder.toPath(options.workspaceFolder)
+export const detect = async (options: { workspaceFolder: string }) => {
+  const workspaceFolder = await WorkspaceFolder.toPath(options.workspaceFolder)
   return DevContainerConfig.detect({ workspaceFolder })
 }
 
-export const getState = ({ workspaceFolder }: { workspaceFolder: string }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+export const getState = async ({
+  workspaceFolder,
+}: {
+  workspaceFolder: string
+}) => {
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   return (
     DevContainerState.get(workspaceFolder) ?? {
       status: 'stopped',
@@ -51,7 +55,7 @@ export const readConfiguration = async ({
 }: {
   workspaceFolder: string
 }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const detected = await detect({ workspaceFolder })
   if (!detected.found) {
     return configNotFound(workspaceFolder)
@@ -60,7 +64,7 @@ export const readConfiguration = async ({
 }
 
 export const up = async ({ workspaceFolder }: { workspaceFolder: string }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const detected = await detect({ workspaceFolder })
   if (!detected.found) {
     return configNotFound(workspaceFolder)
@@ -106,7 +110,7 @@ export const exec = async ({
   command: string
   workspaceFolder: string
 }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const currentState = DevContainerState.get(workspaceFolder)
   if (!currentState || currentState.status !== 'running') {
     return {
@@ -125,7 +129,7 @@ export const stop = async ({
 }: {
   workspaceFolder: string
 }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const currentState = DevContainerState.get(workspaceFolder)
   if (!currentState?.containerId) {
     return {
@@ -160,7 +164,7 @@ export const remove = async ({
 }: {
   workspaceFolder: string
 }) => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const currentState = DevContainerState.get(workspaceFolder)
   if (!currentState?.containerId) {
     return {
@@ -175,6 +179,7 @@ export const remove = async ({
     containerId: currentState.containerId,
   })
   if (isOk(result) && result.ok) {
+    await DevContainerState.forget(workspaceFolder)
     DevContainerState.remove(workspaceFolder)
   } else {
     DevContainerState.set(workspaceFolder, {
@@ -207,6 +212,7 @@ const connectWorkspace = async (workspaceFolder: string) => {
     remoteUser: state.remoteUser,
     remoteWorkspaceFolder: state.remoteWorkspaceFolder,
   })
+  await DevContainerState.persist(workspaceFolder)
   return { ok: true, workspaceUri: `devcontainers:///${state.containerId}` }
 }
 
@@ -215,7 +221,7 @@ export const openWorkspace = async ({
 }: {
   workspaceFolder: string
 }): Promise<unknown> => {
-  workspaceFolder = WorkspaceFolder.toPath(workspaceFolder)
+  workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
   const existing = opening.get(workspaceFolder)
   if (existing) {
     return existing

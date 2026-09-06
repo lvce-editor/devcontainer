@@ -17,6 +17,7 @@ export interface NodeApi {
   cliReadConfiguration(options: { workspaceFolder: string }): Promise<unknown>
   cliUp(options: { workspaceFolder: string }): Promise<unknown>
   containerFileSystem?(options: FileSystemOptions): Promise<unknown>
+  dockerInspectContainer?(options: { containerId: string }): Promise<boolean>
   dockerRemoveContainer(options: { containerId: string }): Promise<unknown>
   dockerStopContainer(options: { containerId: string }): Promise<unknown>
 }
@@ -78,4 +79,13 @@ export const containerFileSystem = (
     return missingNodeApi()
   }
   return nodeApi.containerFileSystem(options)
+}
+
+export const dockerInspectContainer = (
+  containerId: string,
+): Promise<boolean> => {
+  if (!nodeApi.dockerInspectContainer) {
+    return missingNodeApi()
+  }
+  return nodeApi.dockerInspectContainer({ containerId })
 }
