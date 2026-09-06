@@ -54,8 +54,10 @@ void test('stop during boot settles startup and ignores stale readiness; retry b
   assert.equal(stopped.status, 'stopped')
   const retry = lifecycle.up({ workspaceFolder })
   await tick()
+  workers[0].onerror({ preventDefault() {} })
   workers[1].emit({ type: 'ready' })
   assert.equal(((await retry) as any).ok, true)
+  assert.equal(workers[1].terminated, false)
   await lifecycle.stop({ workspaceFolder })
 })
 

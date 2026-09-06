@@ -1,5 +1,6 @@
 import { defineConfig } from '@playwright/test'
 
+// Playwright 1.63+ leaves Firefox’s optimizing Wasm compiler enabled.
 export default defineConfig({
   expect: { timeout: 130_000 },
   projects: [

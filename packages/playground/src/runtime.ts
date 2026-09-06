@@ -57,6 +57,7 @@ export class Runtime {
         )
         worker.onerror = (event) => {
           event.preventDefault()
+          if (this.worker !== worker) return
           this.fail(
             'Linux failed to load. Check your connection and try Start again.',
           )
@@ -90,8 +91,9 @@ export class Runtime {
               break
             }
             case 'result': {
-              clearTimeout(this.commandTimer)
               const finish = this.pending.get(data.id)
+              if (!finish) return
+              clearTimeout(this.commandTimer)
               try {
                 finish?.({
                   exitCode: data.exitCode,

@@ -20,6 +20,7 @@ test('real Linux commands, filesystem lifetime, and cancellation on the Pages su
   await start.click()
   await expect(page.getByRole('status')).toContainText('Linux is ready')
   const seconds = (Date.now() - began) / 1000
+  console.log(`${testInfo.project.name} cold start: ${seconds.toFixed(1)}s`)
   if (process.env.GITHUB_STEP_SUMMARY)
     await appendFile(
       process.env.GITHUB_STEP_SUMMARY,
