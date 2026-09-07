@@ -88,8 +88,8 @@ export const createDevContainer = ({
   }
 
   const up = async ({
-    workspaceFolder,
     onOutput,
+    workspaceFolder,
   }: {
     workspaceFolder: string
     onOutput?: (text: string) => void
@@ -246,7 +246,7 @@ export const createDevContainer = ({
     workspaceFolder: string,
     onOutput?: (text: string) => void,
   ) => {
-    const result = await up({ workspaceFolder, onOutput })
+    const result = await up({ onOutput, workspaceFolder })
     if (!isOk(result) || !result.ok) {
       return result
     }
@@ -270,8 +270,8 @@ export const createDevContainer = ({
   }
 
   const openWorkspace = async ({
-    workspaceFolder,
     onOutput,
+    workspaceFolder,
   }: {
     workspaceFolder: string
     onOutput?: (text: string) => void

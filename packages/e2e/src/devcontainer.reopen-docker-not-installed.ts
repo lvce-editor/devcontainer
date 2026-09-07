@@ -21,13 +21,10 @@ export const test: Test = async ({
     await QuickPick.open()
     await QuickPick.setValue(`>${label}`)
     await QuickPick.selectItem(label)
-    await expect(Locator('.Output')).toBeVisible()
-    await expect(Locator('.Output')).toContainText(
-      'Checking devcontainer configuration',
-    )
-    await expect(Locator('.Output')).toContainText(
-      'Docker executable was not found',
-    )
+    const output = Locator('.Output')
+    await expect(output).toBeVisible()
+    await expect(output).toContainText('Checking devcontainer configuration')
+    await expect(output).toContainText('Docker executable was not found')
     const dialog = Locator('.DialogContent')
     const errorIcon = Locator('.DialogErrorIcon')
     const errorMessage = Locator('.DialogMessage')

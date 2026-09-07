@@ -9,12 +9,12 @@ test('streams stdout and stderr before exit and preserves split UTF-8', async ()
   const release = join(directory, 'release')
   const messages: string[] = []
   let finished = false
-  const pending = runProcess({
-    command: process.execPath,
-    args: [
-      '--input-type=module',
-      '-e',
-      `
+  const run = async () => {
+    const result = await runProcess({
+      args: [
+        '--input-type=module',
+        '-e',
+        `
       import { existsSync } from 'node:fs'
       process.stdout.write(Buffer.from([0xe2]))
       setTimeout(() => {
@@ -23,13 +23,17 @@ test('streams stdout and stderr before exit and preserves split UTF-8', async ()
       }, 20)
       const timer = setInterval(() => { if (existsSync(process.argv[1])) { clearInterval(timer) } }, 10)
     `,
-      release,
-    ],
-    onOutput: (text) => messages.push(text),
-  }).then((result) => {
+        release,
+      ],
+      command: process.execPath,
+      onOutput: (text) => {
+        messages.push(text)
+      },
+    })
     finished = true
     return result
-  })
+  }
+  const pending = run()
   try {
     for (
       let attempt = 0;
@@ -44,11 +48,11 @@ test('streams stdout and stderr before exit and preserves split UTF-8', async ()
   } finally {
     await writeFile(release, '')
     const result = await pending
-    await rm(directory, { recursive: true, force: true })
+    await rm(directory, { force: true, recursive: true })
     expect(result).toEqual({
       exitCode: 0,
-      stdout: '✓\n',
       stderr: 'building layer 1\n',
+      stdout: '✓\n',
     })
   }
 })

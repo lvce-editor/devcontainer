@@ -1,9 +1,9 @@
-import * as Progress from './parts/Progress/Progress.ts'
 import * as DevContainerCli from '@lvce-editor/devcontainer-node/devcontainer-cli'
 import * as ContainerFileSystem from './parts/ContainerFileSystem/ContainerFileSystem.ts'
 import * as DevContainer from './parts/DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from './parts/DevContainerCommandType/DevContainerCommandType.ts'
 import * as DevContainerNodeClient from './parts/DevContainerNodeClient/DevContainerNodeClient.ts'
+import * as Progress from './parts/Progress/Progress.ts'
 
 const initialize = () => {
   DevContainerNodeClient.setNodeApi(DevContainerCli)

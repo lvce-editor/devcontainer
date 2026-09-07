@@ -27,13 +27,10 @@ export const test: Test = async ({
     const command = Locator('.QuickPickItem', { hasText: label })
     await expect(command).toHaveCount(1)
     await QuickPick.selectItem(label)
-    await expect(Locator('.Output')).toBeVisible()
-    await expect(Locator('.Output')).toContainText(
-      'Building and starting the devcontainer',
-    )
-    await expect(Locator('.Output')).toContainText(
-      'Waiting for progress acceptance',
-    )
+    const output = Locator('.Output')
+    await expect(output).toBeVisible()
+    await expect(output).toContainText('Building and starting the devcontainer')
+    await expect(output).toContainText('Waiting for progress acceptance')
     if ((await Command.execute('Workspace.getUri')) !== localUri) {
       throw new Error(
         'Build progress must be visible before reopening completes',

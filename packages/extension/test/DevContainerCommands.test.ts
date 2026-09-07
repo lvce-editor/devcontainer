@@ -6,11 +6,17 @@ const pending = Promise.withResolvers<unknown>()
 mock.module('@lvce-editor/api', {
   namedExports: {
     createOutputChannel: () => ({
-      appendLine: async (text: string) => events.push(text),
-      replace: async (text: string) => events.push(text),
+      appendLine: async (text: string) => {
+        events.push(text)
+      },
+      replace: async (text: string) => {
+        events.push(text)
+      },
     }),
     executeCommand: async () => {},
-    openOutputView: async () => events.push('output opened'),
+    openOutputView: async () => {
+      events.push('output opened')
+    },
     showNotification: async () => {},
   },
 })
@@ -44,7 +50,7 @@ test('reopen opens output and displays logs before the build finishes', async ()
       'Build output must appear before completion',
     )
   } finally {
-    pending.resolve({ ok: false, errorMessage: 'build failed' })
+    pending.resolve({ errorMessage: 'build failed', ok: false })
     await result
     assert.ok(
       events.some((text) =>
