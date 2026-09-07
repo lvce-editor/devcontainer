@@ -17,7 +17,7 @@ export const test: Test = async ({
   const localUri = await getWorkspaceUri({ Command }, 'javascript-node-24')
   await Workspace.setPath(localUri)
   await Devcontainer.setDockerPath(
-    `${new URL(localUri).pathname}/missing-docker`,
+    `${new URL(localUri).pathname}/missing/docker`,
   )
   try {
     const label = 'Dev Containers: Reopen in Container'
@@ -30,12 +30,14 @@ export const test: Test = async ({
     await expect(dialog).toBeVisible()
     await expect(errorIcon).toBeVisible()
     const heading = Locator('.DialogHeading')
-    await expect(heading).toHaveText('Error: Container executable not found')
+    await expect(heading).toHaveText('Error: Docker executable not found')
     const errorCode = Locator('.DialogErrorCode')
     await expect(errorCode).toContainText('ENOENT')
-    await expect(errorMessage).toContainText('Check devcontainer.containerCli')
+    await expect(errorMessage).toContainText(
+      'Install Docker or check its configured path',
+    )
     const installButton = Locator('.DialogButtonsRow button[name="Action"]')
-    await expect(installButton).toHaveCount(0)
+    await expect(installButton).toHaveText('Install Docker')
     const notification = Locator('.NotificationMessage')
     await expect(notification).toHaveCount(0)
     if ((await Command.execute('Workspace.getUri')) !== localUri) {
