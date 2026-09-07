@@ -1,27 +1,25 @@
 import { execa } from 'execa'
+import { createDevBuild } from './createDevBuild.ts'
 import { root } from './root.ts'
 
-await execa('npm', ['run', 'build'], {
-  cwd: root,
-  stdio: 'inherit',
-})
-
-await Promise.all([
-  execa('npm', ['run', 'build:watch'], {
-    cwd: root,
-    stdio: 'inherit',
-  }),
-  execa(
-    'node',
-    [
-      'node_modules/@lvce-editor/server/bin/server.js',
-      '--only-extension=.tmp/dist',
-      '--test-path=packages/e2e',
-      '--link=node_modules/@lvce-editor/test-worker',
-    ],
-    {
-      cwd: root,
-      stdio: 'inherit',
-    },
-  ),
-])
+const build = await createDevBuild()
+try {
+  await Promise.all([
+    build.watch(),
+    execa(
+      process.execPath,
+      [
+        'node_modules/@lvce-editor/server/bin/server.js',
+        '--only-extension=.tmp/dev',
+        '--test-path=packages/e2e',
+        '--link=node_modules/@lvce-editor/test-worker',
+      ],
+      {
+        cwd: root,
+        stdio: 'inherit',
+      },
+    ),
+  ])
+} finally {
+  await build.dispose()
+}

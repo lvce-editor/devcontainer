@@ -3,6 +3,7 @@ import * as ContainerFileSystem from './parts/ContainerFileSystem/ContainerFileS
 import * as DevContainer from './parts/DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from './parts/DevContainerCommandType/DevContainerCommandType.ts'
 import * as DevContainerNodeClient from './parts/DevContainerNodeClient/DevContainerNodeClient.ts'
+import * as GetDockerInstallCommand from './parts/GetDockerInstallCommand/GetDockerInstallCommand.ts'
 import * as Progress from './parts/Progress/Progress.ts'
 
 const initialize = () => {
@@ -67,6 +68,8 @@ const fileSystem = (...args: Parameters<typeof ContainerFileSystem.invoke>) => {
 }
 
 export const commandMap = {
+  'DevContainer.getDockerInstallCommand': () =>
+    GetDockerInstallCommand.getDockerInstallCommand(process.platform),
   'DevContainer.getProgress': Progress.getProgress,
   [DevContainerCommandType.DevContainerDetect]: detect,
   [DevContainerCommandType.DevContainerExec]: exec,

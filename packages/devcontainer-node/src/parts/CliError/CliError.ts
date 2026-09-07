@@ -44,6 +44,7 @@ export const getCliError = (
     )
   })
   return {
+    ...(missingDocker && { missingExecutable: dockerPath }),
     errorCode:
       parsed?.errorCode ||
       (missingDocker ? 'ENOENT' : 'DEVCONTAINER_CLI_ERROR'),

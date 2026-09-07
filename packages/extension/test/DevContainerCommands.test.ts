@@ -1,62 +1,76 @@
 import assert from 'node:assert/strict'
-import { mock, test } from 'node:test'
+import { beforeEach, mock, test } from 'node:test'
 
-const events: string[] = []
-const pending = Promise.withResolvers<unknown>()
+const calls: unknown[][] = []
+let result: unknown
+let terminalFailure = false
+let installCommand = 'installer command'
 mock.module('@lvce-editor/api', {
   namedExports: {
-    createOutputChannel: () => ({
-      appendLine: async (text: string) => {
-        events.push(text)
-      },
-      replace: async (text: string) => {
-        events.push(text)
+    createNodeRpc: async () => ({
+      invoke: async (method: string) => {
+        if (method === 'DevContainer.getDockerInstallCommand')
+          return installCommand
+        return result
       },
     }),
-    executeCommand: async () => {},
+    executeCommand: async (...args: unknown[]) => {
+      calls.push(args)
+      if (terminalFailure && args[0] === 'Terminals.addTerminal')
+        throw new Error('Terminal unavailable')
+    },
     getPreference: async () => 'docker',
-    openOutputView: async () => {
-      events.push('output opened')
-    },
-    showNotification: async () => {},
-  },
-})
-mock.module('../src/parts/Workspace/Workspace.ts', {
-  namedExports: { getFolder: async () => 'file:///workspace' },
-})
-mock.module('../src/parts/Rpc/Rpc.ts', {
-  namedExports: {
-    invoke: async (method: string) => {
-      if (method === 'DevContainer.getProgress') return 'Building layer 1\n'
-      events.push('build started')
-      return pending.promise
+    getWorkspaceUri: async () => 'file:///workspace',
+    showNotification: async (...args: unknown[]) => {
+      calls.push(['notification', ...args])
     },
   },
 })
-const { openWorkspace } =
+mock.module('../src/parts/Progress/Progress.ts', {
+  namedExports: { appendLine: async () => {}, run: async () => result },
+})
+const Commands =
   await import('../src/parts/DevContainerCommands/DevContainerCommands.ts')
+beforeEach(() => {
+  calls.length = 0
+  terminalFailure = false
+  result = undefined
+})
 
-await test('reopen opens output and displays logs before the build finishes', async () => {
-  const operation = openWorkspace()
-  const result = assert.rejects(operation, /build failed/)
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 600))
-    assert.ok(
-      events.includes('output opened'),
-      'Output must open while startup is pending',
-    )
-    assert.ok(events.indexOf('output opened') < events.indexOf('build started'))
-    assert.ok(
-      events.some((text) => text.includes('Building layer 1')),
-      'Build output must appear before completion',
-    )
-  } finally {
-    pending.resolve({ errorMessage: 'build failed', ok: false })
-    await result
-    assert.ok(
-      events.some((text) =>
-        text.includes('Failed to open devcontainer workspace: build failed'),
-      ),
-    )
+await test('missing Docker opens one structured dialog without a duplicate notification or rejection', async () => {
+  result = {
+    errorCode: 'ENOENT',
+    errorMessage: 'stack trace',
+    missingExecutable: 'docker',
+    ok: false,
   }
+  await Commands.openWorkspace()
+  assert.equal(calls.length, 1)
+  assert.equal(calls[0][0], 'Dialog.show')
+  assert.partialDeepStrictEqual(calls[0][1], {
+    actionCommand: 'devcontainer.installDocker',
+    errorCode: 'ENOENT',
+    title: 'Error: Docker executable not found',
+  })
+})
+
+await test('install action opens a fresh terminal before sending the host install command', async () => {
+  installCommand = 'installer command'
+  await Commands.installDocker()
+  assert.deepEqual(calls, [
+    ['Layout.showPanel', 'Terminals'],
+    ['Terminals.addTerminal'],
+    ['Terminals.sendText', 'installer command\r'],
+  ])
+})
+
+await test('terminal launch failure produces one notification and never sends installation text', async () => {
+  terminalFailure = true
+  await Commands.installDocker()
+  assert.equal(
+    calls.some(([name]) => name === 'Terminals.sendText'),
+    false,
+  )
+  assert.equal(calls.at(-1)?.[0], 'notification')
+  assert.match(String(calls.at(-1)?.[2]), /Terminal unavailable/)
 })
