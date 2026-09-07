@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('failed reopen renders an error dialog and contains the notification text', async ({
+test('missing Docker uses a structured dialog without a duplicate notification', async ({
   page,
 }) => {
   const errors: string[] = []
@@ -10,37 +10,15 @@ test('failed reopen renders an error dialog and contains the notification text',
     }
   })
   await page.goto('/tests/devcontainer.reopen-docker-not-installed.html')
-  await expect(page.locator('#TestOverlay')).toContainText(
-    /test (passed|failed)/,
-    { timeout: 60_000 },
+  const result = page.locator('#TestOverlay')
+  await expect(result).toContainText(/test (passed|failed|skipped)/, {
+    timeout: 60_000,
+  })
+  test.skip(
+    (await result.getAttribute('data-state')) === 'skip',
+    'Requires an editor release containing structured dialog support',
   )
-  await expect(page.locator('#TestOverlay')).toContainText('test passed')
-  const notification = page.locator('.Notification')
-  await expect(notification).toBeVisible()
-  for (const viewport of [
-    { height: 720, width: 1280 },
-    { height: 240, width: 320 },
-  ]) {
-    await page.setViewportSize(viewport)
-    await expect
-      .poll(async () =>
-        notification.evaluate((element) => {
-          const message = element.querySelector('.NotificationMessage')!
-          const outer = element.getBoundingClientRect()
-          const inner = message.getBoundingClientRect()
-          return (
-            inner.left >= outer.left &&
-            inner.right <= outer.right &&
-            inner.bottom <= outer.bottom &&
-            outer.left >= 0 &&
-            outer.top >= 0 &&
-            outer.bottom <=
-              element.ownerDocument.documentElement.clientHeight &&
-            message.scrollWidth <= message.clientWidth
-          )
-        }),
-      )
-      .toBe(true)
-  }
+  await expect(result).toContainText('test passed')
+  await expect(page.locator('.Notification')).toHaveCount(0)
   expect(errors.join('\n')).not.toContain('getIcon')
 })
