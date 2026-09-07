@@ -4,9 +4,6 @@ import { waitForContainerWorkspace } from '../helpers/waitForContainerWorkspace.
 
 export const name = 'devcontainer.reopen-terminal'
 
-// Enable when the editor dependency includes devcontainer terminal routing.
-export const skip = 1
-
 export const test: Test = async ({
   Command,
   Devcontainer,
@@ -39,6 +36,16 @@ export const test: Test = async ({
       'cat',
       ['/container-workspace/terminal-created.txt'],
       'terminal-created',
+    )
+    await Command.execute(
+      'Terminals.sendText',
+      'printf "%s" "$DEVCONTAINER_TERMINAL_TEST" > terminal-env.txt; printf "environment-%s\\n" ready\r',
+    )
+    await expect(terminal).toContainText('environment-ready')
+    await Devcontainer.shouldHaveExecOutput(
+      'cat',
+      ['/container-workspace/terminal-env.txt'],
+      'configured environment',
     )
     await FileSystem.mkdir(`${workspaceUri}/sub folder`)
     await Command.execute(

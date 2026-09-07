@@ -6,6 +6,7 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/host-workspace,type=bind",
   "workspaceFolder": "/container-workspace",
   "remoteUser": "root",
+  "remoteEnv": { "DEVCONTAINER_TERMINAL_TEST": "configured environment" },
   "initializeCommand": [
     "node",
     "-e",
