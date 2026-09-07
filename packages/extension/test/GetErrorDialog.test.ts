@@ -7,7 +7,7 @@ await test('missing Docker has a concise heading, separate code, hint and instal
     GetErrorDialog.getErrorDialog({
       errorCode: 'ENOENT',
       errorMessage: 'CLI stack trace',
-      missingDocker: true,
+      missingExecutable: 'docker',
     }),
     {
       actionCommand: 'devcontainer.installDocker',
@@ -17,9 +17,9 @@ await test('missing Docker has a concise heading, separate code, hint and instal
     },
   )
   assert.ok(
-    !GetErrorDialog.getErrorDialog({ missingDocker: true }).message.includes(
-      'CLI stack trace',
-    ),
+    !GetErrorDialog.getErrorDialog({
+      missingExecutable: 'docker',
+    }).message.includes('CLI stack trace'),
   )
 })
 
@@ -37,4 +37,20 @@ await test('unknown errors have a useful fallback', () => {
     GetErrorDialog.getErrorDialog({}).message,
     'Could not open the workspace in a container.',
   )
+})
+
+await test('missing Podman or custom executables never offer to install Docker', () => {
+  for (const executable of [
+    'podman',
+    '/usr/local/bin/podman',
+    '/custom/container-engine',
+  ]) {
+    const result = GetErrorDialog.getErrorDialog({
+      errorCode: 'ENOENT',
+      missingExecutable: executable,
+    })
+    assert.equal(result.actionCommand, undefined)
+    assert.equal(result.title, 'Error: Container executable not found')
+    assert.ok(result.message.includes(executable))
+  }
 })

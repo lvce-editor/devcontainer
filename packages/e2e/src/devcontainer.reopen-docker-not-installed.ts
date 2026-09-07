@@ -30,14 +30,12 @@ export const test: Test = async ({
     await expect(dialog).toBeVisible()
     await expect(errorIcon).toBeVisible()
     const heading = Locator('.DialogHeading')
-    await expect(heading).toHaveText('Error: Docker executable not found')
+    await expect(heading).toHaveText('Error: Container executable not found')
     const errorCode = Locator('.DialogErrorCode')
     await expect(errorCode).toContainText('ENOENT')
-    await expect(errorMessage).toContainText(
-      'Install Docker or check its configured path',
-    )
+    await expect(errorMessage).toContainText('Check devcontainer.containerCli')
     const installButton = Locator('.DialogButtonsRow button[name="Action"]')
-    await expect(installButton).toHaveText('Install Docker')
+    await expect(installButton).toHaveCount(0)
     const notification = Locator('.NotificationMessage')
     await expect(notification).toHaveCount(0)
     if ((await Command.execute('Workspace.getUri')) !== localUri) {

@@ -8,18 +8,21 @@ import * as WorkspaceFolder from '../src/parts/WorkspaceFolder/WorkspaceFolder.t
 
 let directory: string
 let running = true
+let inspectedEngines: (string | undefined)[] = []
 
 beforeEach(async () => {
   directory = await mkdtemp(join(tmpdir(), 'devcontainer-restore-'))
   process.env.LVCE_DEVCONTAINER_CONNECTIONS_DIR = directory
   running = true
+  inspectedEngines = []
   DevContainerNodeClient.setNodeApi({
     cliExec: async () => ({}),
     cliReadConfiguration: async () => ({}),
     cliUp: async () => {
       throw new Error('Restoring must not rebuild the container')
     },
-    dockerInspectContainer: async ({ containerId }) => {
+    dockerInspectContainer: async ({ containerCli, containerId }) => {
+      inspectedEngines.push(containerCli)
       expect(containerId).toBe('abc123')
       return running
     },
@@ -35,38 +38,42 @@ afterEach(async () => {
   await rm(directory, { force: true, recursive: true })
 })
 
-test('restores the URI connection after the workspace disposes its extension runtime', async () => {
-  const workspaceFolder = join(directory, 'workspace')
-  const state = {
-    containerId: 'abc123',
-    remoteUser: 'vscode',
-    remoteWorkspaceFolder: '/container-workspace',
-    status: 'running' as const,
-  }
-  DevContainerState.set(workspaceFolder, state)
-  await DevContainerState.persist(workspaceFolder)
-  DevContainerState.reset()
+test.each([undefined, 'podman'])(
+  'restores the URI connection and engine %s after the workspace disposes its extension runtime',
+  async (containerCli) => {
+    const workspaceFolder = join(directory, 'workspace')
+    const state = {
+      containerCli,
+      containerId: 'abc123',
+      remoteUser: 'vscode',
+      remoteWorkspaceFolder: '/container-workspace',
+      status: 'running' as const,
+    }
+    DevContainerState.set(workspaceFolder, state)
+    await DevContainerState.persist(workspaceFolder)
+    DevContainerState.reset()
 
-  expect(await WorkspaceFolder.toPath('devcontainers:///abc123/file.txt')).toBe(
-    workspaceFolder,
-  )
-  expect(DevContainerState.get(workspaceFolder)).toEqual(state)
+    expect(
+      await WorkspaceFolder.toPath('devcontainers:///abc123/file.txt'),
+    ).toBe(workspaceFolder)
+    expect(DevContainerState.get(workspaceFolder)).toEqual(state)
+    expect(inspectedEngines).toEqual([containerCli])
 
-  DevContainerState.reset()
-  running = false
-  expect(await WorkspaceFolder.toPath(workspaceFolder)).toBe(workspaceFolder)
-  expect(DevContainerState.get(workspaceFolder)).toMatchObject({
-    containerId: 'abc123',
-    status: 'stopped',
-  })
+    DevContainerState.reset()
+    running = false
+    expect(await WorkspaceFolder.toPath(workspaceFolder)).toBe(workspaceFolder)
+    expect(DevContainerState.get(workspaceFolder)).toMatchObject({
+      containerId: 'abc123',
+      status: 'stopped',
+    })
 
-  await DevContainerState.forget(workspaceFolder)
-  DevContainerState.reset()
-  await expect(
-    WorkspaceFolder.toPath('devcontainers:///abc123'),
-  ).rejects.toThrow('no longer available')
-})
-
+    await DevContainerState.forget(workspaceFolder)
+    DevContainerState.reset()
+    await expect(
+      WorkspaceFolder.toPath('devcontainers:///abc123'),
+    ).rejects.toThrow('no longer available')
+  },
+)
 
 test('does not redirect an old URI to a replacement container', async () => {
   const workspaceFolder = join(directory, 'workspace')
@@ -85,5 +92,7 @@ test('does not redirect an old URI to a replacement container', async () => {
   await expect(
     WorkspaceFolder.toPath('devcontainers:///abc123/file.txt'),
   ).rejects.toThrow('no longer available')
-  expect(DevContainerState.get(workspaceFolder)?.containerId).toBe('replacement456')
+  expect(DevContainerState.get(workspaceFolder)?.containerId).toBe(
+    'replacement456',
+  )
 })

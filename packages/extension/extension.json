@@ -65,5 +65,12 @@
     {
       "id": "devcontainers"
     }
-  ]
+  ],
+  "configuration": {
+    "devcontainer.containerCli": {
+      "type": "string",
+      "default": "docker",
+      "description": "Container executable name or path, such as docker or podman. Applies when starting or reopening a container."
+    }
+  }
 }

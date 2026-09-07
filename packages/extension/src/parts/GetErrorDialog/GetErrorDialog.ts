@@ -1,11 +1,23 @@
 export interface DevContainerError {
   errorCode?: string
   errorMessage?: string
-  missingDocker?: boolean
+  missingExecutable?: string
 }
 
 export const getErrorDialog = (error: DevContainerError) => {
-  if (error.missingDocker) {
+  if (error.missingExecutable) {
+    const executableName = error.missingExecutable
+      .split(/[\\/]/)
+      .at(-1)
+      ?.toLowerCase()
+    if (executableName !== 'docker' && executableName !== 'docker.exe') {
+      return {
+        errorCode: error.errorCode || 'ENOENT',
+        message: `The configured executable "${error.missingExecutable}" could not be found. Check devcontainer.containerCli, then run Reopen in Container again.`,
+        title: 'Error: Container executable not found',
+        type: 'error',
+      }
+    }
     return {
       actionCommand: 'devcontainer.installDocker',
       actionLabel: 'Install Docker',

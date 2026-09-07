@@ -1,6 +1,7 @@
 import * as RunProcess from '../RunProcess/RunProcess.ts'
 
 interface Options {
+  containerCli?: string
   containerId: string
   content?: string
   newPath?: string
@@ -28,6 +29,7 @@ done`,
 
 export const run = async (options: Options): Promise<unknown> => {
   const {
+    containerCli = 'docker',
     containerId,
     content,
     newPath,
@@ -55,7 +57,7 @@ export const run = async (options: Options): Promise<unknown> => {
       path,
       ...(newPath ? [newPath] : []),
     ],
-    command: 'docker',
+    command: containerCli,
     input: operation === 'writeFile' ? content : undefined,
   })
   if ('errorMessage' in result) {

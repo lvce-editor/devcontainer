@@ -19,6 +19,7 @@ mock.module('@lvce-editor/api', {
       if (terminalFailure && args[0] === 'Terminals.addTerminal')
         throw new Error('Terminal unavailable')
     },
+    getPreference: async () => 'docker',
     getWorkspaceUri: async () => 'file:///workspace',
     showNotification: async (...args: unknown[]) => {
       calls.push(['notification', ...args])
@@ -37,7 +38,7 @@ await test('missing Docker opens one structured dialog without a duplicate notif
   result = {
     errorCode: 'ENOENT',
     errorMessage: 'stack trace',
-    missingDocker: true,
+    missingExecutable: 'docker',
     ok: false,
   }
   await Commands.openWorkspace()
