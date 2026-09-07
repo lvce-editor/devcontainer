@@ -3,6 +3,8 @@ import { beforeEach, mock, test } from 'node:test'
 import { setTimeout as delay } from 'node:timers/promises'
 
 const calls: unknown[][] = []
+const progressCalls: unknown[][] = []
+let workspaceUri = 'file:///workspace'
 let result: unknown
 let terminalFailure = false
 let installCommand = 'installer command'
@@ -22,7 +24,7 @@ mock.module('@lvce-editor/api', {
         throw new Error('Terminal unavailable')
     },
     getPreference: async () => 'docker',
-    getWorkspaceUri: async () => 'file:///workspace',
+    getWorkspaceUri: async () => workspaceUri,
     openUri: async () => {},
     showNotification: async (...args: unknown[]) => {
       calls.push(['notification', ...args])
@@ -30,12 +32,20 @@ mock.module('@lvce-editor/api', {
   },
 })
 mock.module('../src/parts/Progress/Progress.ts', {
-  namedExports: { appendLine: async () => {}, run: async () => result },
+  namedExports: {
+    appendLine: async () => {},
+    run: async (...args: unknown[]) => {
+      progressCalls.push(args)
+      return result
+    },
+  },
 })
 const Commands =
   await import('../src/parts/DevContainerCommands/DevContainerCommands.ts')
 beforeEach(() => {
   calls.length = 0
+  progressCalls.length = 0
+  workspaceUri = 'file:///workspace'
   terminalFailure = false
   result = undefined
 })
@@ -87,3 +97,44 @@ await test('a ready container switches the workspace URI after the extension com
     ['Workspace.setUri', 'devcontainers:///abc123', '/'],
   ])
 })
+
+for (const command of ['start', 'openWorkspace'] as const) {
+  await test(`${command} waits for setup and connection before scheduling the workspace switch`, async () => {
+    const pending = Promise.withResolvers<unknown>()
+    result = pending.promise
+    const operation = Commands[command]()
+    await delay(10)
+    assert.deepEqual(progressCalls, [
+      ['DevContainer.openWorkspace', 'file:///workspace', 'docker'],
+    ])
+    assert.deepEqual(calls, [])
+    pending.resolve({ ok: true, workspaceUri: 'devcontainers:///abc123' })
+    await operation
+    assert.deepEqual(calls, [])
+    await delay(10)
+    assert.deepEqual(calls, [
+      ['Workspace.setUri', 'devcontainers:///abc123', '/'],
+    ])
+  })
+
+  await test(`${command} leaves the workspace unchanged on failure`, async () => {
+    result = { errorMessage: 'Container connection failed', ok: false }
+    await Commands[command]()
+    await delay(10)
+    assert.equal(calls.length, 1)
+    assert.equal(calls[0][0], 'Dialog.show')
+  })
+
+  await test(`${command} leaves a newly selected workspace open when setup completes`, async () => {
+    const pending = Promise.withResolvers<unknown>()
+    result = pending.promise
+    const operation = Commands[command]()
+    await delay(10)
+    workspaceUri = 'file:///another-workspace'
+    pending.resolve({ ok: true, workspaceUri: 'devcontainers:///abc123' })
+    await operation
+    await delay(10)
+    assert.equal(calls.length, 1)
+    assert.equal(calls[0][0], 'Dialog.show')
+  })
+}

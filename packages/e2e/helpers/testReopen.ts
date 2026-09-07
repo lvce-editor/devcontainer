@@ -17,6 +17,7 @@ export const testReopen = async (
     Workspace,
   }: Parameters<Test>[0],
   containerCli?: string,
+  label = 'Dev Containers: Reopen in Container',
 ): Promise<void> => {
   const localUri = await getWorkspaceUri({ Command }, 'reopen')
   await Workspace.setPath(localUri)
@@ -25,7 +26,6 @@ export const testReopen = async (
   if (containerCli)
     await Settings.update({ 'devcontainer.containerCli': containerCli })
   try {
-    const label = 'Dev Containers: Reopen in Container'
     await QuickPick.open()
     await QuickPick.setValue(`>${label}`)
     const command = Locator('.QuickPickItem', { hasText: label })

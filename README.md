@@ -51,7 +51,7 @@ Each test opens a fresh copy of a workspace fixture, starts the container throug
 
 The tests use the `Devcontainer` page object from `@lvce-editor/test-worker` for start, stop, execution, output assertions, and cleanup. Dependency installation loads the declared test-worker dependency into the development server.
 
-The start/stop tests cover the shared workspace mount. The reopen test separately verifies a workspace created by its Dockerfile outside the bind mount, including Explorer, file editing, and lifecycle commands after switching to the container URI.
+Both startup commands switch to the container URI after setup completes. Tests cover Explorer, file editing, terminals, and lifecycle commands in a workspace created by its Dockerfile outside the bind mount, as well as shared workspace mounts.
 
 To run locally with Node from `.nvmrc` a running Docker daemon, and working rootless Podman:
 
@@ -72,7 +72,8 @@ Open `http://localhost:3000/tests/devcontainer.javascript-node-24.html`, `http:/
 
 The runner allows three minutes per test and removes containers belonging to its copied fixtures even after a failed test. Fixture sources remain unchanged, so repeated runs cannot pass on stale generated files. Run one suite at a time per checkout. CI also visits all three URLs and reloads each one using `npm run e2e:local-url --prefix packages/e2e`.
 
-Use **Dev Containers: Reopen in Container** to build/start the current workspace's
+Use **Dev Containers: Reopen in Container** or **Dev Containers: Start Current
+Workspace** to build/start the current workspace's
 configuration and open its configured `workspaceFolder` at
 `devcontainers:///<containerId>`. Explorer and file editing use Docker inside the
 container as `remoteUser`; the local bind mount is not used as a substitute for
