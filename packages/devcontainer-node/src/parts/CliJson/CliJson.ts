@@ -8,7 +8,11 @@ export const parseFinalJson = (stdout: string): ParseFinalJsonResult => {
     throw new Error('Expected devcontainer cli output to contain a json result')
   }
 
-  for (let index = trimmed.lastIndexOf('{'); index >= 0; index = trimmed.lastIndexOf('{', index - 1)) {
+  for (
+    let index = trimmed.lastIndexOf('{');
+    index >= 0;
+    index = index === 0 ? -1 : trimmed.lastIndexOf('{', index - 1)
+  ) {
     const candidate = trimmed.slice(index)
     try {
       return {

@@ -1,4 +1,7 @@
 import { afterEach, expect, test } from '@jest/globals'
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import * as DevContainerCli from '../src/parts/DevContainerCli/DevContainerCli.js'
 
 test('getCliReadConfigurationArgs', () => {
@@ -87,4 +90,33 @@ test('missing Docker returns an error result without throwing', async () => {
   await expect(
     DevContainerCli.dockerStopContainer({ containerId: 'unused' }),
   ).resolves.toMatchObject({ errorCode: 'ENOENT', ok: false })
+})
+
+test('cliUp preserves the missing Docker cause, error code, and raw output', async () => {
+  const workspaceFolder = await mkdtemp(
+    join(tmpdir(), 'devcontainer-cli-error-'),
+  )
+  const dockerPath = join(workspaceFolder, 'missing-docker')
+  try {
+    await mkdir(join(workspaceFolder, '.devcontainer'))
+    await writeFile(
+      join(workspaceFolder, '.devcontainer', 'devcontainer.json'),
+      JSON.stringify({ image: 'ubuntu' }),
+    )
+    DevContainerCli.setDockerPath(dockerPath)
+    const result = await DevContainerCli.cliUp({ workspaceFolder })
+    expect(result).toMatchObject({
+      errorCode: 'ENOENT',
+      errorMessage: expect.stringContaining('Docker executable was not found'),
+      exitCode: 1,
+      ok: false,
+      stderr: expect.stringContaining('ENOENT'),
+      stdout: expect.stringContaining('"outcome":"error"'),
+    })
+    expect(result).toMatchObject({
+      errorMessage: expect.stringContaining(`spawn ${dockerPath} ENOENT`),
+    })
+  } finally {
+    await rm(workspaceFolder, { force: true, recursive: true })
+  }
 })

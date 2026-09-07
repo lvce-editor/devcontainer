@@ -45,11 +45,17 @@ export const openWorkspace = async (): Promise<void> => {
     })) as {
       ok?: boolean
       workspaceUri?: string
+      errorCode?: string
       errorMessage?: string
     }
     if (!result.ok || !result.workspaceUri?.startsWith('devcontainers:///')) {
       throw new Error(
-        result.errorMessage || 'Failed to open workspace in devcontainer',
+        [
+          result.errorCode ? `Error code: ${result.errorCode}` : '',
+          result.errorMessage || 'Failed to open workspace in devcontainer',
+        ]
+          .filter(Boolean)
+          .join('\n'),
       )
     }
     if ((await Workspace.getFolder()) !== originalWorkspace) {

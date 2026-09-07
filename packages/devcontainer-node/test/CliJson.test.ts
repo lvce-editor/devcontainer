@@ -3,7 +3,9 @@ import * as CliJson from '../src/parts/CliJson/CliJson.js'
 
 test('parseFinalJson - logs before json', () => {
   expect(
-    CliJson.parseFinalJson('starting\n{"outcome":"success","containerId":"abc"}'),
+    CliJson.parseFinalJson(
+      'starting\n{"outcome":"success","containerId":"abc"}',
+    ),
   ).toEqual({
     json: {
       containerId: 'abc',
@@ -14,7 +16,9 @@ test('parseFinalJson - logs before json', () => {
 
 test('parseFinalJson - nested object', () => {
   expect(
-    CliJson.parseFinalJson('log\n{"outcome":"success","config":{"name":"app"}}'),
+    CliJson.parseFinalJson(
+      'log\n{"outcome":"success","config":{"name":"app"}}',
+    ),
   ).toEqual({
     json: {
       config: {
@@ -34,5 +38,11 @@ test('parseFinalJson - malformed output', () => {
 test('parseFinalJson - empty output', () => {
   expect(() => CliJson.parseFinalJson('')).toThrow(
     'Expected devcontainer cli output to contain a json result',
+  )
+})
+
+test('parseFinalJson - malformed object at the start of output', () => {
+  expect(() => CliJson.parseFinalJson('{invalid json')).toThrow(
+    'Failed to parse devcontainer cli json result',
   )
 })
