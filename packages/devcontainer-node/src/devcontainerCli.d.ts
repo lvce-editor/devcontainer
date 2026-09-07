@@ -1,4 +1,5 @@
 export interface WorkspaceOptions {
+  onOutput?: (text: string) => void
   workspaceFolder: string
 }
 

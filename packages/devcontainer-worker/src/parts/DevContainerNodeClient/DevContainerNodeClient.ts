@@ -15,7 +15,10 @@ export interface NodeApi {
     workspaceFolder: string
   }): Promise<unknown>
   cliReadConfiguration(options: { workspaceFolder: string }): Promise<unknown>
-  cliUp(options: { workspaceFolder: string }): Promise<unknown>
+  cliUp(options: {
+    workspaceFolder: string
+    onOutput?: (text: string) => void
+  }): Promise<unknown>
   containerFileSystem?(options: FileSystemOptions): Promise<unknown>
   dockerInspectContainer?(options: { containerId: string }): Promise<boolean>
   dockerRemoveContainer(options: { containerId: string }): Promise<unknown>
@@ -52,7 +55,10 @@ export const cliReadConfiguration = (options: { workspaceFolder: string }) => {
   return nodeApi.cliReadConfiguration(options)
 }
 
-export const cliUp = (options: { workspaceFolder: string }) => {
+export const cliUp = (options: {
+  workspaceFolder: string
+  onOutput?: (text: string) => void
+}) => {
   return nodeApi.cliUp(options)
 }
 

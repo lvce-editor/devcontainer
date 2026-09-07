@@ -22,6 +22,10 @@ test('getCliUpArgs', () => {
     '--workspace-folder',
     '/workspace',
     '--no-lockfile',
+    '--log-format',
+    'text',
+    '--log-level',
+    'debug',
     '--docker-path',
     'docker',
   ])

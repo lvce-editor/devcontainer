@@ -87,7 +87,13 @@ export const createDevContainer = ({
     return DevContainerNodeClient.cliReadConfiguration({ workspaceFolder })
   }
 
-  const up = async ({ workspaceFolder }: { workspaceFolder: string }) => {
+  const up = async ({
+    workspaceFolder,
+    onOutput,
+  }: {
+    workspaceFolder: string
+    onOutput?: (text: string) => void
+  }) => {
     workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
     const existing = DevContainerState.get(workspaceFolder)
     if (existing?.status === 'starting') {
@@ -100,13 +106,18 @@ export const createDevContainer = ({
     const cancellation = { errorCode: 'DEVCONTAINER_CANCELLED', ok: false }
     let result: unknown
     try {
+      onOutput?.(`Checking devcontainer configuration in ${workspaceFolder}…\n`)
       const detected = await detect({ workspaceFolder })
       if (cancelled()) return cancellation
       if (!detected.found) {
         DevContainerState.remove(workspaceFolder)
         return configNotFound(workspaceFolder)
       }
-      result = await DevContainerNodeClient.cliUp({ workspaceFolder })
+      onOutput?.('Building and starting the devcontainer…\n')
+      result = await DevContainerNodeClient.cliUp({
+        workspaceFolder,
+        ...(onOutput && { onOutput }),
+      })
     } catch (error) {
       result = { errorMessage: String(error), ok: false }
     }
@@ -231,8 +242,11 @@ export const createDevContainer = ({
 
   const opening = new Map<string, Promise<unknown>>()
 
-  const connectWorkspace = async (workspaceFolder: string) => {
-    const result = await up({ workspaceFolder })
+  const connectWorkspace = async (
+    workspaceFolder: string,
+    onOutput?: (text: string) => void,
+  ) => {
+    const result = await up({ workspaceFolder, onOutput })
     if (!isOk(result) || !result.ok) {
       return result
     }
@@ -242,6 +256,7 @@ export const createDevContainer = ({
         'Devcontainer did not return a container id and absolute workspace folder',
       )
     }
+    onOutput?.('Connecting to the container workspace…\n')
     // Verify the connection before changing the editor workspace.
     await DevContainerNodeClient.containerFileSystem({
       containerId: state.containerId,
@@ -256,15 +271,17 @@ export const createDevContainer = ({
 
   const openWorkspace = async ({
     workspaceFolder,
+    onOutput,
   }: {
     workspaceFolder: string
+    onOutput?: (text: string) => void
   }): Promise<unknown> => {
     workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
     const existing = opening.get(workspaceFolder)
     if (existing) {
       return existing
     }
-    const promise = connectWorkspace(workspaceFolder)
+    const promise = connectWorkspace(workspaceFolder, onOutput)
     opening.set(workspaceFolder, promise)
     try {
       return await promise

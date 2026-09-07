@@ -1,3 +1,4 @@
+import * as Progress from './parts/Progress/Progress.ts'
 import * as DevContainerCli from '@lvce-editor/devcontainer-node/devcontainer-cli'
 import * as ContainerFileSystem from './parts/ContainerFileSystem/ContainerFileSystem.ts'
 import * as DevContainer from './parts/DevContainer/DevContainer.ts'
@@ -40,16 +41,24 @@ const stop = (options: Parameters<typeof DevContainer.stop>[0]) => {
   return DevContainer.stop(options)
 }
 
-const up = (options: Parameters<typeof DevContainer.up>[0]) => {
+const up = (
+  options: Parameters<typeof DevContainer.up>[0] & { progressId?: string },
+) => {
   initialize()
-  return DevContainer.up(options)
+  return Progress.run(options.progressId || '', (onOutput) =>
+    DevContainer.up({ ...options, onOutput }),
+  )
 }
 
 const openWorkspace = (
-  options: Parameters<typeof DevContainer.openWorkspace>[0],
+  options: Parameters<typeof DevContainer.openWorkspace>[0] & {
+    progressId?: string
+  },
 ) => {
   initialize()
-  return DevContainer.openWorkspace(options)
+  return Progress.run(options.progressId || '', (onOutput) =>
+    DevContainer.openWorkspace({ ...options, onOutput }),
+  )
 }
 
 const fileSystem = (...args: Parameters<typeof ContainerFileSystem.invoke>) => {
@@ -58,6 +67,7 @@ const fileSystem = (...args: Parameters<typeof ContainerFileSystem.invoke>) => {
 }
 
 export const commandMap = {
+  'DevContainer.getProgress': Progress.getProgress,
   [DevContainerCommandType.DevContainerDetect]: detect,
   [DevContainerCommandType.DevContainerExec]: exec,
   [DevContainerCommandType.DevContainerFileSystem]: fileSystem,

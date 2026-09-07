@@ -60,5 +60,11 @@
     {
       "id": "devcontainers"
     }
+  ],
+  "outputChannels": [
+    {
+      "id": "dev-containers",
+      "label": "Dev Containers"
+    }
   ]
 }

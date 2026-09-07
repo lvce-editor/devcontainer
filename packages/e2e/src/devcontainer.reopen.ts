@@ -27,6 +27,10 @@ export const test: Test = async ({
     const command = Locator('.QuickPickItem', { hasText: label })
     await expect(command).toHaveCount(1)
     await QuickPick.selectItem(label)
+    await expect(Locator('.Output')).toBeVisible()
+    await expect(Locator('.Output')).toContainText(
+      'Building and starting the devcontainer',
+    )
     const workspaceUri = await waitForContainerWorkspace({ Command })
     // This directory and file were created by the Dockerfile, outside the bind mount.
     const containerFile = Locator(

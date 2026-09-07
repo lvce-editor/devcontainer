@@ -1,4 +1,5 @@
 import { executeCommand, showNotification } from '@lvce-editor/api'
+import * as Progress from '../Progress/Progress.ts'
 import * as Rpc from '../Rpc/Rpc.ts'
 import * as Workspace from '../Workspace/Workspace.ts'
 
@@ -13,8 +14,18 @@ const invokeForCurrentWorkspace = async (
   })
 }
 
-export const start = () => {
-  return invokeForCurrentWorkspace('DevContainer.up')
+export const start = async () => {
+  const workspaceFolder = await Workspace.getFolder()
+  const result = (await Progress.run('DevContainer.up', workspaceFolder)) as {
+    ok?: boolean
+    errorMessage?: string
+  }
+  await Progress.appendLine(
+    result.ok
+      ? 'Devcontainer started.'
+      : `Failed to start devcontainer: ${result.errorMessage || 'Unknown error'}`,
+  )
+  return result
 }
 
 export const stop = () => {
@@ -40,9 +51,10 @@ export const setDockerPath = (path: string) => {
 export const openWorkspace = async (): Promise<void> => {
   try {
     const originalWorkspace = await Workspace.getFolder()
-    const result = (await Rpc.invoke('DevContainer.openWorkspace', {
-      workspaceFolder: originalWorkspace,
-    })) as {
+    const result = (await Progress.run(
+      'DevContainer.openWorkspace',
+      originalWorkspace,
+    )) as {
       ok?: boolean
       workspaceUri?: string
       errorCode?: string
@@ -63,12 +75,17 @@ export const openWorkspace = async (): Promise<void> => {
         'The workspace changed while the devcontainer was building. Run Reopen in Container again for the desired workspace.',
       )
     }
+    await Progress.appendLine('Container ready. Opening the workspace…')
     const { workspaceUri } = result
     // Workspace refresh reads this extension's provider. Let the originating
     // command return before re-entering its RPC with filesystem requests.
     setTimeout(() => {
-      void executeCommand('Workspace.setUri', workspaceUri, '/').catch(
-        (error: unknown) => {
+      void executeCommand('Workspace.setUri', workspaceUri, '/').then(
+        () => Progress.appendLine('Connected to the devcontainer workspace.'),
+        async (error: unknown) => {
+          await Progress.appendLine(
+            `Failed to open devcontainer workspace: ${String(error)}`,
+          )
           void showNotification(
             'error',
             `Failed to open devcontainer workspace: ${String(error)}`,
@@ -77,6 +94,9 @@ export const openWorkspace = async (): Promise<void> => {
       )
     }, 0)
   } catch (error) {
+    await Progress.appendLine(
+      `Failed to open devcontainer workspace: ${error instanceof Error ? error.message : String(error)}`,
+    )
     await showNotification(
       'error',
       `Failed to open devcontainer workspace: ${error instanceof Error ? error.message : String(error)}`,
