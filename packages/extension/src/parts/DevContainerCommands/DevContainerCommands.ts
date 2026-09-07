@@ -3,6 +3,7 @@ import {
   getPreference,
   showNotification,
 } from '@lvce-editor/api'
+import * as GetErrorDialog from '../GetErrorDialog/GetErrorDialog.ts'
 import * as Rpc from '../Rpc/Rpc.ts'
 import * as Workspace from '../Workspace/Workspace.ts'
 
@@ -68,18 +69,13 @@ export const openWorkspace = async (): Promise<void> => {
     })) as {
       ok?: boolean
       workspaceUri?: string
+      missingExecutable?: string
       errorCode?: string
       errorMessage?: string
     }
     if (!result.ok || !result.workspaceUri?.startsWith('devcontainers:///')) {
-      throw new Error(
-        [
-          result.errorCode ? `Error code: ${result.errorCode}` : '',
-          result.errorMessage || 'Failed to open workspace in devcontainer',
-        ]
-          .filter(Boolean)
-          .join('\n'),
-      )
+      await executeCommand('Dialog.show', GetErrorDialog.getErrorDialog(result))
+      return
     }
     if ((await Workspace.getFolder()) !== originalWorkspace) {
       throw new Error(
@@ -100,10 +96,27 @@ export const openWorkspace = async (): Promise<void> => {
       )
     }, 0)
   } catch (error) {
+    await executeCommand(
+      'Dialog.show',
+      GetErrorDialog.getErrorDialog({
+        errorMessage: error instanceof Error ? error.message : String(error),
+      }),
+    )
+  }
+}
+
+export const installDocker = async (): Promise<void> => {
+  try {
+    const command = (await Rpc.invoke(
+      'DevContainer.getDockerInstallCommand',
+    )) as string
+    await executeCommand('Layout.showPanel', 'Terminals')
+    await executeCommand('Terminals.addTerminal')
+    await executeCommand('Terminals.sendText', `${command}\r`)
+  } catch (error) {
     await showNotification(
       'error',
-      `Failed to open devcontainer workspace: ${error instanceof Error ? error.message : String(error)}`,
+      `Could not open Docker installation: ${error instanceof Error ? error.message : String(error)}. Install Docker from https://docs.docker.com/get-docker/`,
     )
-    throw error
   }
 }

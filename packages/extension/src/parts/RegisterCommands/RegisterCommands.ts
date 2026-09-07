@@ -3,6 +3,10 @@ import * as DevContainerCommands from '../DevContainerCommands/DevContainerComma
 
 const commands = [
   {
+    execute: DevContainerCommands.installDocker,
+    id: 'devcontainer.installDocker',
+  },
+  {
     execute: DevContainerCommands.setDockerPath,
     id: 'devcontainer.setDockerPath',
   },

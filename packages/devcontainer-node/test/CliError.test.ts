@@ -13,6 +13,7 @@ test('extracts missing Docker from the real CLI output format', () => {
     errorCode: 'ENOENT',
     errorMessage:
       'Container executable /missing docker was not found. Install it or check devcontainer.containerCli.\nAn error occurred setting up the container.\nspawn /missing docker ENOENT',
+    missingExecutable: '/missing docker',
   })
 })
 

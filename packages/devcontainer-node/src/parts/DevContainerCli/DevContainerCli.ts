@@ -17,6 +17,7 @@ export interface CliCommandSuccess {
 export interface CliCommandError extends ErrorResult {
   commandName: string
   exitCode?: number | null
+  missingExecutable?: string
   ok: false
   stderr?: string
   stdout?: string
@@ -131,12 +132,13 @@ const toCliError = (
       ok: false,
     }
   }
-  const { errorCode, errorMessage } = CliError.getCliError(
+  const { errorCode, errorMessage, ...details } = CliError.getCliError(
     result.stdout,
     result.stderr,
     containerCli,
   )
   return {
+    ...details,
     commandName,
     errorCode,
     errorMessage: [
