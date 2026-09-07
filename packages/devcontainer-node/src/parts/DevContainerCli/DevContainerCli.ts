@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module'
 import type { ErrorResult } from '../SerializeError/SerializeError.ts'
+import * as CliError from '../CliError/CliError.ts'
 import * as CliJson from '../CliJson/CliJson.ts'
 import * as RunProcess from '../RunProcess/RunProcess.ts'
 
@@ -115,10 +116,20 @@ const toCliError = (
       ok: false,
     }
   }
+  const { errorCode, errorMessage } = CliError.getCliError(
+    result.stdout,
+    result.stderr,
+    dockerPath,
+  )
   return {
     commandName,
-    errorCode: undefined,
-    errorMessage: `${commandName} failed with exit code ${result.exitCode}`,
+    errorCode,
+    errorMessage: [
+      `${commandName} failed with exit code ${result.exitCode}`,
+      errorMessage,
+    ]
+      .filter(Boolean)
+      .join('\n'),
     errorStack: undefined,
     exitCode: result.exitCode,
     ok: false,
