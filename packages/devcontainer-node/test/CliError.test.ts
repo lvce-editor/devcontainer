@@ -45,6 +45,7 @@ test('accepts a structured error on stderr and avoids duplicate messages', () =>
 })
 
 test.each([
+  ['{invalid json', 'Build failed', 'Build failed'],
   [
     'malformed {json',
     'Cannot connect to the Docker daemon',
