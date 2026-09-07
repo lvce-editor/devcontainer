@@ -75,8 +75,10 @@ export const createDevContainer = ({
   }
 
   const readConfiguration = async ({
+    containerCli,
     workspaceFolder,
   }: {
+    containerCli?: string
     workspaceFolder: string
   }) => {
     workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
@@ -84,16 +86,27 @@ export const createDevContainer = ({
     if (!detected.found) {
       return configNotFound(workspaceFolder)
     }
-    return DevContainerNodeClient.cliReadConfiguration({ workspaceFolder })
+    return DevContainerNodeClient.cliReadConfiguration({
+      containerCli,
+      workspaceFolder,
+    })
   }
 
-  const up = async ({ workspaceFolder }: { workspaceFolder: string }) => {
+  const up = async ({
+    containerCli,
+    workspaceFolder,
+  }: {
+    containerCli?: string
+    workspaceFolder: string
+  }) => {
     workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
     const existing = DevContainerState.get(workspaceFolder)
+    containerCli = existing?.containerCli ?? containerCli
     if (existing?.status === 'starting') {
       return { errorCode: 'DEVCONTAINER_ALREADY_STARTED', ok: false }
     }
     const starting = DevContainerState.set(workspaceFolder, {
+      containerCli,
       status: 'starting',
     })
     const cancelled = () => DevContainerState.get(workspaceFolder) !== starting
@@ -106,7 +119,10 @@ export const createDevContainer = ({
         DevContainerState.remove(workspaceFolder)
         return configNotFound(workspaceFolder)
       }
-      result = await DevContainerNodeClient.cliUp({ workspaceFolder })
+      result = await DevContainerNodeClient.cliUp({
+        containerCli,
+        workspaceFolder,
+      })
     } catch (error) {
       result = { errorMessage: String(error), ok: false }
     }
@@ -127,6 +143,7 @@ export const createDevContainer = ({
     )
 
     DevContainerState.set(workspaceFolder, {
+      containerCli,
       containerId,
       lastResult: result,
       remoteUser,
@@ -157,7 +174,12 @@ export const createDevContainer = ({
         workspaceFolder,
       }
     }
-    return DevContainerNodeClient.cliExec({ args, command, workspaceFolder })
+    return DevContainerNodeClient.cliExec({
+      args,
+      command,
+      containerCli: currentState.containerCli,
+      workspaceFolder,
+    })
   }
 
   const stop = async ({ workspaceFolder }: { workspaceFolder: string }) => {
@@ -177,6 +199,7 @@ export const createDevContainer = ({
       }
     }
     const result = await DevContainerNodeClient.dockerStopContainer({
+      containerCli: currentState.containerCli,
       containerId: currentState.containerId,
     })
     if (DevContainerState.get(workspaceFolder) !== currentState) return result
@@ -213,6 +236,7 @@ export const createDevContainer = ({
       }
     }
     const result = await DevContainerNodeClient.dockerRemoveContainer({
+      containerCli: currentState.containerCli,
       containerId: currentState.containerId,
     })
     if (DevContainerState.get(workspaceFolder) !== currentState) return result
@@ -231,8 +255,11 @@ export const createDevContainer = ({
 
   const opening = new Map<string, Promise<unknown>>()
 
-  const connectWorkspace = async (workspaceFolder: string) => {
-    const result = await up({ workspaceFolder })
+  const connectWorkspace = async (
+    workspaceFolder: string,
+    containerCli?: string,
+  ) => {
+    const result = await up({ containerCli, workspaceFolder })
     if (!isOk(result) || !result.ok) {
       return result
     }
@@ -244,6 +271,7 @@ export const createDevContainer = ({
     }
     // Verify the connection before changing the editor workspace.
     await DevContainerNodeClient.containerFileSystem({
+      containerCli: state.containerCli,
       containerId: state.containerId,
       operation: 'readDirWithFileTypes',
       path: state.remoteWorkspaceFolder,
@@ -255,8 +283,10 @@ export const createDevContainer = ({
   }
 
   const openWorkspace = async ({
+    containerCli,
     workspaceFolder,
   }: {
+    containerCli?: string
     workspaceFolder: string
   }): Promise<unknown> => {
     workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
@@ -264,7 +294,7 @@ export const createDevContainer = ({
     if (existing) {
       return existing
     }
-    const promise = connectWorkspace(workspaceFolder)
+    const promise = connectWorkspace(workspaceFolder, containerCli)
     opening.set(workspaceFolder, promise)
     try {
       return await promise

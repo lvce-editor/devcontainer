@@ -2,6 +2,7 @@ import { createRequire } from 'node:module'
 import type { ErrorResult } from '../SerializeError/SerializeError.ts'
 import * as CliError from '../CliError/CliError.ts'
 import * as CliJson from '../CliJson/CliJson.ts'
+import * as ContainerFileSystem from '../ContainerFileSystem/ContainerFileSystem.ts'
 import * as RunProcess from '../RunProcess/RunProcess.ts'
 
 export interface CliCommandSuccess {
@@ -34,6 +35,7 @@ export interface DockerCommandSuccess {
 export type DockerCommandResult = DockerCommandSuccess | CliCommandError
 
 export interface WorkspaceOptions {
+  containerCli?: string
   workspaceFolder: string
 }
 
@@ -43,6 +45,7 @@ export interface ExecOptions extends WorkspaceOptions {
 }
 
 export interface ContainerOptions {
+  containerCli?: string
   containerId: string
 }
 
@@ -65,25 +68,36 @@ export const getDevcontainerCliPath = () => {
 }
 
 export const getCliReadConfigurationArgs = ({
+  containerCli = dockerPath,
   workspaceFolder,
 }: WorkspaceOptions) => {
-  return ['read-configuration', '--workspace-folder', workspaceFolder]
+  return [
+    'read-configuration',
+    '--workspace-folder',
+    workspaceFolder,
+    '--docker-path',
+    containerCli,
+  ]
 }
 
-export const getCliUpArgs = ({ workspaceFolder }: WorkspaceOptions) => {
+export const getCliUpArgs = ({
+  containerCli = dockerPath,
+  workspaceFolder,
+}: WorkspaceOptions) => {
   return [
     'up',
     '--workspace-folder',
     workspaceFolder,
     '--no-lockfile',
     '--docker-path',
-    dockerPath,
+    containerCli,
   ]
 }
 
 export const getCliExecArgs = ({
   args = [],
   command,
+  containerCli = dockerPath,
   workspaceFolder,
 }: ExecOptions) => {
   return [
@@ -91,7 +105,7 @@ export const getCliExecArgs = ({
     '--workspace-folder',
     workspaceFolder,
     '--docker-path',
-    dockerPath,
+    containerCli,
     command,
     ...args,
   ]
@@ -108,6 +122,7 @@ export const getDockerRemoveArgs = ({ containerId }: ContainerOptions) => {
 const toCliError = (
   commandName: string,
   result: RunProcess.RunProcessResult,
+  containerCli: string,
 ): CliCommandError => {
   if (isErrorResult(result)) {
     return {
@@ -119,7 +134,7 @@ const toCliError = (
   const { errorCode, errorMessage } = CliError.getCliError(
     result.stdout,
     result.stderr,
-    dockerPath,
+    containerCli,
   )
   return {
     commandName,
@@ -141,6 +156,7 @@ const toCliError = (
 const runDevcontainerCli = async (
   commandName: string,
   args: readonly string[],
+  containerCli = dockerPath,
 ): Promise<CliCommandResult> => {
   const result = await RunProcess.runProcess({
     args,
@@ -149,7 +165,7 @@ const runDevcontainerCli = async (
   })
 
   if (isErrorResult(result) || result.exitCode) {
-    return toCliError(commandName, result)
+    return toCliError(commandName, result, containerCli)
   }
 
   try {
@@ -180,6 +196,7 @@ const runDevcontainerCli = async (
 const runDevcontainerCommand = async (
   commandName: string,
   args: readonly string[],
+  containerCli = dockerPath,
 ): Promise<CliCommandResult> => {
   const result = await RunProcess.runProcess({
     args,
@@ -188,7 +205,7 @@ const runDevcontainerCommand = async (
   })
 
   if (isErrorResult(result) || result.exitCode) {
-    return toCliError(commandName, result)
+    return toCliError(commandName, result, containerCli)
   }
 
   return {
@@ -203,14 +220,15 @@ const runDevcontainerCommand = async (
 const runDocker = async (
   commandName: string,
   args: readonly string[],
+  containerCli = dockerPath,
 ): Promise<DockerCommandResult> => {
   const result = await RunProcess.runProcess({
     args,
-    command: dockerPath,
+    command: containerCli,
     cwd: process.cwd(),
   })
   if (isErrorResult(result) || result.exitCode) {
-    return toCliError(commandName, result)
+    return toCliError(commandName, result, containerCli)
   }
   return {
     commandName,
@@ -222,30 +240,34 @@ const runDocker = async (
 }
 
 export const cliReadConfiguration = (options: WorkspaceOptions) => {
-  return runDevcontainerCli('DevContainerNode.cliReadConfiguration', [
-    getDevcontainerCliPath(),
-    ...getCliReadConfigurationArgs(options),
-  ])
+  return runDevcontainerCli(
+    'DevContainerNode.cliReadConfiguration',
+    [getDevcontainerCliPath(), ...getCliReadConfigurationArgs(options)],
+    options.containerCli,
+  )
 }
 
 export const cliUp = (options: WorkspaceOptions) => {
-  return runDevcontainerCli('DevContainerNode.cliUp', [
-    getDevcontainerCliPath(),
-    ...getCliUpArgs(options),
-  ])
+  return runDevcontainerCli(
+    'DevContainerNode.cliUp',
+    [getDevcontainerCliPath(), ...getCliUpArgs(options)],
+    options.containerCli,
+  )
 }
 
 export const cliExec = (options: ExecOptions) => {
-  return runDevcontainerCommand('DevContainerNode.cliExec', [
-    getDevcontainerCliPath(),
-    ...getCliExecArgs(options),
-  ])
+  return runDevcontainerCommand(
+    'DevContainerNode.cliExec',
+    [getDevcontainerCliPath(), ...getCliExecArgs(options)],
+    options.containerCli,
+  )
 }
 
 export const dockerStopContainer = (options: ContainerOptions) => {
   return runDocker(
     'DevContainerNode.dockerStopContainer',
     getDockerStopArgs(options),
+    options.containerCli,
   )
 }
 
@@ -253,20 +275,28 @@ export const dockerRemoveContainer = (options: ContainerOptions) => {
   return runDocker(
     'DevContainerNode.dockerRemoveContainer',
     getDockerRemoveArgs(options),
+    options.containerCli,
   )
 }
 
-export { run as containerFileSystem } from '../ContainerFileSystem/ContainerFileSystem.ts'
+export const containerFileSystem = (
+  options: Parameters<typeof ContainerFileSystem.run>[0],
+) => {
+  return ContainerFileSystem.run({
+    ...options,
+    containerCli: options.containerCli ?? dockerPath,
+  })
+}
 
 export const dockerInspectContainer = async ({
+  containerCli = dockerPath,
   containerId,
 }: ContainerOptions) => {
-  const result = await runDocker('DevContainerNode.dockerInspectContainer', [
-    'inspect',
-    '--format',
-    '{{.State.Running}}',
-    containerId,
-  ])
+  const result = await runDocker(
+    'DevContainerNode.dockerInspectContainer',
+    ['inspect', '--format', '{{.State.Running}}', containerId],
+    containerCli,
+  )
   if (!result.ok) {
     throw new Error(result.errorMessage)
   }

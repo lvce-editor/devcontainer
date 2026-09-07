@@ -9,7 +9,13 @@ test('getCliReadConfigurationArgs', () => {
     DevContainerCli.getCliReadConfigurationArgs({
       workspaceFolder: '/workspace',
     }),
-  ).toEqual(['read-configuration', '--workspace-folder', '/workspace'])
+  ).toEqual([
+    'read-configuration',
+    '--workspace-folder',
+    '/workspace',
+    '--docker-path',
+    'docker',
+  ])
 })
 
 test('getCliUpArgs', () => {
@@ -107,7 +113,9 @@ test('cliUp preserves the missing Docker cause, error code, and raw output', asy
     const result = await DevContainerCli.cliUp({ workspaceFolder })
     expect(result).toMatchObject({
       errorCode: 'ENOENT',
-      errorMessage: expect.stringContaining('Docker executable was not found'),
+      errorMessage: expect.stringContaining(
+        `Container executable ${dockerPath} was not found`,
+      ),
       exitCode: 1,
       ok: false,
       stderr: expect.stringContaining('ENOENT'),
@@ -119,4 +127,25 @@ test('cliUp preserves the missing Docker cause, error code, and raw output', asy
   } finally {
     await rm(workspaceFolder, { force: true, recursive: true })
   }
+})
+
+test('uses the per-connection CLI without changing the default', () => {
+  const options = {
+    containerCli: '/tools/podman cli',
+    workspaceFolder: '/workspace',
+  }
+  for (const args of [
+    DevContainerCli.getCliReadConfigurationArgs(options),
+    DevContainerCli.getCliUpArgs(options),
+    DevContainerCli.getCliExecArgs({
+      ...options,
+      command: 'cat',
+      args: ['file with spaces'],
+    }),
+  ]) {
+    expect(args[args.indexOf('--docker-path') + 1]).toBe('/tools/podman cli')
+  }
+  expect(DevContainerCli.getCliUpArgs({ workspaceFolder: '/other' })).toContain(
+    'docker',
+  )
 })

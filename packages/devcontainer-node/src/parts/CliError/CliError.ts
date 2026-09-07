@@ -48,7 +48,7 @@ export const getCliError = (
       parsed?.errorCode ||
       (missingDocker ? 'ENOENT' : 'DEVCONTAINER_CLI_ERROR'),
     errorMessage: missingDocker
-      ? `Docker executable was not found. Install Docker or check its configured path.\n${detail}`
+      ? `Container executable ${dockerPath} was not found. Install it or check devcontainer.containerCli.\n${detail}`
       : detail.slice(-2000),
   }
 }
