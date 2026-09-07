@@ -118,7 +118,7 @@ for (const command of ['start', 'openWorkspace'] as const) {
   })
 
   await test(`${command} leaves the workspace unchanged on failure`, async () => {
-    result = { ok: false, errorMessage: 'Container connection failed' }
+    result = { errorMessage: 'Container connection failed', ok: false }
     await Commands[command]()
     await delay(10)
     assert.equal(calls.length, 1)
