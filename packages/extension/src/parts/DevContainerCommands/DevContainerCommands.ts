@@ -120,7 +120,9 @@ export const openWorkspace = async (): Promise<void> => {
   }
 }
 
-export const start = openWorkspace
+export const start = (): Promise<void> => {
+  return openWorkspace()
+}
 
 export const installDocker = async (): Promise<void> => {
   try {
