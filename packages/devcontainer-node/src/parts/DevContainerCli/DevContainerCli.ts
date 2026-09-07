@@ -37,6 +37,7 @@ export type DockerCommandResult = DockerCommandSuccess | CliCommandError
 
 export interface WorkspaceOptions {
   containerCli?: string
+  onOutput?: (text: string) => void
   workspaceFolder: string
 }
 
@@ -90,6 +91,10 @@ export const getCliUpArgs = ({
     '--workspace-folder',
     workspaceFolder,
     '--no-lockfile',
+    '--log-format',
+    'text',
+    '--log-level',
+    'debug',
     '--docker-path',
     containerCli,
   ]
@@ -159,11 +164,13 @@ const runDevcontainerCli = async (
   commandName: string,
   args: readonly string[],
   containerCli = dockerPath,
+  onOutput?: (text: string) => void,
 ): Promise<CliCommandResult> => {
   const result = await RunProcess.runProcess({
     args,
     command: process.execPath,
     cwd: process.cwd(),
+    onOutput,
   })
 
   if (isErrorResult(result) || result.exitCode) {
@@ -254,6 +261,7 @@ export const cliUp = (options: WorkspaceOptions) => {
     'DevContainerNode.cliUp',
     [getDevcontainerCliPath(), ...getCliUpArgs(options)],
     options.containerCli,
+    options.onOutput,
   )
 }
 

@@ -21,6 +21,7 @@ export interface NodeApi {
     workspaceFolder: string
   }): Promise<unknown>
   cliUp(options: {
+    onOutput?: (text: string) => void
     containerCli?: string
     workspaceFolder: string
   }): Promise<unknown>
@@ -73,6 +74,7 @@ export const cliReadConfiguration = (options: {
 }
 
 export const cliUp = (options: {
+  onOutput?: (text: string) => void
   containerCli?: string
   workspaceFolder: string
 }) => {

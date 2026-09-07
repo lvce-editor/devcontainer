@@ -72,5 +72,11 @@
       "default": "docker",
       "description": "Container executable name or path, such as docker or podman. Applies when starting or reopening a container."
     }
-  }
+  },
+  "outputChannels": [
+    {
+      "id": "dev-containers",
+      "label": "Dev Containers"
+    }
+  ]
 }

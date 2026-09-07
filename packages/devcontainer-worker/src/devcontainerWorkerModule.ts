@@ -4,6 +4,7 @@ import * as DevContainer from './parts/DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from './parts/DevContainerCommandType/DevContainerCommandType.ts'
 import * as DevContainerNodeClient from './parts/DevContainerNodeClient/DevContainerNodeClient.ts'
 import * as GetDockerInstallCommand from './parts/GetDockerInstallCommand/GetDockerInstallCommand.ts'
+import * as Progress from './parts/Progress/Progress.ts'
 
 const initialize = () => {
   DevContainerNodeClient.setNodeApi(DevContainerCli)
@@ -41,16 +42,24 @@ const stop = (options: Parameters<typeof DevContainer.stop>[0]) => {
   return DevContainer.stop(options)
 }
 
-const up = (options: Parameters<typeof DevContainer.up>[0]) => {
+const up = (
+  options: Parameters<typeof DevContainer.up>[0] & { progressId?: string },
+) => {
   initialize()
-  return DevContainer.up(options)
+  return Progress.run(options.progressId || '', (onOutput) =>
+    DevContainer.up({ ...options, onOutput }),
+  )
 }
 
 const openWorkspace = (
-  options: Parameters<typeof DevContainer.openWorkspace>[0],
+  options: Parameters<typeof DevContainer.openWorkspace>[0] & {
+    progressId?: string
+  },
 ) => {
   initialize()
-  return DevContainer.openWorkspace(options)
+  return Progress.run(options.progressId || '', (onOutput) =>
+    DevContainer.openWorkspace({ ...options, onOutput }),
+  )
 }
 
 const fileSystem = (...args: Parameters<typeof ContainerFileSystem.invoke>) => {
@@ -61,6 +70,7 @@ const fileSystem = (...args: Parameters<typeof ContainerFileSystem.invoke>) => {
 export const commandMap = {
   'DevContainer.getDockerInstallCommand': () =>
     GetDockerInstallCommand.getDockerInstallCommand(process.platform),
+  'DevContainer.getProgress': Progress.getProgress,
   [DevContainerCommandType.DevContainerDetect]: detect,
   [DevContainerCommandType.DevContainerExec]: exec,
   [DevContainerCommandType.DevContainerFileSystem]: fileSystem,
