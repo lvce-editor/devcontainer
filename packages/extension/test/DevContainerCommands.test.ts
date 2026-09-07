@@ -46,5 +46,10 @@ test('reopen opens output and displays logs before the build finishes', async ()
   } finally {
     pending.resolve({ ok: false, errorMessage: 'build failed' })
     await result
+    assert.ok(
+      events.some((text) =>
+        text.includes('Failed to open devcontainer workspace: build failed'),
+      ),
+    )
   }
 })

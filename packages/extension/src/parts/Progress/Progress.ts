@@ -1,4 +1,8 @@
-import { createOutputChannel, openOutputView } from '@lvce-editor/api'
+import {
+  createOutputChannel,
+  executeCommand,
+  openOutputView,
+} from '@lvce-editor/api'
 import * as Rpc from '../Rpc/Rpc.ts'
 
 let output: ReturnType<typeof createOutputChannel> | undefined
@@ -6,6 +10,7 @@ let busy = false
 
 export const appendLine = async (text: string): Promise<void> => {
   await output?.appendLine(text)
+  await executeCommand('Output.refresh').catch(() => {})
 }
 
 export const run = async (
@@ -32,6 +37,9 @@ export const run = async (
       if (typeof text === 'string' && text !== previous) {
         previous = text
         await channel.replace(header + text)
+        // Extension output storage currently has no change notifications. Refresh
+        // the visible channel without reopening the panel or changing selection.
+        await executeCommand('Output.refresh').catch(() => {})
       }
     }
     const poll = async (): Promise<void> => {

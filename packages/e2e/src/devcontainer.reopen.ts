@@ -31,6 +31,15 @@ export const test: Test = async ({
     await expect(Locator('.Output')).toContainText(
       'Building and starting the devcontainer',
     )
+    await expect(Locator('.Output')).toContainText(
+      'Waiting for progress acceptance',
+    )
+    if ((await Command.execute('Workspace.getUri')) !== localUri) {
+      throw new Error(
+        'Build progress must be visible before reopening completes',
+      )
+    }
+    await FileSystem.writeFile(`${localUri}/.progress-release`, '')
     const workspaceUri = await waitForContainerWorkspace({ Command })
     // This directory and file were created by the Dockerfile, outside the bind mount.
     const containerFile = Locator(
