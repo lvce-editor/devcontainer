@@ -27,7 +27,8 @@
     "onFileSystem:devcontainers",
     "onCommand:devcontainer.showLogs",
     "onFileSystem:devcontainer-logs",
-    "onCommand:devcontainer.installDocker"
+    "onCommand:devcontainer.installDocker",
+    "onCommand:devcontainer.getTerminalSpawnOptions"
   ],
   "commands": [
     {
@@ -64,6 +65,10 @@
     },
     {
       "id": "devcontainer.installDocker",
+      "internal": true
+    },
+    {
+      "id": "devcontainer.getTerminalSpawnOptions",
       "internal": true
     }
   ],

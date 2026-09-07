@@ -30,3 +30,5 @@ export { run as containerFileSystem } from './parts/ContainerFileSystem/Containe
 export function dockerInspectContainer(
   options: ContainerOptions,
 ): Promise<boolean>
+
+export function getDevcontainerCliPath(): string

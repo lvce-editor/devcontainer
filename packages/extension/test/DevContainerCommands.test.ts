@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { beforeEach, mock, test } from 'node:test'
+import { setTimeout as delay } from 'node:timers/promises'
 
 const calls: unknown[][] = []
 let result: unknown
@@ -75,4 +76,14 @@ await test('terminal launch failure produces one notification and never sends in
   )
   assert.equal(calls.at(-1)?.[0], 'notification')
   assert.match(String(calls.at(-1)?.[2]), /Terminal unavailable/)
+})
+
+await test('a ready container switches the workspace URI after the extension command returns', async () => {
+  result = { ok: true, workspaceUri: 'devcontainers:///abc123' }
+  await Commands.openWorkspace()
+  assert.equal(calls.length, 0)
+  await delay(10)
+  assert.deepEqual(calls, [
+    ['Workspace.setUri', 'devcontainers:///abc123', '/'],
+  ])
 })
