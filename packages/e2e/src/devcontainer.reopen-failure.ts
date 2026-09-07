@@ -8,7 +8,7 @@ export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
   await Workspace.setPath(localUri)
   await Command.executeExtensionCommand('devcontainer.openWorkspace')
   const heading = Locator('.DialogHeading')
-  await expect(heading).toHaveText('Error: Could not open devcontainer')
+  await expect(heading).toHaveText('Could not open devcontainer')
   await Command.execute('Viewlet.closeWidget', 'Dialog')
   const uri = await Command.execute('Workspace.getUri')
   if (uri !== localUri) {
@@ -16,4 +16,7 @@ export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
   }
   const hostFile = Locator('.Explorer .TreeItem[aria-label="host-only.txt"]')
   await expect(hostFile).toBeVisible()
+  await Command.executeExtensionCommand('devcontainer.showLogs')
+  const editor = Locator('.Editor')
+  await expect(editor).toContainText('missing-Dockerfile')
 }

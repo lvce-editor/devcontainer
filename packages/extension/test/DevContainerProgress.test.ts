@@ -5,6 +5,7 @@ const events: string[] = []
 const pending = Promise.withResolvers<unknown>()
 mock.module('@lvce-editor/api', {
   namedExports: {
+    closeUri: async () => {},
     createOutputChannel: () => ({
       appendLine: async (text: string) => {
         events.push(text)
@@ -18,6 +19,7 @@ mock.module('@lvce-editor/api', {
     openOutputView: async () => {
       events.push('output opened')
     },
+    openUri: async () => {},
     showNotification: async () => {},
   },
 })

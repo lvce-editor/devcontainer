@@ -7,6 +7,7 @@ let terminalFailure = false
 let installCommand = 'installer command'
 mock.module('@lvce-editor/api', {
   namedExports: {
+    closeUri: async () => {},
     createNodeRpc: async () => ({
       invoke: async (method: string) => {
         if (method === 'DevContainer.getDockerInstallCommand')
@@ -21,6 +22,7 @@ mock.module('@lvce-editor/api', {
     },
     getPreference: async () => 'docker',
     getWorkspaceUri: async () => 'file:///workspace',
+    openUri: async () => {},
     showNotification: async (...args: unknown[]) => {
       calls.push(['notification', ...args])
     },

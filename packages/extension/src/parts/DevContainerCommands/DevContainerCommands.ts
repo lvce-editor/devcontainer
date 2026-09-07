@@ -3,6 +3,7 @@ import {
   getPreference,
   showNotification,
 } from '@lvce-editor/api'
+import * as BuildError from '../BuildError/BuildError.ts'
 import * as GetErrorDialog from '../GetErrorDialog/GetErrorDialog.ts'
 import * as Progress from '../Progress/Progress.ts'
 import * as Rpc from '../Rpc/Rpc.ts'
@@ -91,6 +92,13 @@ export const openWorkspace = async (): Promise<void> => {
       await Progress.appendLine(
         `Failed to open devcontainer workspace: ${result.errorMessage || 'Unknown error'}`,
       )
+      if (
+        result.errorCode === 'DEVCONTAINER_CLI_ERROR' ||
+        result.errorCode === 'DEVCONTAINER_JSON_PARSE_ERROR'
+      ) {
+        await BuildError.showError(result, originalWorkspace)
+        return
+      }
       await executeCommand('Dialog.show', GetErrorDialog.getErrorDialog(result))
       return
     }

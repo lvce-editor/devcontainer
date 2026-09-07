@@ -25,6 +25,8 @@
     "onCommand:devcontainer.remove",
     "onCommand:devcontainer.openWorkspace",
     "onFileSystem:devcontainers",
+    "onCommand:devcontainer.showLogs",
+    "onFileSystem:devcontainer-logs",
     "onCommand:devcontainer.installDocker"
   ],
   "commands": [
@@ -57,6 +59,10 @@
       "label": "Dev Containers: Remove Current Workspace"
     },
     {
+      "id": "devcontainer.showLogs",
+      "label": "Dev Containers: Show Full Logs"
+    },
+    {
       "id": "devcontainer.installDocker",
       "internal": true
     }
@@ -64,6 +70,9 @@
   "fileSystemProviders": [
     {
       "id": "devcontainers"
+    },
+    {
+      "id": "devcontainer-logs"
     }
   ],
   "configuration": {
