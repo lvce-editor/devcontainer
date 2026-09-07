@@ -4,10 +4,7 @@
   "description": "Dev container lifecycle support",
   "browser": "dist/devcontainerMain.js",
   "isolated": true,
-  "contentSecurityPolicy": [
-    "default-src 'none'",
-    "script-src 'self'"
-  ],
+  "contentSecurityPolicy": ["default-src 'none'", "script-src 'self'"],
   "compatibility": {
     "web": false
   },
@@ -29,7 +26,8 @@
     "onCommand:devcontainer.openWorkspace",
     "onFileSystem:devcontainers",
     "onCommand:devcontainer.showLogs",
-    "onFileSystem:devcontainer-logs"
+    "onFileSystem:devcontainer-logs",
+    "onCommand:devcontainer.installDocker"
   ],
   "commands": [
     {
@@ -63,6 +61,10 @@
     {
       "id": "devcontainer.showLogs",
       "label": "Dev Containers: Show Full Logs"
+    },
+    {
+      "id": "devcontainer.installDocker",
+      "internal": true
     }
   ],
   "fileSystemProviders": [

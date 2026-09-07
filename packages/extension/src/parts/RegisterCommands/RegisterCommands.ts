@@ -5,6 +5,10 @@ import * as DevContainerCommands from '../DevContainerCommands/DevContainerComma
 const commands = [
   { execute: BuildError.showLogs, id: 'devcontainer.showLogs' },
   {
+    execute: DevContainerCommands.installDocker,
+    id: 'devcontainer.installDocker',
+  },
+  {
     execute: DevContainerCommands.setDockerPath,
     id: 'devcontainer.setDockerPath',
   },
