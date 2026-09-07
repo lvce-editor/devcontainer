@@ -94,9 +94,11 @@ export const createDevContainer = ({
 
   const up = async ({
     containerCli,
+    onOutput,
     workspaceFolder,
   }: {
     containerCli?: string
+    onOutput?: (text: string) => void
     workspaceFolder: string
   }) => {
     workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
@@ -113,14 +115,17 @@ export const createDevContainer = ({
     const cancellation = { errorCode: 'DEVCONTAINER_CANCELLED', ok: false }
     let result: unknown
     try {
+      onOutput?.(`Checking devcontainer configuration in ${workspaceFolder}…\n`)
       const detected = await detect({ workspaceFolder })
       if (cancelled()) return cancellation
       if (!detected.found) {
         DevContainerState.remove(workspaceFolder)
         return configNotFound(workspaceFolder)
       }
+      onOutput?.('Building and starting the devcontainer…\n')
       result = await DevContainerNodeClient.cliUp({
         containerCli,
+        onOutput,
         workspaceFolder,
       })
     } catch (error) {
@@ -258,8 +263,9 @@ export const createDevContainer = ({
   const connectWorkspace = async (
     workspaceFolder: string,
     containerCli?: string,
+    onOutput?: (text: string) => void,
   ) => {
-    const result = await up({ containerCli, workspaceFolder })
+    const result = await up({ containerCli, onOutput, workspaceFolder })
     if (!isOk(result) || !result.ok) {
       return result
     }
@@ -269,6 +275,7 @@ export const createDevContainer = ({
         'Devcontainer did not return a container id and absolute workspace folder',
       )
     }
+    onOutput?.('Connecting to the container workspace…\n')
     // Verify the connection before changing the editor workspace.
     await DevContainerNodeClient.containerFileSystem({
       containerCli: state.containerCli,
@@ -284,17 +291,19 @@ export const createDevContainer = ({
 
   const openWorkspace = async ({
     containerCli,
+    onOutput,
     workspaceFolder,
   }: {
     containerCli?: string
     workspaceFolder: string
+    onOutput?: (text: string) => void
   }): Promise<unknown> => {
     workspaceFolder = await WorkspaceFolder.toPath(workspaceFolder)
     const existing = opening.get(workspaceFolder)
     if (existing) {
       return existing
     }
-    const promise = connectWorkspace(workspaceFolder, containerCli)
+    const promise = connectWorkspace(workspaceFolder, containerCli, onOutput)
     opening.set(workspaceFolder, promise)
     try {
       return await promise

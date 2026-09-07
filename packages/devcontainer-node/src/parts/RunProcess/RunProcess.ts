@@ -16,6 +16,7 @@ export interface RunProcessOptions {
   command: string
   cwd?: string
   input?: string
+  onOutput?: (text: string) => void
 }
 
 const toPath = (pathOrUri: string | undefined) => {
@@ -25,30 +26,31 @@ const toPath = (pathOrUri: string | undefined) => {
   return pathOrUri
 }
 
-const toString = (chunks: readonly Uint8Array[]) => {
-  return Buffer.concat(chunks).toString()
-}
-
 export const runProcess = async ({
   args,
   command,
   cwd,
   input,
+  onOutput,
 }: RunProcessOptions): Promise<RunProcessResult> => {
   try {
     const { promise, resolve } = Promise.withResolvers<RunProcessResult>()
     const childProcess = spawn(command, [...args], {
       cwd: toPath(cwd),
     })
-    const stdoutChunks: Uint8Array[] = []
-    const stderrChunks: Uint8Array[] = []
+    childProcess.stdout.setEncoding('utf8')
+    childProcess.stderr.setEncoding('utf8')
+    const stdoutChunks: string[] = []
+    const stderrChunks: string[] = []
 
-    const handleStdoutData = (chunk: Uint8Array) => {
+    const handleStdoutData = (chunk: string) => {
       stdoutChunks.push(chunk)
+      onOutput?.(chunk)
     }
 
-    const handleStderrData = (chunk: Uint8Array) => {
+    const handleStderrData = (chunk: string) => {
       stderrChunks.push(chunk)
+      onOutput?.(chunk)
     }
 
     const cleanup = () => {
@@ -70,8 +72,8 @@ export const runProcess = async ({
     const handleClose = (exitCode: number | null) => {
       resolveWithCleanup({
         exitCode,
-        stderr: toString(stderrChunks),
-        stdout: toString(stdoutChunks),
+        stderr: stderrChunks.join(''),
+        stdout: stdoutChunks.join(''),
       })
     }
 

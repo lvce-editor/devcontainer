@@ -1,5 +1,6 @@
 export interface WorkspaceOptions {
   containerCli?: string
+  onOutput?: (text: string) => void
   workspaceFolder: string
 }
 

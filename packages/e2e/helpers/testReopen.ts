@@ -31,6 +31,16 @@ export const testReopen = async (
     const command = Locator('.QuickPickItem', { hasText: label })
     await expect(command).toHaveCount(1)
     await QuickPick.selectItem(label)
+    const output = Locator('.Output')
+    await expect(output).toBeVisible()
+    await expect(output).toContainText('Building and starting the devcontainer')
+    await expect(output).toContainText('Waiting for progress acceptance')
+    if ((await Command.execute('Workspace.getUri')) !== localUri) {
+      throw new Error(
+        'Build progress must be visible before reopening completes',
+      )
+    }
+    await FileSystem.writeFile(`${localUri}/.progress-release`, '')
     const workspaceUri = await waitForContainerWorkspace({ Command })
     if (containerCli === 'podman') {
       // Podman's marker exists but is empty in an unprivileged container.

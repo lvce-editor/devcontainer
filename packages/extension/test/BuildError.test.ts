@@ -32,6 +32,9 @@ mock.module('@lvce-editor/api', {
     },
   },
 })
+mock.module('../src/parts/Progress/Progress.ts', {
+  namedExports: { appendLine: async () => {}, run: async () => result },
+})
 const Commands =
   await import('../src/parts/DevContainerCommands/DevContainerCommands.ts')
 

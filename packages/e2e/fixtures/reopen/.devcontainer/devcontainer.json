@@ -5,5 +5,10 @@
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/host-workspace,type=bind",
   "workspaceFolder": "/container-workspace",
-  "remoteUser": "root"
+  "remoteUser": "root",
+  "initializeCommand": [
+    "node",
+    "-e",
+    "const fs = require('node:fs'); console.log('Waiting for progress acceptance'); const timeout = setTimeout(() => process.exit(1), 30000); const timer = setInterval(() => { if (fs.existsSync('.progress-release')) { clearInterval(timer); clearTimeout(timeout); } }, 50)"
+  ]
 }
