@@ -6,7 +6,7 @@
     "ghcr.io/devcontainers/features/docker-in-docker:4": { "moby": false }
   },
   "postCreateCommand": "npm ci",
-  "postStartCommand": "npm run dev --workspace=packages/server",
+  "postStartCommand": "nohup npm run dev > /tmp/lvce-devcontainer-server.log 2>&1 < /dev/null &",
   "customizations": {
     "vscode": {
       "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]

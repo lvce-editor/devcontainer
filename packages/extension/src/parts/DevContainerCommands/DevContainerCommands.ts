@@ -153,3 +153,7 @@ export const installDocker = async (): Promise<void> => {
     )
   }
 }
+
+export const getTerminalSpawnOptions = (workspaceUri: string, cwd = '') => {
+  return Rpc.invoke('DevContainer.getTerminalSpawnOptions', workspaceUri, cwd)
+}

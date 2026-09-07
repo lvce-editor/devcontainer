@@ -1,5 +1,6 @@
 import * as DevContainerCli from '@lvce-editor/devcontainer-node/devcontainer-cli'
 import * as ContainerFileSystem from './parts/ContainerFileSystem/ContainerFileSystem.ts'
+import * as ContainerTerminal from './parts/ContainerTerminal/ContainerTerminal.ts'
 import * as DevContainer from './parts/DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from './parts/DevContainerCommandType/DevContainerCommandType.ts'
 import * as DevContainerNodeClient from './parts/DevContainerNodeClient/DevContainerNodeClient.ts'
@@ -67,10 +68,18 @@ const fileSystem = (...args: Parameters<typeof ContainerFileSystem.invoke>) => {
   return ContainerFileSystem.invoke(...args)
 }
 
+const getTerminalSpawnOptions = (
+  ...args: Parameters<typeof ContainerTerminal.getSpawnOptions>
+) => {
+  initialize()
+  return ContainerTerminal.getSpawnOptions(...args)
+}
+
 export const commandMap = {
   'DevContainer.getDockerInstallCommand': () =>
     GetDockerInstallCommand.getDockerInstallCommand(process.platform),
   'DevContainer.getProgress': Progress.getProgress,
+  'DevContainer.getTerminalSpawnOptions': getTerminalSpawnOptions,
   [DevContainerCommandType.DevContainerDetect]: detect,
   [DevContainerCommandType.DevContainerExec]: exec,
   [DevContainerCommandType.DevContainerFileSystem]: fileSystem,

@@ -3,6 +3,10 @@ import * as BuildError from '../BuildError/BuildError.ts'
 import * as DevContainerCommands from '../DevContainerCommands/DevContainerCommands.ts'
 
 const commands = [
+  {
+    execute: DevContainerCommands.getTerminalSpawnOptions,
+    id: 'devcontainer.getTerminalSpawnOptions',
+  },
   { execute: BuildError.showLogs, id: 'devcontainer.showLogs' },
   {
     execute: DevContainerCommands.installDocker,
