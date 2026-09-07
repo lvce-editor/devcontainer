@@ -1,4 +1,5 @@
 import { executeCommand, showNotification } from '@lvce-editor/api'
+import * as BuildError from '../BuildError/BuildError.ts'
 import * as Rpc from '../Rpc/Rpc.ts'
 import * as Workspace from '../Workspace/Workspace.ts'
 
@@ -49,6 +50,13 @@ export const openWorkspace = async (): Promise<void> => {
       errorMessage?: string
     }
     if (!result.ok || !result.workspaceUri?.startsWith('devcontainers:///')) {
+      if (
+        result.errorCode === 'DEVCONTAINER_CLI_ERROR' ||
+        result.errorCode === 'DEVCONTAINER_JSON_PARSE_ERROR'
+      ) {
+        await BuildError.showError(result, originalWorkspace)
+        return
+      }
       throw new Error(
         [
           result.errorCode ? `Error code: ${result.errorCode}` : '',

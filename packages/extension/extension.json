@@ -4,7 +4,10 @@
   "description": "Dev container lifecycle support",
   "browser": "dist/devcontainerMain.js",
   "isolated": true,
-  "contentSecurityPolicy": ["default-src 'none'", "script-src 'self'"],
+  "contentSecurityPolicy": [
+    "default-src 'none'",
+    "script-src 'self'"
+  ],
   "compatibility": {
     "web": false
   },
@@ -24,7 +27,9 @@
     "onCommand:devcontainer.exec",
     "onCommand:devcontainer.remove",
     "onCommand:devcontainer.openWorkspace",
-    "onFileSystem:devcontainers"
+    "onFileSystem:devcontainers",
+    "onCommand:devcontainer.showLogs",
+    "onFileSystem:devcontainer-logs"
   ],
   "commands": [
     {
@@ -54,11 +59,18 @@
     {
       "id": "devcontainer.remove",
       "label": "Dev Containers: Remove Current Workspace"
+    },
+    {
+      "id": "devcontainer.showLogs",
+      "label": "Dev Containers: Show Full Logs"
     }
   ],
   "fileSystemProviders": [
     {
       "id": "devcontainers"
+    },
+    {
+      "id": "devcontainer-logs"
     }
   ]
 }

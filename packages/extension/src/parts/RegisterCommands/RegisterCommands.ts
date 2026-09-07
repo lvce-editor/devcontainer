@@ -1,7 +1,9 @@
 import { registerCommand } from '@lvce-editor/api'
+import * as BuildError from '../BuildError/BuildError.ts'
 import * as DevContainerCommands from '../DevContainerCommands/DevContainerCommands.ts'
 
 const commands = [
+  { execute: BuildError.showLogs, id: 'devcontainer.showLogs' },
   {
     execute: DevContainerCommands.setDockerPath,
     id: 'devcontainer.setDockerPath',
