@@ -6,6 +6,15 @@ export default defineConfig([
   ...config.default,
   ...config.recommendedActions,
   {
+    files: ['.devcontainer/devcontainer.json'],
+    rules: {
+      'devcontainer/allowed-image': [
+        'error',
+        { allowedImages: ['mcr.microsoft.com/devcontainers/javascript-node:26'] },
+      ],
+    },
+  },
+  {
     rules: {
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
