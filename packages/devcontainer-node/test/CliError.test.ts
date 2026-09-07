@@ -58,7 +58,7 @@ test.each([
     'Build failed',
     'Build failed',
   ],
-  ['', '\u001B[31mPermission denied\u001B[0m', 'Permission denied'],
+  ['', '\u{001B}[31mPermission denied\u{001B}[0m', 'Permission denied'],
 ])('falls back to text output (%s, %s)', (stdout, stderr, errorMessage) => {
   expect(CliError.getCliError(stdout, stderr, 'docker')).toEqual({
     errorCode: 'DEVCONTAINER_CLI_ERROR',
