@@ -2,6 +2,10 @@
 extension.tar.br
 .vscode
 
+# Generated development launchers
+/packages/devcontainer-node/bin/
+/packages/devcontainer-worker/bin/
+
 # Logs
 logs
 *.log
