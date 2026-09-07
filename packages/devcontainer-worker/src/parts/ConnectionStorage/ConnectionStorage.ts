@@ -4,6 +4,7 @@ import { homedir } from 'node:os'
 import { isAbsolute, join } from 'node:path'
 
 interface Connection {
+  containerCli?: string
   containerId: string
   remoteUser?: string
   remoteWorkspaceFolder: string
@@ -47,6 +48,8 @@ export const read = async (key: string): Promise<Connection | undefined> => {
   if (
     !value ||
     typeof value.containerId !== 'string' ||
+    (value.containerCli !== undefined &&
+      (typeof value.containerCli !== 'string' || !value.containerCli.trim())) ||
     typeof value.workspaceFolder !== 'string' ||
     !isAbsolute(value.workspaceFolder) ||
     typeof value.remoteWorkspaceFolder !== 'string' ||

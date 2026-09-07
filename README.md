@@ -2,6 +2,23 @@
 
 Devcontainer lifecycle support for Lvce Editor.
 
+Set the container executable in your editor settings to use Podman:
+
+```json
+{
+  "devcontainer.containerCli": "podman"
+}
+```
+
+The default is `docker`. An absolute executable path is also supported. Install
+and configure the selected engine on the host before starting a container.
+The setting applies to new connections; running and saved connections retain
+their original engine for execution, file access, stop, and removal.
+
+Rootless Podman e2e tests run in GitHub Actions on Ubuntu alongside Docker. They
+cover image startup, Dockerfile builds, mounted workspace edits, and reopening
+and editing a container workspace after the extension runtime restarts.
+
 For local development, use Node from `.nvmrc`, then run `npm ci` and `npm run dev`.
 This prepares the local extension in `.tmp/dev` with esbuild and starts the
 development server alongside browser bundle watching. The first bundle is ready
@@ -15,7 +32,7 @@ dependencies into `.tmp/dist`, and compresses `extension.tar.br`. Development
 startup does not need this build.
 
 - `packages/devcontainer-worker` owns editor-facing orchestration, config detection, lifecycle state, and typed RPC commands.
-- `packages/devcontainer-node` wraps host capabilities: the official `@devcontainers/cli` package and Docker teardown commands.
+- `packages/devcontainer-node` wraps host capabilities: the official `@devcontainers/cli` package and container engine teardown commands.
 
 The first implementation slice supports detecting a devcontainer config, reading configuration, starting a container, executing commands inside it, and stopping/removing the tracked container by id.
 
@@ -33,7 +50,7 @@ The tests use the `Devcontainer` page object from `@lvce-editor/test-worker` for
 
 The start/stop tests cover the shared workspace mount. The reopen test separately verifies a workspace created by its Dockerfile outside the bind mount, including Explorer, file editing, and lifecycle commands after switching to the container URI.
 
-To run locally with Node from `.nvmrc` and a running Docker daemon:
+To run locally with Node from `.nvmrc` a running Docker daemon, and working rootless Podman:
 
 ```sh
 npm ci
