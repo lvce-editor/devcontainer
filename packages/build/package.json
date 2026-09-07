@@ -4,6 +4,7 @@
   "main": "src/build.ts",
   "type": "module",
   "scripts": {
+    "test": "node --test test/*.test.ts",
     "build:watch": "esbuild --platform=node --format=esm --bundle --external:electron --external:execa --external:ws --external:debug --watch ../devcontainer-worker/src/devcontainerWorkerMain.ts ../devcontainer-worker/src/devcontainerWorkerModule.ts ../devcontainer-worker/src/devcontainerProcess.ts ../extension/src/devcontainerMain.ts --outdir=../../.tmp/dist/dist --outbase=.. --entry-names=[name]"
   },
   "keywords": [],

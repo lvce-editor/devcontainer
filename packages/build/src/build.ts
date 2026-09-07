@@ -3,6 +3,7 @@ import { execa } from 'execa'
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { bundleJs } from './bundleJs.ts'
+import { copyNodeDependencies } from './copyNodeDependencies.ts'
 import { root } from './root.ts'
 
 interface PackageJson {
@@ -92,7 +93,16 @@ delete packageJson.dependencies['debug']
 packageJson.version = version
 packageJson.main = 'dist/devcontainerWorkerMain.js'
 
+const nodePackageJson = await readJson(
+  join(root, 'packages', 'devcontainer-node', 'package.json'),
+)
+packageJson.dependencies = {
+  ...packageJson.dependencies,
+  ...nodePackageJson.dependencies,
+}
+
 await writeJson(join(dist, 'package.json'), packageJson)
+await copyNodeDependencies(dist)
 
 await cp(join(root, 'README.md'), join(dist, 'README.md'))
 await cp(join(root, 'LICENSE'), join(dist, 'LICENSE'))
