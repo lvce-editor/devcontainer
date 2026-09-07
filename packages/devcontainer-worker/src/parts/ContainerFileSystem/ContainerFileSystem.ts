@@ -35,6 +35,7 @@ export const invoke = async (
     newPath = posix.join(state.remoteWorkspaceFolder, destination.path)
   }
   return DevContainerNodeClient.containerFileSystem({
+    containerCli: state.containerCli,
     containerId: state.containerId,
     content: operation === 'writeFile' ? value : undefined,
     newPath,

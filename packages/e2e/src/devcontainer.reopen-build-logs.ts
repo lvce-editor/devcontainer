@@ -18,7 +18,7 @@ export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
   await expect(message).toHaveText(
     'The container could not be started. Run “Dev Containers: Show Full Logs” to see what went wrong.',
   )
-  const showLogs = Locator('.DialogButton[name=Action]')
+  const showLogs = Locator('.DialogContent button[name=Action]')
   await expect(showLogs).toBeVisible()
   await Command.execute('Dialog.handleClickButton', 'Action')
   await expect(dialog).toHaveCount(0)

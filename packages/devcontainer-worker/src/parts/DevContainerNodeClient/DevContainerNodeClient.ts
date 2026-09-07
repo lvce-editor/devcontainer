@@ -1,4 +1,5 @@
 export interface FileSystemOptions {
+  containerCli?: string
   containerId: string
   content?: string
   newPath?: string
@@ -12,14 +13,30 @@ export interface NodeApi {
   cliExec(options: {
     args?: readonly string[]
     command: string
+    containerCli?: string
     workspaceFolder: string
   }): Promise<unknown>
-  cliReadConfiguration(options: { workspaceFolder: string }): Promise<unknown>
-  cliUp(options: { workspaceFolder: string }): Promise<unknown>
+  cliReadConfiguration(options: {
+    containerCli?: string
+    workspaceFolder: string
+  }): Promise<unknown>
+  cliUp(options: {
+    containerCli?: string
+    workspaceFolder: string
+  }): Promise<unknown>
   containerFileSystem?(options: FileSystemOptions): Promise<unknown>
-  dockerInspectContainer?(options: { containerId: string }): Promise<boolean>
-  dockerRemoveContainer(options: { containerId: string }): Promise<unknown>
-  dockerStopContainer(options: { containerId: string }): Promise<unknown>
+  dockerInspectContainer?(options: {
+    containerCli?: string
+    containerId: string
+  }): Promise<boolean>
+  dockerRemoveContainer(options: {
+    containerCli?: string
+    containerId: string
+  }): Promise<unknown>
+  dockerStopContainer(options: {
+    containerCli?: string
+    containerId: string
+  }): Promise<unknown>
 }
 
 const missingNodeApi = () => {
@@ -48,27 +65,40 @@ export const resetNodeApi = () => {
   }
 }
 
-export const cliReadConfiguration = (options: { workspaceFolder: string }) => {
+export const cliReadConfiguration = (options: {
+  containerCli?: string
+  workspaceFolder: string
+}) => {
   return nodeApi.cliReadConfiguration(options)
 }
 
-export const cliUp = (options: { workspaceFolder: string }) => {
+export const cliUp = (options: {
+  containerCli?: string
+  workspaceFolder: string
+}) => {
   return nodeApi.cliUp(options)
 }
 
 export const cliExec = (options: {
   args?: readonly string[]
   command: string
+  containerCli?: string
   workspaceFolder: string
 }) => {
   return nodeApi.cliExec(options)
 }
 
-export const dockerStopContainer = (options: { containerId: string }) => {
+export const dockerStopContainer = (options: {
+  containerCli?: string
+  containerId: string
+}) => {
   return nodeApi.dockerStopContainer(options)
 }
 
-export const dockerRemoveContainer = (options: { containerId: string }) => {
+export const dockerRemoveContainer = (options: {
+  containerCli?: string
+  containerId: string
+}) => {
   return nodeApi.dockerRemoveContainer(options)
 }
 
@@ -83,9 +113,10 @@ export const containerFileSystem = (
 
 export const dockerInspectContainer = (
   containerId: string,
+  containerCli?: string,
 ): Promise<boolean> => {
   if (!nodeApi.dockerInspectContainer) {
     return missingNodeApi()
   }
-  return nodeApi.dockerInspectContainer({ containerId })
+  return nodeApi.dockerInspectContainer({ containerCli, containerId })
 }

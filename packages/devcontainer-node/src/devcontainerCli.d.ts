@@ -1,4 +1,5 @@
 export interface WorkspaceOptions {
+  containerCli?: string
   workspaceFolder: string
 }
 
@@ -8,6 +9,7 @@ export interface ExecOptions extends WorkspaceOptions {
 }
 
 export interface ContainerOptions {
+  containerCli?: string
   containerId: string
 }
 

@@ -22,6 +22,7 @@ mock.module('@lvce-editor/api', {
     executeCommand: async (...args: unknown[]) => {
       calls.push(args)
     },
+    getPreference: async () => undefined,
     getWorkspaceUri: async () => 'file:///workspace',
     openUri: async (...args: unknown[]) => {
       calls.push(['openUri', ...args])
