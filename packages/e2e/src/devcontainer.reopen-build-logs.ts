@@ -6,7 +6,13 @@ export const skip = 1
 
 export const name = 'devcontainer.reopen-build-logs'
 
-export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
+export const test: Test = async ({
+  Command,
+  ComponentState,
+  expect,
+  Locator,
+  Workspace,
+}) => {
   const localUri = await getWorkspaceUri({ Command }, 'reopen-invalid')
   await Workspace.setPath(localUri)
   await Command.executeExtensionCommand('devcontainer.openWorkspace')
@@ -20,7 +26,13 @@ export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
   )
   const showLogs = Locator('.DialogContent button[name=Action]')
   await expect(showLogs).toBeVisible()
-  await Command.execute('Dialog.handleClickButton', 'Action')
+  const { uid } = await ComponentState.getComponent('Dialog')
+  await Command.execute(
+    'Viewlet.executeViewletCommand',
+    uid,
+    'handleClickButton',
+    'Action',
+  )
   await expect(dialog).toHaveCount(0)
   const editor = Locator('.Editor')
   await expect(editor).toContainText('missing-Dockerfile')

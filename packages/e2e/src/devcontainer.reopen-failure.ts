@@ -16,4 +16,7 @@ export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
   }
   const hostFile = Locator('.Explorer .TreeItem[aria-label="host-only.txt"]')
   await expect(hostFile).toBeVisible()
+  await Command.executeExtensionCommand('devcontainer.showLogs')
+  const editor = Locator('.Editor')
+  await expect(editor).toContainText('missing-Dockerfile')
 }
