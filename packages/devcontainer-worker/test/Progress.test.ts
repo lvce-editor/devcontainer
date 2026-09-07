@@ -11,7 +11,10 @@ test('progress is bounded, isolated by operation, and released after failure', a
     await completed.promise
     throw new Error('build failed')
   })
-  const failed = await expect(pending).rejects.toThrow('build failed')
+  const expectFailure = async () => {
+    await expect(pending).rejects.toThrow('build failed')
+  }
+  const failed = expectFailure()
   try {
     await started.promise
     expect(getProgress('first')).toHaveLength(1024 * 1024)
