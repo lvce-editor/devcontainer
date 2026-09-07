@@ -1,4 +1,5 @@
 import type { Test } from '@lvce-editor/test-worker'
+import { waitForContainerWorkspace } from './waitForContainerWorkspace.ts'
 
 interface Options {
   containerCli?: string
@@ -64,6 +65,7 @@ export const testDevContainer = async (
   }
   try {
     await Devcontainer.start()
+    const containerUri = await waitForContainerWorkspace({ Command })
     if (containerCli === 'podman') {
       // Podman's marker exists but is empty in an unprivileged container.
       await Devcontainer.exec('test', ['-f', '/run/.containerenv'])
@@ -88,7 +90,7 @@ export const testDevContainer = async (
     ])
     await Explorer.refresh()
     await expect(output).toBeVisible()
-    await Explorer.reveal(`${workspaceUri}/container-output.txt`)
+    await Explorer.reveal(`${containerUri}/container-output.txt`)
     await Explorer.clickCurrent()
     await Editor.shouldHaveText(fixtureContent)
 
@@ -109,6 +111,7 @@ export const testDevContainer = async (
     )
   } finally {
     try {
+      await Workspace.setPath(workspaceUri)
       await Devcontainer.remove()
     } finally {
       if (containerCli)

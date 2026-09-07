@@ -35,24 +35,6 @@ const invokeForCurrentWorkspace = async (
   })
 }
 
-export const start = async () => {
-  const workspaceFolder = await Workspace.getFolder()
-  const result = (await Progress.run(
-    'DevContainer.up',
-    workspaceFolder,
-    await getContainerCli(),
-  )) as {
-    ok?: boolean
-    errorMessage?: string
-  }
-  await Progress.appendLine(
-    result.ok
-      ? 'Devcontainer started.'
-      : `Failed to start devcontainer: ${result.errorMessage || 'Unknown error'}`,
-  )
-  return result
-}
-
 export const stop = () => {
   return invokeForCurrentWorkspace('DevContainer.stop')
 }
@@ -137,6 +119,8 @@ export const openWorkspace = async (): Promise<void> => {
     )
   }
 }
+
+export const start = openWorkspace
 
 export const installDocker = async (): Promise<void> => {
   try {
