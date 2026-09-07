@@ -8,7 +8,8 @@
     },
     "packages/build": {
       "entry": ["src/build.ts", "src/computeNodeModulesCacheKey.ts"],
-      "project": ["src/**/*.ts"]
+      "project": ["src/**/*.ts"],
+      "ignoreDependencies": ["@devcontainers/cli"]
     },
     "packages/devcontainer-node": {
       "entry": [

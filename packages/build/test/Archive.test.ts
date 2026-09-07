@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -9,7 +9,9 @@ import { brotliDecompressSync } from 'node:zlib'
 import { root } from '../src/root.ts'
 
 test('the release archive includes a runnable devcontainer CLI', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'devcontainer-archive-'))
+  const directory = await realpath(
+    await mkdtemp(join(tmpdir(), 'devcontainer-archive-')),
+  )
   try {
     const archive = await readFile(join(root, 'extension.tar.br'))
     const tarPath = join(directory, 'extension.tar')
