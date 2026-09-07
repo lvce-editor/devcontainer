@@ -4,22 +4,23 @@ import { waitForContainerWorkspace } from '../helpers/waitForContainerWorkspace.
 
 export const name = 'devcontainer.reopen-terminal'
 
-// Enable when the editor dependency includes devcontainer terminal routing.
-export const skip = 1
-
 export const test: Test = async ({
   Command,
   Devcontainer,
   expect,
   FileSystem,
   Locator,
+  QuickPick,
   Workspace,
 }) => {
   const localUri = await getWorkspaceUri({ Command }, 'reopen')
   await Workspace.setPath(localUri)
   await FileSystem.writeFile(`${localUri}/.progress-release`, '')
   try {
-    await Command.execute('devcontainer.openWorkspace')
+    const label = 'Dev Containers: Reopen in Container'
+    await QuickPick.open()
+    await QuickPick.setValue(`>${label}`)
+    await QuickPick.selectItem(label)
     const workspaceUri = await waitForContainerWorkspace({ Command })
     const containerFile = Locator(
       '.Explorer .TreeItem[aria-label="container-only.txt"]',
@@ -39,6 +40,16 @@ export const test: Test = async ({
       'cat',
       ['/container-workspace/terminal-created.txt'],
       'terminal-created',
+    )
+    await Command.execute(
+      'Terminals.sendText',
+      'printf "%s" "$DEVCONTAINER_TERMINAL_TEST" > terminal-env.txt; printf "environment-%s\\n" ready\r',
+    )
+    await expect(terminal).toContainText('environment-ready')
+    await Devcontainer.shouldHaveExecOutput(
+      'cat',
+      ['/container-workspace/terminal-env.txt'],
+      'configured environment',
     )
     await FileSystem.mkdir(`${workspaceUri}/sub folder`)
     await Command.execute(

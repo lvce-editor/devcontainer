@@ -12,7 +12,7 @@
     "type-check": "tsc"
   },
   "devDependencies": {
-    "@lvce-editor/static-server": "^0.113.15",
+    "@lvce-editor/static-server": "^0.113.20",
     "@lvce-editor/test-with-playwright": "^22.31.0",
     "@lvce-editor/test-worker": "^17.21.0",
     "@playwright/test": "^1.62.1"

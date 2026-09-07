@@ -23,7 +23,6 @@ export const test: Test = async ({
     await QuickPick.selectItem(label)
     const output = Locator('.Output')
     await expect(output).toBeVisible()
-    await expect(output).toContainText('Checking devcontainer configuration')
     await expect(output).toContainText('missing-container-cli')
     await expect(output).toContainText('ENOENT')
     await expect(output).toContainText('Failed to open devcontainer workspace:')

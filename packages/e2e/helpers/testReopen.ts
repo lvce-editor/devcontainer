@@ -33,7 +33,7 @@ export const testReopen = async (
     await QuickPick.selectItem(label)
     const output = Locator('.Output')
     await expect(output).toBeVisible()
-    await expect(output).toContainText('Building and starting the devcontainer')
+    // Older progress lines may be outside the virtualized Output viewport.
     await expect(output).toContainText('Waiting for progress acceptance')
     if ((await Command.execute('Workspace.getUri')) !== localUri) {
       throw new Error(

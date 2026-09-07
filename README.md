@@ -27,6 +27,9 @@ directly and uses the installed workspace dependencies; reload the editor to
 restart it after Node source changes. `npm run build:watch` prepares and watches
 the same development extension without starting the server.
 
+In this repository’s devcontainer, the server runs in the background and writes
+logs to `/tmp/lvce-devcontainer-server.log`, allowing Reopen in Container to finish.
+
 `npm run build` remains the release build: it bundles with Rollup, copies runtime
 dependencies into `.tmp/dist`, and compresses `extension.tar.br`. Development
 startup does not need this build.
@@ -76,6 +79,10 @@ container as `remoteUser`; the local bind mount is not used as a substitute for
 the container filesystem. A failed build or connection leaves the local workspace
 open. The existing execution, stop, and remove commands also work from the
 container workspace.
+
+New terminals run an interactive shell through `devcontainer exec`, using the
+configured remote user and environment. Opening a terminal from an Explorer
+subfolder starts it in that container directory.
 
 Connection metadata survives the extension runtime restart during workspace changes. Restoring a connection checks whether its container is still running.
 
