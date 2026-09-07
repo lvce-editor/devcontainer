@@ -33,7 +33,7 @@ beforeEach(() => {
   result = undefined
 })
 
-test('missing Docker opens one structured dialog without a duplicate notification or rejection', async () => {
+await test('missing Docker opens one structured dialog without a duplicate notification or rejection', async () => {
   result = {
     errorCode: 'ENOENT',
     errorMessage: 'stack trace',
@@ -50,7 +50,7 @@ test('missing Docker opens one structured dialog without a duplicate notificatio
   })
 })
 
-test('install action opens a fresh terminal before sending the host install command', async () => {
+await test('install action opens a fresh terminal before sending the host install command', async () => {
   installCommand = 'installer command'
   await Commands.installDocker()
   assert.deepEqual(calls, [
@@ -60,7 +60,7 @@ test('install action opens a fresh terminal before sending the host install comm
   ])
 })
 
-test('terminal launch failure produces one notification and never sends installation text', async () => {
+await test('terminal launch failure produces one notification and never sends installation text', async () => {
   terminalFailure = true
   await Commands.installDocker()
   assert.equal(
