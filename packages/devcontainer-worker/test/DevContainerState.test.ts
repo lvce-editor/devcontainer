@@ -8,11 +8,13 @@ import * as WorkspaceFolder from '../src/parts/WorkspaceFolder/WorkspaceFolder.t
 
 let directory: string
 let running = true
+let inspectedEngines: (string | undefined)[] = []
 
 beforeEach(async () => {
   directory = await mkdtemp(join(tmpdir(), 'devcontainer-restore-'))
   process.env.LVCE_DEVCONTAINER_CONNECTIONS_DIR = directory
   running = true
+  inspectedEngines = []
   DevContainerNodeClient.setNodeApi({
     cliExec: async () => ({}),
     cliReadConfiguration: async () => ({}),
@@ -20,7 +22,7 @@ beforeEach(async () => {
       throw new Error('Restoring must not rebuild the container')
     },
     dockerInspectContainer: async ({ containerCli, containerId }) => {
-      if (containerCli) expect(containerCli).toBe('podman')
+      inspectedEngines.push(containerCli)
       expect(containerId).toBe('abc123')
       return running
     },
@@ -55,6 +57,7 @@ test.each([undefined, 'podman'])(
       await WorkspaceFolder.toPath('devcontainers:///abc123/file.txt'),
     ).toBe(workspaceFolder)
     expect(DevContainerState.get(workspaceFolder)).toEqual(state)
+    expect(inspectedEngines).toEqual([containerCli])
 
     DevContainerState.reset()
     running = false

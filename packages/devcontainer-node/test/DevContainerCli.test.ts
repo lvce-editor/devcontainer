@@ -139,8 +139,8 @@ test('uses the per-connection CLI without changing the default', () => {
     DevContainerCli.getCliUpArgs(options),
     DevContainerCli.getCliExecArgs({
       ...options,
-      command: 'cat',
       args: ['file with spaces'],
+      command: 'cat',
     }),
   ]) {
     expect(args[args.indexOf('--docker-path') + 1]).toBe('/tools/podman cli')
