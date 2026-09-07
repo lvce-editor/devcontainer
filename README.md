@@ -2,9 +2,17 @@
 
 Devcontainer lifecycle support for Lvce Editor.
 
-For local development, run `npm ci` and `npm run dev`. This builds the extension,
-starts the development server with the local extension, and watches its JavaScript
-bundles for changes, following the `about-view` development workflow.
+For local development, use Node from `.nvmrc`, then run `npm ci` and `npm run dev`.
+This prepares the local extension in `.tmp/dev` with esbuild and starts the
+development server alongside browser bundle watching. The first bundle is ready
+before the server accepts requests. The Node process runs TypeScript source
+directly and uses the installed workspace dependencies; reload the editor to
+restart it after Node source changes. `npm run build:watch` prepares and watches
+the same development extension without starting the server.
+
+`npm run build` remains the release build: it bundles with Rollup, copies runtime
+dependencies into `.tmp/dist`, and compresses `extension.tar.br`. Development
+startup does not need this build.
 
 - `packages/devcontainer-worker` owns editor-facing orchestration, config detection, lifecycle state, and typed RPC commands.
 - `packages/devcontainer-node` wraps host capabilities: the official `@devcontainers/cli` package and Docker teardown commands.
