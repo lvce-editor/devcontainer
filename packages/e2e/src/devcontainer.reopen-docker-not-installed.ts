@@ -24,7 +24,10 @@ export const test: Test = async ({
     const output = Locator('.Output')
     await expect(output).toBeVisible()
     await expect(output).toContainText('Checking devcontainer configuration')
-    await expect(output).toContainText('Docker executable was not found')
+    await expect(output).toContainText('Container executable')
+    await expect(output).toContainText(
+      'was not found. Install it or check devcontainer.containerCli.',
+    )
     const dialog = Locator('.DialogContent')
     const errorIcon = Locator('.DialogErrorIcon')
     const errorMessage = Locator('.DialogMessage')
