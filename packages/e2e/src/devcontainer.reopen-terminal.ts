@@ -10,13 +10,17 @@ export const test: Test = async ({
   expect,
   FileSystem,
   Locator,
+  QuickPick,
   Workspace,
 }) => {
   const localUri = await getWorkspaceUri({ Command }, 'reopen')
   await Workspace.setPath(localUri)
   await FileSystem.writeFile(`${localUri}/.progress-release`, '')
   try {
-    await Command.execute('devcontainer.openWorkspace')
+    const label = 'Dev Containers: Reopen in Container'
+    await QuickPick.open()
+    await QuickPick.setValue(`>${label}`)
+    await QuickPick.selectItem(label)
     const workspaceUri = await waitForContainerWorkspace({ Command })
     const containerFile = Locator(
       '.Explorer .TreeItem[aria-label="container-only.txt"]',
