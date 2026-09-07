@@ -1,6 +1,9 @@
 import type { Test } from '@lvce-editor/test-worker'
 import { getWorkspaceUri } from '../helpers/getWorkspaceUri.ts'
 
+// Enable when the editor release includes structured dialog support.
+export const skip = 1
+
 export const name = 'devcontainer.reopen-docker-not-installed'
 
 export const test: Test = async ({
@@ -24,22 +27,19 @@ export const test: Test = async ({
     const dialog = Locator('.DialogContent')
     const errorIcon = Locator('.DialogErrorIcon')
     const errorMessage = Locator('.DialogMessage')
-    const notificationMessage = Locator('.NotificationMessage')
     await expect(dialog).toBeVisible()
     await expect(errorIcon).toBeVisible()
+    const heading = Locator('.DialogHeading')
+    await expect(heading).toHaveText('Error: Docker executable not found')
+    const errorCode = Locator('.DialogErrorCode')
+    await expect(errorCode).toContainText('ENOENT')
     await expect(errorMessage).toContainText(
-      'DevContainerNode.cliUp failed with exit code 1',
+      'Install Docker or check its configured path',
     )
-    await expect(errorMessage).toContainText('Error code: ENOENT')
-    await expect(errorMessage).toContainText('Docker executable was not found')
-    await expect(errorMessage).toContainText('missing-docker ENOENT')
-    await expect(notificationMessage).toContainText('Error code: ENOENT')
-    await expect(notificationMessage).toContainText(
-      'Docker executable was not found',
-    )
-    await expect(notificationMessage).toContainText(
-      'Failed to open devcontainer workspace:',
-    )
+    const installButton = Locator('.DialogButtonsRow button[name="Action"]')
+    await expect(installButton).toHaveText('Install Docker')
+    const notification = Locator('.NotificationMessage')
+    await expect(notification).toHaveCount(0)
     if ((await Command.execute('Workspace.getUri')) !== localUri) {
       throw new Error('Failed startup must preserve the local workspace')
     }

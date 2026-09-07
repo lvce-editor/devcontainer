@@ -24,7 +24,8 @@
     "onCommand:devcontainer.exec",
     "onCommand:devcontainer.remove",
     "onCommand:devcontainer.openWorkspace",
-    "onFileSystem:devcontainers"
+    "onFileSystem:devcontainers",
+    "onCommand:devcontainer.installDocker"
   ],
   "commands": [
     {
@@ -54,6 +55,10 @@
     {
       "id": "devcontainer.remove",
       "label": "Dev Containers: Remove Current Workspace"
+    },
+    {
+      "id": "devcontainer.installDocker",
+      "internal": true
     }
   ],
   "fileSystemProviders": [

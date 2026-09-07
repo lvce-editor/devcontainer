@@ -6,15 +6,10 @@ export const name = 'devcontainer.reopen-failure'
 export const test: Test = async ({ Command, expect, Locator, Workspace }) => {
   const localUri = await getWorkspaceUri({ Command }, 'reopen-invalid')
   await Workspace.setPath(localUri)
-  let failed = false
-  try {
-    await Command.executeExtensionCommand('devcontainer.openWorkspace')
-  } catch {
-    failed = true
-  }
-  if (!failed) {
-    throw new Error('Expected devcontainer build to fail')
-  }
+  await Command.executeExtensionCommand('devcontainer.openWorkspace')
+  const heading = Locator('.DialogHeading')
+  await expect(heading).toHaveText('Error: Could not open devcontainer')
+  await Command.execute('Viewlet.closeWidget', 'Dialog')
   const uri = await Command.execute('Workspace.getUri')
   if (uri !== localUri) {
     throw new Error(`Failed build changed the workspace to ${uri}`)

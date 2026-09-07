@@ -16,7 +16,8 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "allowImportingTsExtensions": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }

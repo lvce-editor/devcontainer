@@ -3,6 +3,7 @@ import * as ContainerFileSystem from './parts/ContainerFileSystem/ContainerFileS
 import * as DevContainer from './parts/DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from './parts/DevContainerCommandType/DevContainerCommandType.ts'
 import * as DevContainerNodeClient from './parts/DevContainerNodeClient/DevContainerNodeClient.ts'
+import * as GetDockerInstallCommand from './parts/GetDockerInstallCommand/GetDockerInstallCommand.ts'
 
 const initialize = () => {
   DevContainerNodeClient.setNodeApi(DevContainerCli)
@@ -58,6 +59,8 @@ const fileSystem = (...args: Parameters<typeof ContainerFileSystem.invoke>) => {
 }
 
 export const commandMap = {
+  'DevContainer.getDockerInstallCommand': () =>
+    GetDockerInstallCommand.getDockerInstallCommand(process.platform),
   [DevContainerCommandType.DevContainerDetect]: detect,
   [DevContainerCommandType.DevContainerExec]: exec,
   [DevContainerCommandType.DevContainerFileSystem]: fileSystem,
