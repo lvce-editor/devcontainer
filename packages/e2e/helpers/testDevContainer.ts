@@ -65,11 +65,8 @@ export const testDevContainer = async (
   try {
     await Devcontainer.start()
     if (containerCli === 'podman') {
-      await Devcontainer.shouldHaveExecOutput(
-        'cat',
-        ['/run/.containerenv'],
-        /engine="podman-/,
-      )
+      // Podman's marker exists but is empty in an unprivileged container.
+      await Devcontainer.exec('test', ['-f', '/run/.containerenv'])
       // The running connection keeps its engine when the preference changes.
       await Settings.update({ 'devcontainer.containerCli': 'docker' })
     }

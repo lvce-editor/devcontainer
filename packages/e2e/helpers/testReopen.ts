@@ -33,11 +33,8 @@ export const testReopen = async (
     await QuickPick.selectItem(label)
     const workspaceUri = await waitForContainerWorkspace({ Command })
     if (containerCli === 'podman') {
-      await Devcontainer.shouldHaveExecOutput(
-        'cat',
-        ['/run/.containerenv'],
-        /engine="podman-/,
-      )
+      // Podman's marker exists but is empty in an unprivileged container.
+      await Devcontainer.exec('test', ['-f', '/run/.containerenv'])
       await Settings.update({ 'devcontainer.containerCli': 'docker' })
     }
     // This directory and file were created by the Dockerfile, outside the bind mount.
