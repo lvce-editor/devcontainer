@@ -1,6 +1,7 @@
 import type { Test } from '@lvce-editor/test-worker'
 
 interface Options {
+  containerCli?: string
   fixture: string
   runtimeArgs: readonly string[]
   runtimeCommand: string
@@ -16,9 +17,16 @@ export const testDevContainer = async (
     Explorer,
     FileSystem,
     Locator,
+    Settings,
     Workspace,
   }: Parameters<Test>[0],
-  { fixture, runtimeArgs, runtimeCommand, runtimeOutput }: Options,
+  {
+    containerCli,
+    fixture,
+    runtimeArgs,
+    runtimeCommand,
+    runtimeOutput,
+  }: Options,
 ): Promise<void> => {
   // Prepare the workspace on every URL visit, including reloads after a completed test.
   const fixtureUrl = new URL(
@@ -51,8 +59,17 @@ export const testDevContainer = async (
   )
   await expect(output).toHaveCount(0)
 
+  if (containerCli) {
+    await Settings.update({ 'devcontainer.containerCli': containerCli })
+  }
   try {
     await Devcontainer.start()
+    if (containerCli === 'podman') {
+      // Podman's marker exists but is empty in an unprivileged container.
+      await Devcontainer.exec('test', ['-f', '/run/.containerenv'])
+      // The running connection keeps its engine when the preference changes.
+      await Settings.update({ 'devcontainer.containerCli': 'docker' })
+    }
     await Devcontainer.shouldHaveExecOutput(
       runtimeCommand,
       runtimeArgs,
@@ -64,10 +81,10 @@ export const testDevContainer = async (
       fixtureContent,
     )
 
-    // Prove that execution is inside Docker and in the mounted workspace.
+    // Prove that execution is inside the container and in the mounted workspace.
     await Devcontainer.exec('sh', [
       '-c',
-      'test -f /.dockerenv && cat src/message.txt > container-output.txt',
+      '(test -f /.dockerenv || test -f /run/.containerenv) && cat src/message.txt > container-output.txt',
     ])
     await Explorer.refresh()
     await expect(output).toBeVisible()
@@ -91,6 +108,11 @@ export const testDevContainer = async (
       'DEVCONTAINER_NOT_RUNNING',
     )
   } finally {
-    await Devcontainer.remove()
+    try {
+      await Devcontainer.remove()
+    } finally {
+      if (containerCli)
+        await Settings.update({ 'devcontainer.containerCli': 'docker' })
+    }
   }
 }

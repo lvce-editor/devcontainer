@@ -35,11 +35,13 @@ export const test: Test = async ({
       'DevContainerNode.cliUp failed with exit code 1',
     )
     await expect(errorMessage).toContainText('Error code: ENOENT')
-    await expect(errorMessage).toContainText('Docker executable was not found')
+    await expect(errorMessage).toContainText(
+      'was not found. Install it or check devcontainer.containerCli.',
+    )
     await expect(errorMessage).toContainText('missing-docker ENOENT')
     await expect(notificationMessage).toContainText('Error code: ENOENT')
     await expect(notificationMessage).toContainText(
-      'Docker executable was not found',
+      'was not found. Install it or check devcontainer.containerCli.',
     )
     await expect(notificationMessage).toContainText(
       'Failed to open devcontainer workspace:',

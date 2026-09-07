@@ -1,7 +1,26 @@
-import { executeCommand, showNotification } from '@lvce-editor/api'
+import {
+  executeCommand,
+  getPreference,
+  showNotification,
+} from '@lvce-editor/api'
 import * as Progress from '../Progress/Progress.ts'
 import * as Rpc from '../Rpc/Rpc.ts'
 import * as Workspace from '../Workspace/Workspace.ts'
+
+let containerCliOverride: string | undefined
+
+const getContainerCli = async (): Promise<string> => {
+  const value =
+    containerCliOverride ??
+    (await getPreference('devcontainer.containerCli')) ??
+    'docker'
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new TypeError(
+      'devcontainer.containerCli must be a non-empty executable name or path',
+    )
+  }
+  return value
+}
 
 const invokeForCurrentWorkspace = async (
   method: string,
@@ -16,7 +35,11 @@ const invokeForCurrentWorkspace = async (
 
 export const start = async () => {
   const workspaceFolder = await Workspace.getFolder()
-  const result = (await Progress.run('DevContainer.up', workspaceFolder)) as {
+  const result = (await Progress.run(
+    'DevContainer.up',
+    workspaceFolder,
+    await getContainerCli(),
+  )) as {
     ok?: boolean
     errorMessage?: string
   }
@@ -45,6 +68,7 @@ export const remove = () => {
 }
 
 export const setDockerPath = (path: string) => {
+  containerCliOverride = path === 'docker' ? undefined : path
   return Rpc.invoke('DevContainer.setDockerPath', path)
 }
 
@@ -54,6 +78,7 @@ export const openWorkspace = async (): Promise<void> => {
     const result = (await Progress.run(
       'DevContainer.openWorkspace',
       originalWorkspace,
+      await getContainerCli(),
     )) as {
       ok?: boolean
       workspaceUri?: string

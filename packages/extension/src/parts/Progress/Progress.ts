@@ -24,6 +24,7 @@ export const appendLine = async (text: string): Promise<void> => {
 export const run = async (
   method: string,
   workspaceFolder: string,
+  containerCli: string,
 ): Promise<unknown> => {
   if (busy) {
     await openOutputView({ channel: 'dev-containers' })
@@ -72,7 +73,11 @@ export const run = async (
     }
     const polling = poll()
     try {
-      return await Rpc.invoke(method, { progressId, workspaceFolder })
+      return await Rpc.invoke(method, {
+        containerCli,
+        progressId,
+        workspaceFolder,
+      })
     } finally {
       finished = true
       completed.resolve()

@@ -4,6 +4,7 @@ import * as DevContainerNodeClient from '../DevContainerNodeClient/DevContainerN
 type DevContainerStatus = 'error' | 'running' | 'starting' | 'stopped'
 
 export interface DevContainerState {
+  containerCli?: string
   containerId?: string
   lastResult?: unknown
   remoteUser?: string
@@ -56,10 +57,12 @@ export const restore = async (key: string): Promise<string | undefined> => {
   }
   const running = await DevContainerNodeClient.dockerInspectContainer(
     connection.containerId,
+    connection.containerCli,
   )
   // Another request may already have restored or changed this workspace.
   if (!state.has(connection.workspaceFolder)) {
     state.set(connection.workspaceFolder, {
+      containerCli: connection.containerCli,
       containerId: connection.containerId,
       remoteUser: connection.remoteUser,
       remoteWorkspaceFolder: connection.remoteWorkspaceFolder,
@@ -75,6 +78,7 @@ export const persist = async (workspaceFolder: string): Promise<void> => {
     throw new Error('Devcontainer workspace connection is incomplete')
   }
   await ConnectionStorage.save({
+    containerCli: current.containerCli,
     containerId: current.containerId,
     remoteUser: current.remoteUser,
     remoteWorkspaceFolder: current.remoteWorkspaceFolder,

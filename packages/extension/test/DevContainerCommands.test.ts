@@ -14,6 +14,7 @@ mock.module('@lvce-editor/api', {
       },
     }),
     executeCommand: async () => {},
+    getPreference: async () => 'docker',
     openOutputView: async () => {
       events.push('output opened')
     },
@@ -35,7 +36,7 @@ mock.module('../src/parts/Rpc/Rpc.ts', {
 const { openWorkspace } =
   await import('../src/parts/DevContainerCommands/DevContainerCommands.ts')
 
-test('reopen opens output and displays logs before the build finishes', async () => {
+await test('reopen opens output and displays logs before the build finishes', async () => {
   const operation = openWorkspace()
   const result = assert.rejects(operation, /build failed/)
   try {
