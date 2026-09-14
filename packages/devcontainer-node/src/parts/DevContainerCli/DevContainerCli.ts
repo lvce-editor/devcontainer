@@ -188,11 +188,16 @@ const runDevcontainerCli = async (
       stdout: result.stdout,
     }
   } catch (error) {
-    return {
+    const parseError = CliError.getCliJsonError(
       commandName,
-      errorCode: 'DEVCONTAINER_JSON_PARSE_ERROR',
-      errorMessage:
-        error instanceof Error ? error.message : 'Failed to parse cli output',
+      error instanceof Error ? error.message : 'unknown parse error',
+      result.exitCode,
+      result.stdout,
+      result.stderr,
+    )
+    return {
+      ...parseError,
+      commandName,
       errorStack: error instanceof Error ? error.stack : undefined,
       exitCode: result.exitCode,
       ok: false,

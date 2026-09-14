@@ -85,3 +85,41 @@ test('keeps the end of long fallback logs for the dialog', () => {
   expect(result.errorMessage).toHaveLength(2000)
   expect(result.errorMessage.endsWith('Build failed')).toBe(true)
 })
+
+test('explains an empty CLI result with the command and runtime guidance', () => {
+  expect(
+    CliError.getCliJsonError(
+      'DevContainerNode.cliUp',
+      'Expected devcontainer cli output to contain a json result',
+      0,
+      '',
+      '',
+    ),
+  ).toEqual({
+    errorCode: 'DEVCONTAINER_JSON_PARSE_ERROR',
+    errorMessage:
+      'DevContainerNode.cliUp exited with code 0 without a usable JSON result (Expected devcontainer cli output to contain a json result).\nThe CLI returned no output. Check that the configured container runtime is installed and running, then try again.',
+  })
+})
+
+test('includes bounded CLI diagnostics for malformed output', () => {
+  const result = CliError.getCliJsonError(
+    'DevContainerNode.cliUp',
+    'Failed to parse devcontainer cli json result',
+    0,
+    'starting container\n{invalid json',
+    'permission denied',
+  )
+  expect(result).toEqual({
+    errorCode: 'DEVCONTAINER_JSON_PARSE_ERROR',
+    errorMessage: expect.stringContaining(
+      'DevContainerNode.cliUp exited with code 0 without a usable JSON result',
+    ),
+  })
+  expect(result.errorMessage).toContain(
+    'Standard error:\npermission denied',
+  )
+  expect(result.errorMessage).toContain(
+    'Standard output:\nstarting container\n{invalid json',
+  )
+})
