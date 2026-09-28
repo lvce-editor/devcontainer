@@ -49,7 +49,7 @@ export const testDevContainer = async (
     `${workspaceUri}/src/message.txt`,
     fixtureContent,
   )
-  await Workspace.setPath(workspaceUri)
+  await Workspace.setUri(workspaceUri)
   const sourceFolder = Locator('.Explorer .TreeItem[aria-label="src"]')
   await expect(sourceFolder).toBeVisible()
   await Explorer.reveal(`${workspaceUri}/src/message.txt`)
@@ -111,7 +111,7 @@ export const testDevContainer = async (
     )
   } finally {
     try {
-      await Workspace.setPath(workspaceUri)
+      await Workspace.setUri(workspaceUri)
       await Devcontainer.remove()
     } finally {
       if (containerCli)

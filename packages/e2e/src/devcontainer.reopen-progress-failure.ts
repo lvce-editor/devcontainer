@@ -12,7 +12,7 @@ export const test: Test = async ({
   Workspace,
 }) => {
   const localUri = await getWorkspaceUri({ Command }, 'javascript-node-24')
-  await Workspace.setPath(localUri)
+  await Workspace.setUri(localUri)
   await Devcontainer.setDockerPath(
     `${new URL(localUri).pathname}/missing-container-cli`,
   )

@@ -15,7 +15,7 @@ export const testContainerTerminal = async (
   label = 'Dev Containers: Reopen in Container',
 ): Promise<void> => {
   const localUri = await getWorkspaceUri({ Command }, 'reopen')
-  await Workspace.setPath(localUri)
+  await Workspace.setUri(localUri)
   await FileSystem.writeFile(`${localUri}/.progress-release`, '')
   try {
     await QuickPick.open()
@@ -67,7 +67,7 @@ export const testContainerTerminal = async (
       'subfolder-created',
     )
   } finally {
-    await Workspace.setPath(localUri)
+    await Workspace.setUri(localUri)
     await Devcontainer.remove()
   }
 }
