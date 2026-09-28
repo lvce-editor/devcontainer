@@ -7,9 +7,11 @@ export interface DetectResult {
   workspaceFolder: string
 }
 
-const exists = async (path: string) => {
+type StatFile = (path: string) => Promise<unknown>
+
+const exists = async (path: string, statFile: StatFile) => {
   try {
-    await stat(path)
+    await statFile(path)
     return true
   } catch (error) {
     if (
@@ -31,13 +33,12 @@ const getConfigCandidates = (workspaceFolder: string) => {
   ]
 }
 
-export const detect = async ({
-  workspaceFolder,
-}: {
-  workspaceFolder: string
-}): Promise<DetectResult> => {
+export const detect = async (
+  { workspaceFolder }: { workspaceFolder: string },
+  statFile: StatFile = stat,
+): Promise<DetectResult> => {
   for (const configPath of getConfigCandidates(workspaceFolder)) {
-    if (await exists(configPath)) {
+    if (await exists(configPath, statFile)) {
       return {
         configPath,
         found: true,

@@ -1,10 +1,7 @@
 import { beforeEach, expect, jest, test } from '@jest/globals'
-import type { stat as Stat } from 'node:fs/promises'
+import * as DevContainerConfig from '../src/parts/DevContainerConfig/DevContainerConfig.ts'
 
-const stat = jest.fn<typeof Stat>()
-jest.unstable_mockModule('node:fs/promises', () => ({ stat }))
-const DevContainerConfig =
-  await import('../src/parts/DevContainerConfig/DevContainerConfig.ts')
+const stat = jest.fn<(path: string) => Promise<unknown>>()
 
 beforeEach(() => {
   stat.mockReset()
@@ -18,7 +15,7 @@ test.each(['EACCES', 'EIO', 'ELOOP'])(
     })
     stat.mockRejectedValue(error)
     await expect(
-      DevContainerConfig.detect({ workspaceFolder: '/workspace' }),
+      DevContainerConfig.detect({ workspaceFolder: '/workspace' }, stat),
     ).rejects.toBe(error)
     expect(stat).toHaveBeenCalledTimes(1)
   },
@@ -29,7 +26,7 @@ test.each(['ENOENT', 'ENOTDIR'])(
   async (code) => {
     stat.mockRejectedValue(Object.assign(new Error('missing'), { code }))
     expect(
-      await DevContainerConfig.detect({ workspaceFolder: '/workspace' }),
+      await DevContainerConfig.detect({ workspaceFolder: '/workspace' }, stat),
     ).toMatchObject({ found: false })
     expect(stat).toHaveBeenCalledTimes(2)
   },
