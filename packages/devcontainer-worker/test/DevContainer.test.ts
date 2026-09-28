@@ -45,6 +45,23 @@ test('up - missing config', async () => {
   })
 })
 
+test('SSH lifecycle requests never use a matching local workspace', async () => {
+  const localPath = await createWorkspace()
+  const workspaceFolder = `remote-ssh://example.com${localPath}`
+  for (const operation of [
+    DevContainer.detect,
+    DevContainer.readConfiguration,
+    DevContainer.up,
+    DevContainer.openWorkspace,
+  ]) {
+    await expect(operation({ workspaceFolder })).rejects.toThrow(
+      'Reopening an SSH workspace in a devcontainer is not supported yet',
+    )
+  }
+  expect(DevContainerState.get(localPath)).toBeUndefined()
+  expect(DevContainerState.get(workspaceFolder)).toBeUndefined()
+})
+
 test('up - success stores running state', async () => {
   const workspaceFolder = await createWorkspace()
   DevContainerNodeClient.setNodeApi({

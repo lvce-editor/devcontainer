@@ -63,6 +63,14 @@ test('starts the packaged Dev Containers process and invokes a representative co
     })
 
     expect(result).toEqual({ status: 'stopped' })
+
+    await expect(
+      rpc.invoke('DevContainer.openWorkspace', {
+        workspaceFolder: 'remote-ssh://example.com/workspace',
+      }),
+    ).rejects.toThrow(
+      'Reopening an SSH workspace in a devcontainer is not supported yet',
+    )
   } finally {
     await rpc?.dispose()
     await controlRpc?.dispose()

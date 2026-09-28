@@ -53,3 +53,15 @@ test('detect - missing config', async () => {
     workspaceFolder,
   })
 })
+
+test('detect - nested config takes precedence over top-level config', async () => {
+  const workspaceFolder = await createWorkspace()
+  const configPath = join(workspaceFolder, '.devcontainer', 'devcontainer.json')
+  await mkdir(join(workspaceFolder, '.devcontainer'))
+  await writeFile(configPath, '{}')
+  await writeFile(join(workspaceFolder, '.devcontainer.json'), '{}')
+  expect(await DevContainerConfig.detect({ workspaceFolder })).toMatchObject({
+    configPath,
+    found: true,
+  })
+})

@@ -7,6 +7,7 @@ const progressCalls: unknown[][] = []
 let workspaceUri = 'file:///workspace'
 let result: unknown
 let terminalFailure = false
+let progressError: Error | undefined
 let installCommand = 'installer command'
 mock.module('@lvce-editor/api', {
   namedExports: {
@@ -36,6 +37,7 @@ mock.module('../src/parts/Progress/Progress.ts', {
     appendLine: async () => {},
     run: async (...args: unknown[]) => {
       progressCalls.push(args)
+      if (progressError) throw progressError
       return result
     },
   },
@@ -47,7 +49,27 @@ beforeEach(() => {
   progressCalls.length = 0
   workspaceUri = 'file:///workspace'
   terminalFailure = false
+  progressError = undefined
   result = undefined
+})
+
+await test('SSH rejection shows the real error and leaves the workspace unchanged', async () => {
+  workspaceUri = 'remote-ssh://example.com/workspace'
+  const message =
+    'Reopening an SSH workspace in a devcontainer is not supported yet.'
+  progressError = new Error(message)
+  await Commands.openWorkspace()
+  assert.deepEqual(calls, [
+    [
+      'Dialog.show',
+      {
+        errorCode: undefined,
+        message,
+        title: 'Error: Could not open devcontainer',
+        type: 'error',
+      },
+    ],
+  ])
 })
 
 await test('missing Docker opens one structured dialog without a duplicate notification or rejection', async () => {

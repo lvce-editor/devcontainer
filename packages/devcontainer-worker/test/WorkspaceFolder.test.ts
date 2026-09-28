@@ -23,3 +23,11 @@ test('toPath - path', async () => {
     '/workspace/sample',
   )
 })
+
+test('toPath - SSH workspace is rejected before local state restoration', async () => {
+  await expect(
+    WorkspaceFolder.toPath('remote-ssh://example.com/workspace/sample'),
+  ).rejects.toThrow(
+    'Reopening an SSH workspace in a devcontainer is not supported yet',
+  )
+})
