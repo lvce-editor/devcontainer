@@ -14,7 +14,7 @@ export const test: Test = async ({
   Workspace,
 }) => {
   const localUri = await getWorkspaceUri({ Command }, 'reopen-invalid')
-  await Workspace.setUri(localUri)
+  await Workspace.setPath(localUri)
   await Command.executeExtensionCommand('devcontainer.openWorkspace')
   const dialog = Locator('.DialogContent')
   await expect(dialog).toBeVisible()

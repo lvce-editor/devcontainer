@@ -20,7 +20,7 @@ export const testReopen = async (
   label = 'Dev Containers: Reopen in Container',
 ): Promise<void> => {
   const localUri = await getWorkspaceUri({ Command }, 'reopen')
-  await Workspace.setUri(localUri)
+  await Workspace.setPath(localUri)
   const hostFile = Locator('.Explorer .TreeItem[aria-label="host-only.txt"]')
   await expect(hostFile).toBeVisible()
   if (containerCli)
@@ -92,7 +92,7 @@ export const testReopen = async (
     )
   } finally {
     try {
-      await Workspace.setUri(localUri)
+      await Workspace.setPath(localUri)
       await Devcontainer.remove()
     } finally {
       if (containerCli)

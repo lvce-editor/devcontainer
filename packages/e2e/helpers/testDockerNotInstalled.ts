@@ -15,7 +15,7 @@ export const testDockerNotInstalled = async ({
     () => `/.tmp/fixtures/docker-not-installed-${crypto.randomUUID()}`,
   )
   await Command.execute('FileSystem.copy', sourceUri, targetUri)
-  await Workspace.setUri(targetUri)
+  await Workspace.setPath(targetUri)
   await Devcontainer.setDockerPath(
     `${new URL(targetUri).pathname}/missing-docker`,
   )
