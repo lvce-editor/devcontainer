@@ -6,7 +6,9 @@ jest.unstable_mockModule('node:fs/promises', () => ({ stat }))
 const DevContainerConfig =
   await import('../src/parts/DevContainerConfig/DevContainerConfig.ts')
 
-beforeEach(() => stat.mockReset())
+beforeEach(() => {
+  stat.mockReset()
+})
 
 test.each(['EACCES', 'EIO', 'ELOOP'])(
   'detect preserves %s instead of reporting missing configuration',
