@@ -67,14 +67,8 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
       - name: Devcontainer Quick Pick and Explorer e2e
         timeout-minutes: 30
-        run: npm run e2e:headless --prefix packages/e2e -- --trace-renderer-worker
+        run: npm run e2e:devcontainer
         if: matrix.os == 'ubuntu-24.04'
-      - name: Upload devcontainer diagnostic traces
-        if: always() && matrix.os == 'ubuntu-24.04'
-        uses: actions/upload-artifact@v7
-        with:
-          name: devcontainer-traces
-          path: packages/e2e/renderer-worker-traces
       - name: Devcontainer direct test URLs and reloads
         timeout-minutes: 15
         run: npm run e2e:local-url --prefix packages/e2e
