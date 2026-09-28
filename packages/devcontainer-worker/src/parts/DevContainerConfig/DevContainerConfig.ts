@@ -11,8 +11,16 @@ const exists = async (path: string) => {
   try {
     await stat(path)
     return true
-  } catch {
-    return false
+  } catch (error) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      (error.code === 'ENOENT' || error.code === 'ENOTDIR')
+    ) {
+      return false
+    }
+    throw error
   }
 }
 
