@@ -56,3 +56,23 @@ test('streams stdout and stderr before exit and preserves split UTF-8', async ()
     })
   }
 })
+
+test('passes the child process environment', async () => {
+  const result = await runProcess({
+    args: [
+      '--input-type=module',
+      '-e',
+      'console.log(process.env.ELECTRON_RUN_AS_NODE)',
+    ],
+    command: process.execPath,
+    env: {
+      ...process.env,
+      ELECTRON_RUN_AS_NODE: '1',
+    },
+  })
+  expect(result).toEqual({
+    exitCode: 0,
+    stderr: '',
+    stdout: '1\n',
+  })
+})
