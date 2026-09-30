@@ -6,7 +6,7 @@ export default defineConfig({
   outputDir: './.tmp/test-results',
   timeout: 400_000,
   workers: 1,
-  use: { baseURL: 'http://localhost:3000' },
+  use: { baseURL: 'http://localhost:3000', trace: 'retain-on-failure' },
   webServer: {
     command: 'npm run dev --prefix ../..',
     url: 'http://localhost:3000',

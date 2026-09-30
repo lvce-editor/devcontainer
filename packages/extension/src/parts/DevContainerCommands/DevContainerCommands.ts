@@ -10,6 +10,7 @@ import * as Rpc from '../Rpc/Rpc.ts'
 import * as Workspace from '../Workspace/Workspace.ts'
 
 let containerCliOverride: string | undefined
+let pendingWorkspaceChanges = 0
 
 const getContainerCli = async (): Promise<string> => {
   const value =
@@ -39,8 +40,11 @@ export const stop = () => {
   return invokeForCurrentWorkspace('DevContainer.stop')
 }
 
-export const getState = () => {
-  return invokeForCurrentWorkspace('DevContainer.getState')
+export const getState = async () => {
+  const state = await invokeForCurrentWorkspace('DevContainer.getState')
+  if (!state || typeof state !== 'object')
+    throw new TypeError('Invalid devcontainer state')
+  return { ...state, workspaceReady: pendingWorkspaceChanges === 0 }
 }
 
 export const exec = (command: string, args: readonly string[] = []) => {
@@ -93,19 +97,24 @@ export const openWorkspace = async (): Promise<void> => {
     const { workspaceUri } = result
     // Workspace refresh reads this extension's provider. Let the originating
     // command return before re-entering its RPC with filesystem requests.
+    pendingWorkspaceChanges++
     setTimeout(() => {
-      void executeCommand('Workspace.setUri', workspaceUri, '/').then(
-        () => Progress.appendLine('Connected to the devcontainer workspace.'),
-        async (error: unknown) => {
-          await Progress.appendLine(
-            `Failed to open devcontainer workspace: ${String(error)}`,
-          )
-          void showNotification(
-            'error',
-            `Failed to open devcontainer workspace: ${String(error)}`,
-          )
-        },
-      )
+      void executeCommand('Workspace.setUri', workspaceUri, '/')
+        .then(
+          () => Progress.appendLine('Connected to the devcontainer workspace.'),
+          async (error: unknown) => {
+            await Progress.appendLine(
+              `Failed to open devcontainer workspace: ${String(error)}`,
+            )
+            void showNotification(
+              'error',
+              `Failed to open devcontainer workspace: ${String(error)}`,
+            )
+          },
+        )
+        .finally(() => {
+          pendingWorkspaceChanges--
+        })
     }, 0)
   } catch (error) {
     await Progress.appendLine(
