@@ -4,6 +4,7 @@
   "description": "Dev container lifecycle support",
   "browser": "dist/devcontainerMain.js",
   "isolated": true,
+  "preserveRuntimeOnWorkspaceChange": true,
   "contentSecurityPolicy": ["default-src 'none'", "script-src 'self'"],
   "compatibility": {
     "web": false
