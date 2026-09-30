@@ -15,6 +15,7 @@ export interface RunProcessOptions {
   args: readonly string[]
   command: string
   cwd?: string
+  env?: NodeJS.ProcessEnv
   input?: string
   onOutput?: (text: string) => void
 }
@@ -30,6 +31,7 @@ export const runProcess = async ({
   args,
   command,
   cwd,
+  env,
   input,
   onOutput,
 }: RunProcessOptions): Promise<RunProcessResult> => {
@@ -37,6 +39,7 @@ export const runProcess = async ({
     const { promise, resolve } = Promise.withResolvers<RunProcessResult>()
     const childProcess = spawn(command, [...args], {
       cwd: toPath(cwd),
+      env,
     })
     childProcess.stdout.setEncoding('utf8')
     childProcess.stderr.setEncoding('utf8')

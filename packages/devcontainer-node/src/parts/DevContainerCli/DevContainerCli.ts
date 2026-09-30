@@ -170,6 +170,10 @@ const runDevcontainerCli = async (
     args,
     command: process.execPath,
     cwd: process.cwd(),
+    env: {
+      ...process.env,
+      ELECTRON_RUN_AS_NODE: '1',
+    },
     onOutput,
   })
 
@@ -216,6 +220,10 @@ const runDevcontainerCommand = async (
     args,
     command: process.execPath,
     cwd: process.cwd(),
+    env: {
+      ...process.env,
+      ELECTRON_RUN_AS_NODE: '1',
+    },
   })
 
   if (isErrorResult(result) || result.exitCode) {
