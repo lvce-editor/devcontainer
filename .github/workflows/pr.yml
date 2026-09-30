@@ -49,7 +49,7 @@ jobs:
         id: npm-cache
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-startup-diagnostic-v2-${{ steps.nodeModulesCacheKey.outputs.value }}
+          key: ${{ runner.os }}-startup-diagnostic-v3-${{ steps.nodeModulesCacheKey.outputs.value }}
       - name: npm ci
         run: npm ci
         if: steps.npm-cache.outputs.cache-hit != 'true'

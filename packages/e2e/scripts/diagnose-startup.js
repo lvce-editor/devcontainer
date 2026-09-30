@@ -22,6 +22,24 @@ const patch = async (path, changes) => {
 }
 const workerChanges = [
   [
+    "  return invoke$6('Extensions.executeCommand', commandId, ...args);",
+    `  console.info('DEVCONTAINER_STARTUP_DIAGNOSTIC extension-call', performance.now(), commandId);
+  try {
+    const result = await invoke$6('Extensions.executeCommand', commandId, ...args);
+    console.info('DEVCONTAINER_STARTUP_DIAGNOSTIC extension-result', performance.now(), commandId);
+    return result;
+  } catch (error) {
+    console.error('DEVCONTAINER_STARTUP_DIAGNOSTIC extension-error', performance.now(), commandId, String(error));
+    throw error;
+  }`,
+  ],
+  [
+    "  await selectCommand('Dev Containers: Start Current Workspace');",
+    `  console.info('DEVCONTAINER_STARTUP_DIAGNOSTIC select-start', performance.now());
+  await selectCommand('Dev Containers: Start Current Workspace');
+  console.info('DEVCONTAINER_STARTUP_DIAGNOSTIC select-done', performance.now());`,
+  ],
+  [
     'const printTestError = async error => {',
     `const printTestError = async error => {
     console.error('DEVCONTAINER_STARTUP_DIAGNOSTIC original-error', performance.now(), error?.stack || String(error));`,
