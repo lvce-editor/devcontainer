@@ -8,6 +8,8 @@ let workspaceUri = 'file:///workspace'
 let result: unknown
 let terminalFailure = false
 let progressError: Error | undefined
+let workspaceChange: Promise<void> | undefined
+let workspaceChangeStarted: (() => void) | undefined
 let installCommand = 'installer command'
 mock.module('@lvce-editor/api', {
   namedExports: {
@@ -21,6 +23,10 @@ mock.module('@lvce-editor/api', {
     }),
     executeCommand: async (...args: unknown[]) => {
       calls.push(args)
+      if (args[0] === 'Workspace.setUri') {
+        workspaceChangeStarted?.()
+        await workspaceChange
+      }
       if (terminalFailure && args[0] === 'Terminals.addTerminal')
         throw new Error('Terminal unavailable')
     },
@@ -50,6 +56,8 @@ beforeEach(() => {
   workspaceUri = 'file:///workspace'
   terminalFailure = false
   progressError = undefined
+  workspaceChange = undefined
+  workspaceChangeStarted = undefined
   result = undefined
 })
 
@@ -160,3 +168,22 @@ for (const command of ['start', 'openWorkspace'] as const) {
     assert.equal(calls[0][0], 'Dialog.show')
   })
 }
+
+await test('workspace readiness stays false until the deferred view refresh completes', async () => {
+  const refresh = Promise.withResolvers<void>()
+  const started = Promise.withResolvers<void>()
+  workspaceChange = refresh.promise
+  workspaceChangeStarted = started.resolve
+  result = { ok: true, workspaceUri: 'devcontainers:///abc123' }
+  await Commands.openWorkspace()
+  const scheduled = await Commands.getState()
+  assert.equal(scheduled.workspaceReady, false)
+  await started.promise
+  const refreshing = await Commands.getState()
+  assert.equal(refreshing.workspaceReady, false)
+  refresh.resolve()
+  await refresh.promise
+  await delay(0)
+  const ready = await Commands.getState()
+  assert.equal(ready.workspaceReady, true)
+})

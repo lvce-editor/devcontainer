@@ -11,7 +11,16 @@ export const waitForContainerWorkspace = async ({
       typeof workspaceUri === 'string' &&
       /^devcontainers:\/\/\/[a-f0-9]+$/.test(workspaceUri)
     ) {
-      return workspaceUri
+      const state = await Command.executeExtensionCommand(
+        'devcontainer.getState',
+      )
+      if (
+        state &&
+        typeof state === 'object' &&
+        'workspaceReady' in state &&
+        state.workspaceReady === true
+      )
+        return workspaceUri
     }
   }
   throw new Error(`Timed out reopening workspace: ${workspaceUri}`)
