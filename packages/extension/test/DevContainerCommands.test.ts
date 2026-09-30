@@ -27,6 +27,7 @@ mock.module('@lvce-editor/api', {
     getPreference: async () => 'docker',
     getWorkspaceUri: async () => workspaceUri,
     openUri: async () => {},
+    preparePrettyError: async (error: unknown) => error,
     showNotification: async (...args: unknown[]) => {
       calls.push(['notification', ...args])
     },

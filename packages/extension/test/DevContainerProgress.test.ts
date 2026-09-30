@@ -20,6 +20,7 @@ mock.module('@lvce-editor/api', {
       events.push('output opened')
     },
     openUri: async () => {},
+    preparePrettyError: async (error: unknown) => error,
     showNotification: async () => {},
   },
 })

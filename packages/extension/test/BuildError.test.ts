@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
 const calls: unknown[][] = []
+let shouldFailPrettyError = false
 const stderr =
   'Original build output\n'.repeat(200) + 'ERROR: feature installation failed'
 const result = {
@@ -24,6 +25,16 @@ mock.module('@lvce-editor/api', {
     },
     getPreference: async () => undefined,
     getWorkspaceUri: async () => 'file:///workspace',
+    preparePrettyError: async (error: { message?: string; stack?: string }) => {
+      if (shouldFailPrettyError) {
+        throw new Error('renderer unavailable')
+      }
+      return {
+        codeFrame: '  1 | build step\n> 2 | invalid syntax\n    | ^',
+        message: error.message,
+        stack: error.stack,
+      }
+    },
     openUri: async (...args: unknown[]) => {
       calls.push(['openUri', ...args])
     },
@@ -61,6 +72,8 @@ await test('the log provider retains the complete output and is read only', asyn
   assert.ok(text.includes(stderr))
   assert.ok(text.includes(result.stdout))
   assert.ok(text.includes(result.errorMessage))
+  assert.ok(text.includes('  1 | build step'))
+  assert.ok(text.includes('invalid syntax'))
   assert.equal(await BuildError.fileSystem.isReadonly?.(), true)
   calls.length = 0
   BuildError.showLogs()
@@ -70,4 +83,17 @@ await test('the log provider retains the complete output and is read only', asyn
     ['closeUri', 'devcontainer-logs:///Dev Container.log'],
     ['openUri', 'devcontainer-logs:///Dev Container.log'],
   ])
+})
+
+await test('the log provider retains the original diagnostics when formatting fails', async () => {
+  shouldFailPrettyError = true
+  const BuildError = await import('../src/parts/BuildError/BuildError.ts')
+  await BuildError.showError(result, '/workspace')
+  const blob = await BuildError.fileSystem.readFile(
+    'devcontainer-logs:///Dev Container.log',
+  )
+  const text = await blob.text()
+  assert.ok(text.includes(result.errorMessage))
+  assert.ok(text.includes(stderr))
+  shouldFailPrettyError = false
 })

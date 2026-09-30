@@ -3,6 +3,7 @@ import {
   closeUri,
   executeCommand,
   openUri,
+  preparePrettyError,
   showNotification,
 } from '@lvce-editor/api'
 
@@ -43,11 +44,24 @@ export const showError = async (
   error: BuildError,
   workspaceFolder: string,
 ): Promise<void> => {
+  let prettyError: Awaited<ReturnType<typeof preparePrettyError>>
+  try {
+    prettyError = await preparePrettyError({
+      message: error.errorMessage,
+      stack: error.errorStack,
+    })
+  } catch {
+    prettyError = {
+      message: error.errorMessage,
+      stack: error.errorStack,
+    }
+  }
   logs = [
     `Workspace: ${workspaceFolder}`,
     error.errorCode,
-    error.errorMessage,
-    error.errorStack,
+    prettyError.message || error.errorMessage,
+    prettyError.codeFrame,
+    prettyError.stack || error.errorStack,
     error.stdout ? `Standard output:\n${error.stdout}` : '',
     error.stderr ? `Standard error:\n${error.stderr}` : '',
   ]
