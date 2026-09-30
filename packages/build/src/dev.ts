@@ -1,4 +1,5 @@
 import { execa } from 'execa'
+import { resolveServerPath } from './resolveServerPath.ts'
 import { createDevBuild } from './createDevBuild.ts'
 import { root } from './root.ts'
 
@@ -9,7 +10,7 @@ try {
     execa(
       process.execPath,
       [
-        'node_modules/@lvce-editor/server/bin/server.js',
+        resolveServerPath(),
         '--only-extension=.tmp/dev',
         '--test-path=packages/e2e',
         '--link=node_modules/@lvce-editor/test-worker',
