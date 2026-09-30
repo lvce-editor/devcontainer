@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test'
+import { mkdir, writeFile } from 'node:fs/promises'
+import { dirname } from 'node:path'
 
 test.beforeEach(async ({ page }) => {
   page.on('console', (message) => {
@@ -12,8 +14,16 @@ const capture = async (page, testInfo, phase) => {
   const data = await page.evaluate(
     () => globalThis['__devcontainerStartup'] || { missing: true },
   )
+  const path = testInfo.outputPath(`startup-${phase}.json`)
+  await mkdir(dirname(path), { recursive: true })
+  await writeFile(path, JSON.stringify(data))
+  if (
+    process.env.LVCE_STARTUP_DIAGNOSTIC &&
+    (data.missing || !data.entries?.length)
+  )
+    throw new Error('Startup diagnostic capture is missing')
   await testInfo.attach(`startup-${phase}`, {
-    body: JSON.stringify(data),
+    path,
     contentType: 'application/json',
   })
 }

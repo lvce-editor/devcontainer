@@ -49,7 +49,7 @@ jobs:
         id: npm-cache
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-cacheNodeModules-${{ steps.nodeModulesCacheKey.outputs.value }}
+          key: ${{ runner.os }}-startup-diagnostic-v2-${{ steps.nodeModulesCacheKey.outputs.value }}
       - name: npm ci
         run: npm ci
         if: steps.npm-cache.outputs.cache-hit != 'true'
@@ -72,6 +72,8 @@ jobs:
       - name: Instrument test startup
         run: node packages/e2e/scripts/diagnose-startup.js
       - name: Direct URL and reload e2e attempt ${{ matrix.attempt }}
+        env:
+          LVCE_STARTUP_DIAGNOSTIC: 1
         run: npm run e2e:local-url --prefix packages/e2e
       - uses: actions/upload-artifact@v7
         if: always()
