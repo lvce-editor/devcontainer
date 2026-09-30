@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "postinstall": "node src/postinstall.js",
-    "dev": "node node_modules/@lvce-editor/server/bin/server.js --only-extension=../../.tmp/dev --test-path=../e2e"
+    "dev": "node ../build/src/dev.ts"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@lvce-editor/server": "0.113.20",
-    "@lvce-editor/static-server": "0.113.20",
+    "@lvce-editor/server": "0.115.5",
+    "@lvce-editor/static-server": "0.115.5",
     "@lvce-editor/test-worker": "17.21.0"
   }
 }
