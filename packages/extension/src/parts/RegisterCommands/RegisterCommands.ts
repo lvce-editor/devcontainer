@@ -4,6 +4,10 @@ import * as DevContainerCommands from '../DevContainerCommands/DevContainerComma
 
 const commands = [
   {
+    execute: DevContainerCommands.disposeTerminal,
+    id: 'devcontainer.disposeTerminal',
+  },
+  {
     execute: DevContainerCommands.getTerminalSpawnOptions,
     id: 'devcontainer.getTerminalSpawnOptions',
   },
