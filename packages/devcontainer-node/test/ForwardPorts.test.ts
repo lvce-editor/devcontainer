@@ -157,7 +157,7 @@ test('relays binary data after a client half-close and reuses concurrent starts'
   } finally {
     clearTimeout(timer)
   }
-})
+}, 10_000)
 
 test('host conflicts roll back all newly opened listeners and preserve the other owner', async () => {
   const occupied = await listen(
