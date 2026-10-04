@@ -39,5 +39,6 @@ export const getSpawnOptions = async (workspaceUri: string, cwd = '') => {
     ],
     command: process.execPath,
     cwd: workspaceFolder,
+    env: { ELECTRON_RUN_AS_NODE: '1' },
   }
 }
