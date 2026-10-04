@@ -54,7 +54,9 @@ test.each([undefined, 'podman'])(
     DevContainerState.reset()
 
     expect(
-      await WorkspaceFolder.toPath('devcontainers:///abc123/file.txt'),
+      await WorkspaceFolder.toPath(
+        `devcontainers://${workspaceFolder.replaceAll(' ', '%20')}!/file.txt`,
+      ),
     ).toBe(workspaceFolder)
     expect(DevContainerState.get(workspaceFolder)).toEqual(state)
     expect(inspectedEngines).toEqual([containerCli])

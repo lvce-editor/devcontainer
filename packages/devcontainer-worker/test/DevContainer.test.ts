@@ -248,7 +248,10 @@ test('openWorkspace builds, checks the remote folder, and resolves lifecycle com
     DevContainer.openWorkspace({ workspaceFolder }),
     DevContainer.openWorkspace({ workspaceFolder }),
   ])
-  expect(first).toEqual({ ok: true, workspaceUri: 'devcontainers:///abc123' })
+  expect(first).toEqual({
+    ok: true,
+    workspaceUri: `devcontainers:///${workspaceFolder.slice(1).replaceAll(' ', '%20')}!`,
+  })
   expect(second).toEqual(first)
   expect(operations).toEqual(['build', 'connect'])
   expect(

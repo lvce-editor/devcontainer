@@ -75,11 +75,13 @@ The runner allows three minutes per test and removes containers belonging to its
 Use **Dev Containers: Reopen in Container** or **Dev Containers: Start Current
 Workspace** to build/start the current workspace's
 configuration and open its configured `workspaceFolder` at
-`devcontainers:///<containerId>`. Explorer and file editing use Docker inside the
-container as `remoteUser`; the local bind mount is not used as a substitute for
-the container filesystem. A failed build or connection leaves the local workspace
-open. The existing execution, stop, and remove commands also work from the
-container workspace.
+`devcontainers:///<local-workspace-path>!`. The local path keeps recent entries
+recognizable; container-relative file paths follow the `!` separator. Older
+`devcontainers:///<containerId>` workspace URLs remain supported. Explorer and
+file editing use Docker inside the container as `remoteUser`; the local bind
+mount is not used as a substitute for the container filesystem. A failed build
+or connection leaves the local workspace open. The existing execution, stop,
+and remove commands also work from the container workspace.
 
 New terminals run an interactive shell through `devcontainer exec`, using the
 configured remote user and environment. Opening a terminal from an Explorer
