@@ -9,7 +9,8 @@ export const waitForContainerWorkspace = async ({
     workspaceUri = await Command.execute('Workspace.getUri')
     if (
       typeof workspaceUri === 'string' &&
-      /^devcontainers:\/\/\/[a-f0-9]+$/.test(workspaceUri)
+      (workspaceUri.endsWith('!') ||
+        /^devcontainers:\/\/\/[a-f0-9]+$/.test(workspaceUri))
     ) {
       const state = await Command.executeExtensionCommand(
         'devcontainer.getState',
