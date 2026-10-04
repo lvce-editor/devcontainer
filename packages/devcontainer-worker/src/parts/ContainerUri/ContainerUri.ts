@@ -40,7 +40,7 @@ export const parse = (
     const source = decodeSegments(
       url.pathname.slice(0, separator).split('/').filter(Boolean),
     )
-    if (!source.length) {
+    if (source.length === 0) {
       throw new Error('Invalid devcontainer workspace folder')
     }
     const workspaceFolder = `/${source.join('/')}`
