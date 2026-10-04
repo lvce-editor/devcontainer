@@ -29,7 +29,8 @@
     "onCommand:devcontainer.showLogs",
     "onFileSystem:devcontainer-logs",
     "onCommand:devcontainer.installDocker",
-    "onCommand:devcontainer.getTerminalSpawnOptions"
+    "onCommand:devcontainer.getTerminalSpawnOptions",
+    "onCommand:devcontainer.disposeTerminal"
   ],
   "commands": [
     {
@@ -70,6 +71,10 @@
     },
     {
       "id": "devcontainer.getTerminalSpawnOptions",
+      "internal": true
+    },
+    {
+      "id": "devcontainer.disposeTerminal",
       "internal": true
     }
   ],

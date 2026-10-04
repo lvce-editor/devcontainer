@@ -1,6 +1,7 @@
 import * as DevContainerCli from '@lvce-editor/devcontainer-node/devcontainer-cli'
 import * as ContainerFileSystem from './parts/ContainerFileSystem/ContainerFileSystem.ts'
 import * as ContainerTerminal from './parts/ContainerTerminal/ContainerTerminal.ts'
+import * as ContainerTerminalSession from './parts/ContainerTerminalSession/ContainerTerminalSession.ts'
 import * as DevContainer from './parts/DevContainer/DevContainer.ts'
 import * as DevContainerCommandType from './parts/DevContainerCommandType/DevContainerCommandType.ts'
 import * as DevContainerNodeClient from './parts/DevContainerNodeClient/DevContainerNodeClient.ts'
@@ -76,6 +77,7 @@ const getTerminalSpawnOptions = (
 }
 
 export const commandMap = {
+  'DevContainer.disposeTerminal': ContainerTerminalSession.dispose,
   'DevContainer.getDockerInstallCommand': () =>
     GetDockerInstallCommand.getDockerInstallCommand(process.platform),
   'DevContainer.getProgress': Progress.getProgress,

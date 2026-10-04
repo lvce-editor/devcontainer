@@ -89,7 +89,7 @@ export const testContainerTerminal = async (
         'sh',
         [
           '-c',
-          'pid=$(cat "/container-workspace/sub folder/terminal-shell-pid"); state=$(awk \'{print $3}\' "/proc/$pid/stat" 2>/dev/null || true); if [ -z "$state" ] || [ "$state" = Z ]; then printf disposed; else printf alive; fi',
+          'pid=$(cat "/container-workspace/sub folder/terminal-shell-pid"); for attempt in $(seq 1 50); do state=$(awk \'{print $3}\' "/proc/$pid/stat" 2>/dev/null || true); if [ -z "$state" ] || [ "$state" = Z ]; then printf disposed; exit; fi; sleep 0.1; done; printf alive',
         ],
         'disposed',
       )
