@@ -13,6 +13,7 @@ export const testContainerTerminal = async (
     Workspace,
   }: Parameters<Test>[0],
   label = 'Dev Containers: Reopen in Container',
+  verifyDisposal = false,
 ): Promise<void> => {
   const localUri = await getWorkspaceUri({ Command }, 'reopen')
   await Workspace.setPath(localUri)
@@ -77,6 +78,22 @@ export const testContainerTerminal = async (
       ['/container-workspace/sub folder/marker.txt'],
       'subfolder-created',
     )
+    if (verifyDisposal) {
+      await Command.execute(
+        'Terminals.sendText',
+        'echo $$ > terminal-shell-pid; printf "dispose-%s\\n" ready\r',
+      )
+      await expect(terminal).toContainText('dispose-ready')
+      await Command.execute('Terminals.killTerminal')
+      await Devcontainer.shouldHaveExecOutput(
+        'sh',
+        [
+          '-c',
+          'pid=$(cat "/container-workspace/sub folder/terminal-shell-pid"); state=$(awk \'{print $3}\' "/proc/$pid/stat" 2>/dev/null || true); if [ -z "$state" ] || [ "$state" = Z ]; then printf disposed; else printf alive; fi',
+        ],
+        'disposed',
+      )
+    }
   } finally {
     await Workspace.setPath(localUri)
     await Devcontainer.remove()
