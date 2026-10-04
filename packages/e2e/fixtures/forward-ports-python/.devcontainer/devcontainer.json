@@ -1,0 +1,6 @@
+{
+  "name": "Forward Ports Python",
+  "image": "python:3.13-slim-bookworm",
+  "forwardPorts": [3000],
+  "postStartCommand": "nohup python3 server.py >/tmp/forward-ports.log 2>&1 </dev/null &"
+}

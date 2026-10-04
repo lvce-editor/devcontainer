@@ -38,6 +38,12 @@ export interface NodeApi {
     containerCli?: string
     containerId: string
   }): Promise<unknown>
+  forwardPorts?(options: {
+    containerCli?: string
+    containerId: string
+    forwardPorts?: unknown
+    remoteUser?: string
+  }): Promise<void>
 }
 
 const missingNodeApi = () => {
@@ -121,4 +127,15 @@ export const dockerInspectContainer = (
     return missingNodeApi()
   }
   return nodeApi.dockerInspectContainer({ containerCli, containerId })
+}
+
+export const forwardPorts = (options: {
+  containerCli?: string
+  containerId: string
+  forwardPorts?: unknown
+  remoteUser?: string
+}): Promise<void> => {
+  if (!nodeApi.forwardPorts)
+    return Promise.reject(new Error('Port forwarding is not available'))
+  return nodeApi.forwardPorts(options)
 }

@@ -96,3 +96,82 @@ test('does not redirect an old URI to a replacement container', async () => {
     'replacement456',
   )
 })
+
+test('restores saved forwarding once for concurrent requests and skips stopped containers', async () => {
+  const workspaceFolder = join(directory, 'workspace')
+  const forwarded: unknown[] = []
+  DevContainerNodeClient.setNodeApi({
+    cliExec: async () => ({}),
+    cliReadConfiguration: async () => ({}),
+    cliUp: async () => ({}),
+    dockerInspectContainer: async () => running,
+    dockerRemoveContainer: async () => ({}),
+    dockerStopContainer: async () => ({}),
+    forwardPorts: async (options) => {
+      forwarded.push(options)
+    },
+  })
+  DevContainerState.set(workspaceFolder, {
+    containerId: 'abc123',
+    forwardPorts: [3000],
+    remoteUser: 'node',
+    remoteWorkspaceFolder: '/app',
+    status: 'running',
+  })
+  await DevContainerState.persist(workspaceFolder)
+  DevContainerState.reset()
+  await Promise.all([
+    DevContainerState.restore('abc123'),
+    DevContainerState.restore(workspaceFolder),
+  ])
+  expect(forwarded).toEqual([
+    expect.objectContaining({
+      containerId: 'abc123',
+      forwardPorts: [3000],
+      remoteUser: 'node',
+      workspaceFolder,
+    }),
+  ])
+  DevContainerState.reset()
+  running = false
+  await DevContainerState.restore('abc123')
+  expect(forwarded).toHaveLength(1)
+})
+
+test('a stale restoration does not reopen ports after the workspace state changes', async () => {
+  const workspaceFolder = join(directory, 'workspace')
+  const inspected = Promise.withResolvers<boolean>()
+  let forwards = 0
+  DevContainerNodeClient.setNodeApi({
+    cliExec: async () => ({}),
+    cliReadConfiguration: async () => ({}),
+    cliUp: async () => ({}),
+    dockerInspectContainer: async () => {
+      DevContainerState.set(workspaceFolder, {
+        containerId: 'replacement',
+        status: 'stopped',
+      })
+      return inspected.promise
+    },
+    dockerRemoveContainer: async () => ({}),
+    dockerStopContainer: async () => ({}),
+    forwardPorts: async () => {
+      forwards++
+    },
+  })
+  DevContainerState.set(workspaceFolder, {
+    containerId: 'abc123',
+    forwardPorts: [3000],
+    remoteWorkspaceFolder: '/app',
+    status: 'running',
+  })
+  await DevContainerState.persist(workspaceFolder)
+  DevContainerState.reset()
+  const restoring = DevContainerState.restore('abc123')
+  inspected.resolve(true)
+  await restoring
+  expect(forwards).toBe(0)
+  expect(DevContainerState.get(workspaceFolder)?.containerId).toBe(
+    'replacement',
+  )
+})

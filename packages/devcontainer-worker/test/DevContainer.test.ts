@@ -293,3 +293,25 @@ test('openWorkspace rejects an inaccessible remote workspace', async () => {
     'workspace missing',
   )
 })
+
+test('forwarding failures retain the container id for cleanup', async () => {
+  const workspaceFolder = await createWorkspace()
+  DevContainerNodeClient.setNodeApi({
+    cliExec: async () => ({ ok: true }),
+    cliReadConfiguration: async () => ({ ok: true }),
+    cliUp: async () => ({
+      errorCode: 'DEVCONTAINER_FORWARD_PORTS_ERROR',
+      json: { containerId: 'abc123' },
+      ok: false,
+    }),
+    dockerRemoveContainer: async (options) => {
+      expect(options.containerId).toBe('abc123')
+      return { ok: true }
+    },
+    dockerStopContainer: async () => ({ ok: true }),
+  })
+  expect(await DevContainer.up({ workspaceFolder })).toMatchObject({
+    ok: false,
+  })
+  expect(await DevContainer.remove({ workspaceFolder })).toEqual({ ok: true })
+})
