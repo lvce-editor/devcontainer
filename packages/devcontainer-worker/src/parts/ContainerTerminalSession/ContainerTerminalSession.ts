@@ -12,7 +12,7 @@ interface Session {
 
 const execFileAsync = promisify(execFile)
 
-export const run = async (session: Session, script: string) => {
+const run = async (session: Session, script: string) => {
   const user = session.remoteUser ? ['--user', session.remoteUser] : []
   await execFileAsync(
     session.containerCli,
