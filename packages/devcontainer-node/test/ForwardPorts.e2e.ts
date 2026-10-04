@@ -174,6 +174,31 @@ for (const fixture of ['forward-ports', 'forward-ports-python']) {
         })
         assert.equal(removed.ok, true, JSON.stringify(removed))
         await shouldReleasePort()
+      } catch (error) {
+        if (connection) {
+          try {
+            const state = await connection.rpc.invoke('DevContainer.getState', {
+              workspaceFolder,
+            })
+            const logs = await connection.rpc.invoke('DevContainer.exec', {
+              args: ['/tmp/forward-ports.log'],
+              command: 'cat',
+              workspaceFolder,
+            })
+            console.error('Forwarding fixture diagnostics', {
+              containerId: state.containerId,
+              lastResult: state.lastResult,
+              logs,
+              remoteWorkspaceFolder: state.remoteWorkspaceFolder,
+            })
+          } catch (diagnosticError) {
+            console.error(
+              'Could not read forwarding fixture diagnostics',
+              diagnosticError,
+            )
+          }
+        }
+        throw error
       } finally {
         try {
           if (connection) {
