@@ -21,6 +21,18 @@ test('creates readable workspace URIs and preserves paths inside the container',
   })
 })
 
+test('round-trips Windows workspace paths', () => {
+  const workspaceFolder = 'C:\\Users\\simon\\my project!'
+  const uri = ContainerUri.create(workspaceFolder)
+
+  expect(uri).toBe('devcontainers:///C:/Users/simon/my%20project%21!')
+  expect(ContainerUri.parse(uri)).toEqual({
+    id: `workspace:${workspaceFolder}`,
+    path: '',
+    workspaceFolder,
+  })
+})
+
 test('continues to parse saved container-id URIs', () => {
   expect(ContainerUri.parse('devcontainers:///abc123/src/a%20b.ts')).toEqual({
     id: 'abc123',

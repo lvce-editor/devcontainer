@@ -1,6 +1,3 @@
-import { isAbsolute } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
-
 const decodeSegments = (segments: string[]): string[] => {
   const decoded = segments.map(decodeURIComponent)
   if (
@@ -17,14 +14,22 @@ const decodeSegments = (segments: string[]): string[] => {
   return decoded
 }
 
+const encodeSegment = (segment: string): string =>
+  encodeURIComponent(segment).replaceAll('!', '%21')
+
 export const create = (workspaceFolder: string): string => {
-  if (!isAbsolute(workspaceFolder)) {
+  const windowsPath = /^([a-zA-Z]:)[\\/](.*)$/.exec(workspaceFolder)
+  if (!workspaceFolder.startsWith('/') && !windowsPath) {
     throw new Error('Invalid devcontainer workspace folder')
   }
-  const sourcePath = pathToFileURL(workspaceFolder).pathname.replaceAll(
-    '!',
-    '%21',
-  )
+  const sourceSegments = windowsPath
+    ? [windowsPath[1], ...windowsPath[2].split(/[\\/]/).filter(Boolean)]
+    : workspaceFolder.split('/').filter(Boolean)
+  const sourcePath = `/${sourceSegments
+    .map((segment, index) =>
+      windowsPath && index === 0 ? segment : encodeSegment(segment),
+    )
+    .join('/')}`
   return `devcontainers://${sourcePath}!`
 }
 
@@ -42,7 +47,10 @@ export const parse = (
     if (source.length === 0) {
       throw new Error('Invalid devcontainer workspace folder')
     }
-    const workspaceFolder = fileURLToPath(new URL(`file://${sourcePath}`))
+    const drive = /^([a-zA-Z]):$/.exec(source[0])
+    const workspaceFolder = drive
+      ? `${drive[1]}:\\${source.slice(1).join('\\')}`
+      : `/${source.join('/')}`
     const rawPath = url.pathname.slice(separator + 1).replace(/^\//, '')
     const path = decodeSegments(rawPath ? rawPath.split('/') : []).join('/')
     return { id: `workspace:${workspaceFolder}`, path, workspaceFolder }
