@@ -164,6 +164,8 @@ test('reports a missing relay before opening any listeners', async () => {
 
 test('disposing an active connection releases its listener and engine process', async () => {
   const port = await freePort()
+  const accepted = Promise.withResolvers<void>()
+  const engineClosed = Promise.withResolvers<void>()
   spawn.mockImplementationOnce(() => {
     const child = realSpawn(
       process.execPath,
@@ -171,15 +173,28 @@ test('disposing an active connection releases its listener and engine process', 
       { stdio: 'pipe' },
     )
     children.push(child)
+    child.once('close', () => engineClosed.resolve())
+    accepted.resolve()
     return child
   })
   await ForwardPorts.ensure({ containerId: 'one', forwardPorts: [port] })
   const socket = connect(port, '127.0.0.1')
   sockets.push(socket)
-  await new Promise<void>((resolve) => socket.once('connect', resolve))
-  const closed = new Promise((resolve) => socket.once('close', resolve))
+  const closed = new Promise<void>((resolve, reject) => {
+    // Destroying the peer may deliver a reset before close, particularly on macOS.
+    socket.once('error', (error: NodeJS.ErrnoException) => {
+      if (error.code !== 'ECONNRESET') reject(error)
+    })
+    socket.once('close', () => resolve())
+  })
+  await new Promise<void>((resolve, reject) => {
+    socket.once('connect', resolve)
+    socket.once('error', reject)
+  })
+  await accepted.promise
   ForwardPorts.dispose()
   await closed
+  await engineClosed.promise
   await expect(read(port, Buffer.from('closed'))).rejects.toThrow()
   await ForwardPorts.ensure({ containerId: 'one', forwardPorts: [port] })
 })
