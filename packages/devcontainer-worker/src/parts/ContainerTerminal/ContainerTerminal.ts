@@ -38,7 +38,7 @@ export const getSpawnOptions = async (workspaceUri: string, cwd = '') => {
       posix.join(state.remoteWorkspaceFolder, location.path),
     ],
     command: process.execPath,
-    env: { ELECTRON_RUN_AS_NODE: '1' },
     cwd: workspaceFolder,
+    env: { ELECTRON_RUN_AS_NODE: '1' },
   }
 }
