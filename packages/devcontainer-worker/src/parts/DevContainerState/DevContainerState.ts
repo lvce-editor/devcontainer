@@ -35,14 +35,23 @@ export const reset = () => {
 }
 
 export const getWorkspaceFolder = async (uri: string): Promise<string> => {
-  const { id } = ContainerUri.parse(uri)
+  const { id, workspaceFolder: sourceWorkspaceFolder } = ContainerUri.parse(uri)
   for (const [workspaceFolder, value] of state) {
-    if (value.containerId === id) {
+    if (
+      (sourceWorkspaceFolder &&
+        workspaceFolder === sourceWorkspaceFolder &&
+        id === `workspace:${workspaceFolder}`) ||
+      (!sourceWorkspaceFolder && value.containerId === id)
+    ) {
       return workspaceFolder
     }
   }
-  const restored = await restore(id)
-  if (restored && state.get(restored)?.containerId === id) {
+  const key = sourceWorkspaceFolder || id
+  const restored = await restore(key)
+  if (
+    restored &&
+    (state.get(restored)?.containerId === id || id === `workspace:${restored}`)
+  ) {
     return restored
   }
   throw new Error(

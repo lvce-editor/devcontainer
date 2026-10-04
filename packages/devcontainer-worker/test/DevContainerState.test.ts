@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, test } from '@jest/globals'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import * as ContainerUri from '../src/parts/ContainerUri/ContainerUri.ts'
 import * as DevContainerNodeClient from '../src/parts/DevContainerNodeClient/DevContainerNodeClient.ts'
 import * as DevContainerState from '../src/parts/DevContainerState/DevContainerState.ts'
 import * as WorkspaceFolder from '../src/parts/WorkspaceFolder/WorkspaceFolder.ts'
@@ -54,7 +55,9 @@ test.each([undefined, 'podman'])(
     DevContainerState.reset()
 
     expect(
-      await WorkspaceFolder.toPath('devcontainers:///abc123/file.txt'),
+      await WorkspaceFolder.toPath(
+        `${ContainerUri.create(workspaceFolder)}/file.txt`,
+      ),
     ).toBe(workspaceFolder)
     expect(DevContainerState.get(workspaceFolder)).toEqual(state)
     expect(inspectedEngines).toEqual([containerCli])

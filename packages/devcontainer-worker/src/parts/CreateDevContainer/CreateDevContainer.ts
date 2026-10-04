@@ -2,6 +2,7 @@ import type * as Config from '../DevContainerConfig/DevContainerConfig.ts'
 import type * as Client from '../DevContainerNodeClient/DevContainerNodeClient.ts'
 import type * as State from '../DevContainerState/DevContainerState.ts'
 import type * as Workspace from '../WorkspaceFolder/WorkspaceFolder.ts'
+import * as ContainerUri from '../ContainerUri/ContainerUri.ts'
 
 export interface Host {
   cancelStart?: (workspaceFolder: string) => Promise<unknown>
@@ -286,7 +287,7 @@ export const createDevContainer = ({
       remoteWorkspaceFolder: state.remoteWorkspaceFolder,
     })
     await DevContainerState.persist(workspaceFolder)
-    return { ok: true, workspaceUri: `devcontainers:///${state.containerId}` }
+    return { ok: true, workspaceUri: ContainerUri.create(workspaceFolder) }
   }
 
   const openWorkspace = async ({
