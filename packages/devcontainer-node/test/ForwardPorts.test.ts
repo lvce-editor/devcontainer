@@ -90,47 +90,73 @@ test('reports invalid ports and conflicting destinations', async () => {
 })
 
 test('relays binary data after a client half-close and reuses concurrent starts', async () => {
-  const target = await listen(
-    createServer({ allowHalfOpen: true }, (socket) => {
-      sockets.push(socket)
-      const chunks: Buffer[] = []
-      socket.on('data', (chunk) => {
-        chunks.push(chunk)
-      })
-      socket.on('end', () => socket.end(Buffer.concat(chunks)))
-    }),
-  )
-  const port = await freePort()
-  // Route the real relay to the test service, retaining the production listener.
-  spawn.mockImplementationOnce((_command, args) => {
-    const index = args.indexOf('-e')
-    const relayArgs = args.slice(index)
-    relayArgs[relayArgs.length - 1] = String(target)
-    const child = realSpawn(process.execPath, relayArgs, { stdio: 'pipe' })
-    children.push(child)
-    return child
-  })
-  const options = {
-    containerCli: 'podman',
-    containerId: 'one',
-    forwardPorts: [port, port],
-    remoteUser: 'node',
+  const events: string[] = []
+  const record = (event: string) => {
+    events.push(`${Date.now()}: ${event}`)
   }
-  await Promise.all([
-    ForwardPorts.ensure(options),
-    ForwardPorts.ensure(options),
-  ])
-  expect(probe).toHaveBeenCalledTimes(1)
-  const payload = Buffer.alloc(1024 * 1024, 0x80)
-  expect(await read(port, payload)).toEqual(payload)
-  expect(spawn.mock.calls[0].slice(0, 2)).toEqual([
-    'podman',
-    expect.arrayContaining(['--user', 'node', 'one']),
-  ])
-  await ForwardPorts.remove('one')
-  await expect(read(port, Buffer.from('closed'))).rejects.toThrow()
-  await ForwardPorts.ensure(options)
-  await ForwardPorts.remove('one')
+  const timer = setTimeout(
+    () => console.error('Half-close events', events),
+    4000,
+  )
+  try {
+    const target = await listen(
+      createServer({ allowHalfOpen: true }, (socket) => {
+        sockets.push(socket)
+        const chunks: Buffer[] = []
+        socket.on('data', (chunk) => {
+          chunks.push(chunk)
+        })
+        socket.on('end', () => {
+          record(`target end: ${Buffer.concat(chunks).length} bytes`)
+          socket.end(Buffer.concat(chunks))
+        })
+      }),
+    )
+    const port = await freePort()
+    // Route the real relay to the test service, retaining the production listener.
+    spawn.mockImplementationOnce((_command, args) => {
+      const index = args.indexOf('-e')
+      const relayArgs = args.slice(index)
+      relayArgs[relayArgs.length - 1] = String(target)
+      const child = realSpawn(process.execPath, relayArgs, { stdio: 'pipe' })
+      child.once('spawn', () => record('relay spawned'))
+      child.stdin.once('finish', () => record('relay stdin finish'))
+      child.stdout.once('end', () => record('relay stdout end'))
+      child.once('close', (code) => record(`relay close: ${code}`))
+      child.stderr.on('data', (data) => record(`relay stderr: ${data}`))
+      children.push(child)
+      return child
+    })
+    const options = {
+      containerCli: 'podman',
+      containerId: 'one',
+      forwardPorts: [port, port],
+      remoteUser: 'node',
+    }
+    await Promise.all([
+      ForwardPorts.ensure(options),
+      ForwardPorts.ensure(options),
+    ])
+    expect(probe).toHaveBeenCalledTimes(1)
+    const payload = Buffer.alloc(1024 * 1024, 0x80)
+    record('reading binary response')
+    expect(await read(port, payload)).toEqual(payload)
+    record('binary response received')
+    expect(spawn.mock.calls[0].slice(0, 2)).toEqual([
+      'podman',
+      expect.arrayContaining(['--user', 'node', 'one']),
+    ])
+    record('removing listener')
+    await ForwardPorts.remove('one')
+    record('listener removed')
+    await expect(read(port, Buffer.from('closed'))).rejects.toThrow()
+    record('closed listener rejected connection')
+    await ForwardPorts.ensure(options)
+    record('listener reopened')
+    await ForwardPorts.remove('one')
+  } finally {
+    clearTimeout(timer)
+  }
 })
 
 test('host conflicts roll back all newly opened listeners and preserve the other owner', async () => {

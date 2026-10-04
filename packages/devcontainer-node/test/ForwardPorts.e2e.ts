@@ -114,14 +114,14 @@ for (const fixture of ['forward-ports', 'forward-ports-python']) {
         join(tmpdir(), 'devcontainer-forward-ports-'),
       )
       const workspaceFolder = join(directory, 'workspace')
-      await cp(
-        new URL(`../../e2e/fixtures/${fixture}/`, import.meta.url),
-        workspaceFolder,
-        { recursive: true },
-      )
       let connection: Awaited<ReturnType<typeof connectProcess>> | undefined
       let containerId: string | undefined
       try {
+        await cp(
+          new URL(`../../e2e/fixtures/${fixture}/`, import.meta.url),
+          workspaceFolder,
+          { recursive: true },
+        )
         await shouldReleasePort()
         connection = await connectProcess(directory)
         const opened = await connection.rpc.invoke(
