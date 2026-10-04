@@ -31,11 +31,28 @@ export const getSpawnOptions = async (
   ) {
     throw new Error('Devcontainer is not running')
   }
-  const session = await createSession(
-    state.containerId,
-    state.containerCli || 'docker',
-    state.remoteUser,
-  )
+  let session: { directory: string; token: string }
+  try {
+    session = await createSession(
+      state.containerId,
+      state.containerCli || 'docker',
+      state.remoteUser,
+    )
+  } catch (error) {
+    // Keep preparation failures in the terminal's normal startup-error UI.
+    // The message is an argument to fixed code, never executable source.
+    return {
+      args: [
+        '--eval',
+        'console.error(process.argv[1]); process.exitCode = 1',
+        error instanceof Error ? error.message : String(error),
+      ],
+      command: process.execPath,
+      cwd: workspaceFolder,
+      disposeCommand: undefined,
+      env: { ELECTRON_RUN_AS_NODE: '1' },
+    }
+  }
   // The host PTY runs the CLI, which applies remoteUser, remoteEnv and the
   // user's environment probe. The shell and its working directory are remote.
   return {

@@ -62,6 +62,18 @@ test('opens an Explorer directory and passes special characters as a positional 
   expect(options.args.at(-2)).toBe('/workspaces/project/src/a b;$x')
 })
 
+test('preparation failures use the normal terminal error path without evaluating the message', async () => {
+  connect()
+  const message = 'Docker is unavailable; $(unexpected) "quoted"'
+  createSession.mockRejectedValueOnce(new Error(message))
+  const options = await getOptions(workspaceUri)
+  expect(options.command).toBe(process.execPath)
+  expect(options.env).toEqual({ ELECTRON_RUN_AS_NODE: '1' })
+  expect(options.args.at(-1)).toBe(message)
+  expect(options.args[1]).not.toContain(message)
+  expect(options.disposeCommand).toBeUndefined()
+})
+
 test('refuses a terminal in another container', async () => {
   connect()
   await expect(
