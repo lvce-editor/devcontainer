@@ -6,6 +6,7 @@ import { isAbsolute, join } from 'node:path'
 interface Connection {
   containerCli?: string
   containerId: string
+  forwardPorts?: unknown
   remoteUser?: string
   remoteWorkspaceFolder: string
   workspaceFolder: string

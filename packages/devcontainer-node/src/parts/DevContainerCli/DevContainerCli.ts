@@ -3,6 +3,7 @@ import type { ErrorResult } from '../SerializeError/SerializeError.ts'
 import * as CliError from '../CliError/CliError.ts'
 import * as CliJson from '../CliJson/CliJson.ts'
 import * as ContainerFileSystem from '../ContainerFileSystem/ContainerFileSystem.ts'
+import * as ForwardPorts from '../ForwardPorts/ForwardPorts.ts'
 import * as RunProcess from '../RunProcess/RunProcess.ts'
 
 export interface CliCommandSuccess {
@@ -17,6 +18,7 @@ export interface CliCommandSuccess {
 export interface CliCommandError extends ErrorResult {
   commandName: string
   exitCode?: number | null
+  json?: unknown
   missingExecutable?: string
   ok: false
   stderr?: string
@@ -91,6 +93,7 @@ export const getCliUpArgs = ({
     '--workspace-folder',
     workspaceFolder,
     '--no-lockfile',
+    '--include-merged-configuration',
     '--log-format',
     'text',
     '--log-level',
@@ -269,14 +272,52 @@ export const cliReadConfiguration = (options: WorkspaceOptions) => {
   )
 }
 
-export const cliUp = (options: WorkspaceOptions) => {
-  return runDevcontainerCli(
+export const cliUp = async (
+  options: WorkspaceOptions,
+): Promise<CliCommandResult> => {
+  const result = await runDevcontainerCli(
     'DevContainerNode.cliUp',
     [getDevcontainerCliPath(), ...getCliUpArgs(options)],
     options.containerCli,
     options.onOutput,
   )
+  if (!result.ok) return result
+  const json = result.json as {
+    containerId: string
+    remoteUser?: string
+    mergedConfiguration?: { forwardPorts?: unknown }
+  }
+  try {
+    await ForwardPorts.ensure({
+      containerCli: options.containerCli ?? dockerPath,
+      containerId: json.containerId,
+      forwardPorts: json.mergedConfiguration?.forwardPorts,
+      remoteUser: json.remoteUser,
+      workspaceFolder: options.workspaceFolder,
+    })
+    return result
+  } catch (error) {
+    return {
+      commandName: result.commandName,
+      errorCode: 'DEVCONTAINER_FORWARD_PORTS_ERROR',
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: undefined,
+      json: result.json,
+      ok: false,
+      stderr: result.stderr,
+      stdout: result.stdout,
+    }
+  }
 }
+
+export const forwardPorts = (
+  options: ContainerOptions & {
+    workspaceFolder?: string
+    forwardPorts?: unknown
+    remoteUser?: string
+  },
+): Promise<void> => ForwardPorts.ensure(options)
+export const disposeForwardPorts = ForwardPorts.dispose
 
 export const cliExec = (options: ExecOptions) => {
   return runDevcontainerCommand(
@@ -286,7 +327,8 @@ export const cliExec = (options: ExecOptions) => {
   )
 }
 
-export const dockerStopContainer = (options: ContainerOptions) => {
+export const dockerStopContainer = async (options: ContainerOptions) => {
+  await ForwardPorts.remove(options.containerId)
   return runDocker(
     'DevContainerNode.dockerStopContainer',
     getDockerStopArgs(options),
@@ -294,7 +336,8 @@ export const dockerStopContainer = (options: ContainerOptions) => {
   )
 }
 
-export const dockerRemoveContainer = (options: ContainerOptions) => {
+export const dockerRemoveContainer = async (options: ContainerOptions) => {
+  await ForwardPorts.remove(options.containerId)
   return runDocker(
     'DevContainerNode.dockerRemoveContainer',
     getDockerRemoveArgs(options),

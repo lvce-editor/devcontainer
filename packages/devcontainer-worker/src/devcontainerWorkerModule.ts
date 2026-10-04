@@ -7,7 +7,12 @@ import * as DevContainerNodeClient from './parts/DevContainerNodeClient/DevConta
 import * as GetDockerInstallCommand from './parts/GetDockerInstallCommand/GetDockerInstallCommand.ts'
 import * as Progress from './parts/Progress/Progress.ts'
 
+let initialized = false
 const initialize = () => {
+  if (!initialized) {
+    process.once('exit', DevContainerCli.disposeForwardPorts)
+    initialized = true
+  }
   DevContainerNodeClient.setNodeApi(DevContainerCli)
 }
 

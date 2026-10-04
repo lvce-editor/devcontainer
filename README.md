@@ -19,6 +19,14 @@ Rootless Podman e2e tests run in GitHub Actions on Ubuntu alongside Docker. They
 cover image startup, Dockerfile builds, mounted workspace edits, and reopening
 and editing a container workspace after the extension runtime restarts.
 
+Configured `forwardPorts` are automatically available on host `127.0.0.1` at
+those ports, including services listening only on container localhost. Numeric
+ports and `"host:port"` destinations are supported. The container must include
+socat, Node.js, or Python 3 for the streaming relay. A missing relay or occupied
+host port fails startup with an actionable error. Stop, Remove, and disconnecting
+the extension close its listeners and active connections; reconnecting restores
+the saved forwarding configuration. This does not require Docker `-p` publication.
+
 For local development, use Node from `.nvmrc`, then run `npm ci` and `npm run dev`.
 This prepares the local extension in `.tmp/dev` with esbuild and starts the
 development server alongside browser bundle watching. The first bundle is ready
@@ -47,7 +55,13 @@ The desktop extension contributes these commands for the active workspace:
 
 Docker-backed end-to-end tests run on Ubuntu for every pull request and push to `main`. They cover the official JavaScript/Node 24 and Ubuntu 24.04 images, plus a Dockerfile build with a custom workspace mount.
 
-Each test opens a fresh copy of a workspace fixture, starts the container through Quick Pick, checks its runtime and reads the fixture inside the container. It then writes a file from inside Docker and verifies the file in Explorer and its contents in the editor. A subsequent workspace edit must be readable inside the container. Finally, the test stops the container through Quick Pick and verifies that execution is rejected while stopped.
+The forwardPorts acceptance test starts the packaged Dev Containers RPC process
+with a localhost-only HTTP server and `forwardPorts: [3000]`. It asserts the
+response from the host and checks listener cleanup and restoration across repeated
+opening, process disconnect/reconnect, Stop, and Remove. It runs before the browser
+suite on Ubuntu, with no Docker publication or manual forwarding.
+
+Each browser test opens a fresh copy of a workspace fixture, starts the container through Quick Pick, checks its runtime and reads the fixture inside the container. It then writes a file from inside Docker and verifies the file in Explorer and its contents in the editor. A subsequent workspace edit must be readable inside the container. Finally, the test stops the container through Quick Pick and verifies that execution is rejected while stopped.
 
 The tests use the `Devcontainer` page object from `@lvce-editor/test-worker` for start, stop, execution, output assertions, and cleanup. Dependency installation loads the declared test-worker dependency into the development server.
 

@@ -28,6 +28,7 @@ test('getCliUpArgs', () => {
     '--workspace-folder',
     '/workspace',
     '--no-lockfile',
+    '--include-merged-configuration',
     '--log-format',
     'text',
     '--log-level',

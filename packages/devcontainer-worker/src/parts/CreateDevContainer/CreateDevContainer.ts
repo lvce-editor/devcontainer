@@ -135,6 +135,10 @@ export const createDevContainer = ({
     if (cancelled()) return cancellation
     if (!isOk(result) || !result.ok) {
       DevContainerState.set(workspaceFolder, {
+        containerCli,
+        containerId: isOk(result)
+          ? getStringProperty(result.json, 'containerId')
+          : undefined,
         lastResult: result,
         status: 'error',
       })
@@ -151,6 +155,10 @@ export const createDevContainer = ({
     DevContainerState.set(workspaceFolder, {
       containerCli,
       containerId,
+      forwardPorts: (
+        result.json as
+          { mergedConfiguration?: { forwardPorts?: unknown } } | undefined
+      )?.mergedConfiguration?.forwardPorts,
       lastResult: result,
       remoteUser,
       remoteWorkspaceFolder,

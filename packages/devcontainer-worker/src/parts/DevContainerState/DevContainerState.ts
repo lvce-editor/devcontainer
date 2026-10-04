@@ -6,6 +6,7 @@ type DevContainerStatus = 'error' | 'running' | 'starting' | 'stopped'
 export interface DevContainerState {
   containerCli?: string
   containerId?: string
+  forwardPorts?: unknown
   lastResult?: unknown
   remoteUser?: string
   remoteWorkspaceFolder?: string
@@ -70,13 +71,26 @@ export const restore = async (key: string): Promise<string | undefined> => {
   )
   // Another request may already have restored or changed this workspace.
   if (!state.has(connection.workspaceFolder)) {
-    state.set(connection.workspaceFolder, {
+    const restored = set(connection.workspaceFolder, {
       containerCli: connection.containerCli,
       containerId: connection.containerId,
+      ...(connection.forwardPorts !== undefined && {
+        forwardPorts: connection.forwardPorts,
+      }),
       remoteUser: connection.remoteUser,
       remoteWorkspaceFolder: connection.remoteWorkspaceFolder,
       status: running ? 'running' : 'stopped',
     })
+    if (running && connection.forwardPorts !== undefined) {
+      try {
+        await DevContainerNodeClient.forwardPorts(connection)
+      } catch (error) {
+        if (state.get(connection.workspaceFolder) === restored) {
+          set(connection.workspaceFolder, { ...restored, status: 'error' })
+        }
+        throw error
+      }
+    }
   }
   return connection.workspaceFolder
 }
@@ -89,6 +103,9 @@ export const persist = async (workspaceFolder: string): Promise<void> => {
   await ConnectionStorage.save({
     containerCli: current.containerCli,
     containerId: current.containerId,
+    ...(current.forwardPorts !== undefined && {
+      forwardPorts: current.forwardPorts,
+    }),
     remoteUser: current.remoteUser,
     remoteWorkspaceFolder: current.remoteWorkspaceFolder,
     workspaceFolder,

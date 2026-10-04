@@ -32,3 +32,12 @@ export function dockerInspectContainer(
 ): Promise<boolean>
 
 export function getDevcontainerCliPath(): string
+
+export function forwardPorts(
+  options: ContainerOptions & {
+    workspaceFolder?: string
+    forwardPorts?: unknown
+    remoteUser?: string
+  },
+): Promise<void>
+export function disposeForwardPorts(): void

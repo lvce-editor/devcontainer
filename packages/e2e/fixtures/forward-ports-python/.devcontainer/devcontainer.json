@@ -1,0 +1,9 @@
+{
+  "name": "Forward Ports Python",
+  "forwardPorts": [3000],
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile"
+  },
+  "overrideCommand": false
+}
