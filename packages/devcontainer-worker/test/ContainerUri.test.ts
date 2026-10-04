@@ -1,19 +1,23 @@
 import { expect, test } from '@jest/globals'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import * as ContainerUri from '../src/parts/ContainerUri/ContainerUri.ts'
 
 test('creates readable workspace URIs and preserves paths inside the container', () => {
-  const uri = ContainerUri.create('/home/simon/Projects/my project!')
+  const workspaceFolder = join(tmpdir(), 'my project!')
+  const uri = ContainerUri.create(workspaceFolder)
 
-  expect(uri).toBe('devcontainers:///home/simon/Projects/my%20project%21!')
+  expect(uri).toContain('my%20project%21!')
+  expect(uri).toMatch(/^devcontainers:\/\//)
   expect(ContainerUri.parse(uri)).toEqual({
-    id: 'workspace:/home/simon/Projects/my project!',
+    id: `workspace:${workspaceFolder}`,
     path: '',
-    workspaceFolder: '/home/simon/Projects/my project!',
+    workspaceFolder,
   })
   expect(ContainerUri.parse(`${uri}/src/a%20b.ts`)).toEqual({
-    id: 'workspace:/home/simon/Projects/my project!',
+    id: `workspace:${workspaceFolder}`,
     path: 'src/a b.ts',
-    workspaceFolder: '/home/simon/Projects/my project!',
+    workspaceFolder,
   })
 })
 

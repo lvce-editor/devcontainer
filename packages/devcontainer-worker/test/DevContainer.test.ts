@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import * as ContainerUri from '../src/parts/ContainerUri/ContainerUri.ts'
 import * as DevContainer from '../src/parts/DevContainer/DevContainer.js'
 import * as DevContainerNodeClient from '../src/parts/DevContainerNodeClient/DevContainerNodeClient.js'
 import * as DevContainerState from '../src/parts/DevContainerState/DevContainerState.js'
@@ -250,7 +251,7 @@ test('openWorkspace builds, checks the remote folder, and resolves lifecycle com
   ])
   expect(first).toEqual({
     ok: true,
-    workspaceUri: `devcontainers:///${workspaceFolder.slice(1).replaceAll(' ', '%20')}!`,
+    workspaceUri: ContainerUri.create(workspaceFolder),
   })
   expect(second).toEqual(first)
   expect(operations).toEqual(['build', 'connect'])
