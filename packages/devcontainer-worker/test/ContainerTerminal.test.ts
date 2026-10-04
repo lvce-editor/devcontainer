@@ -19,6 +19,7 @@ test('launches a PTY through devcontainer exec with the configured environment a
   connect()
   const options = await ContainerTerminal.getSpawnOptions(workspaceUri)
   expect(options.command).toBe(process.execPath)
+  expect(options.env).toEqual({ ELECTRON_RUN_AS_NODE: '1' })
   expect(options.cwd).toBe(workspaceFolder)
   expect(options.args).toEqual([
     expect.stringContaining('devcontainer.js'),

@@ -29,6 +29,7 @@ export const testContainerTerminal = async (
     await Command.execute('Layout.showPanel', 'Terminals')
     const terminal = Locator('.XtermTerminal')
     await expect(terminal).toBeVisible()
+    await expect(terminal).toContainText('# ')
     await Command.execute(
       'Terminals.sendText',
       'pwd; id -un; cat container-only.txt; printf "terminal-%s" created > terminal-created.txt\r',
@@ -41,6 +42,15 @@ export const testContainerTerminal = async (
       ['/container-workspace/terminal-created.txt'],
       'terminal-created',
     )
+    for (let index = 0; index < 3; index++) {
+      await Command.execute('Layout.showPanel', 'Problems')
+      await Command.execute('Layout.showPanel', 'Terminals')
+      await expect(containerFile).toBeVisible()
+      if ((await Command.execute('Workspace.getUri')) !== workspaceUri) {
+        throw new Error('Opening the terminal changed the container workspace')
+      }
+    }
+
     await Command.execute(
       'Terminals.sendText',
       'printf "%s" "$DEVCONTAINER_TERMINAL_TEST" > terminal-env.txt; printf "environment-%s\\n" ready\r',
@@ -56,6 +66,7 @@ export const testContainerTerminal = async (
       'Terminals.addTerminal',
       `${workspaceUri}/sub%20folder`,
     )
+    await expect(terminal).toContainText('# ')
     await Command.execute(
       'Terminals.sendText',
       'pwd; printf "subfolder-%s" created > marker.txt\r',
