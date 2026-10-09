@@ -13,6 +13,7 @@ test('getCliReadConfigurationArgs', () => {
     'read-configuration',
     '--workspace-folder',
     '/workspace',
+    '--include-merged-configuration',
     '--docker-path',
     'docker',
   ])
@@ -25,7 +26,6 @@ test('getCliUpArgs', () => {
     }),
   ).toEqual([
     'up',
-    '--skip-non-blocking-commands',
     '--workspace-folder',
     '/workspace',
     '--no-lockfile',
@@ -37,6 +37,15 @@ test('getCliUpArgs', () => {
     '--docker-path',
     'docker',
   ])
+})
+
+test('getCliUpArgs enables background lifecycle commands when requested', () => {
+  expect(
+    DevContainerCli.getCliUpArgs({
+      skipNonBlockingCommands: true,
+      workspaceFolder: '/workspace',
+    }),
+  ).toContain('--skip-non-blocking-commands')
 })
 
 test('getCliUpArgs accepts a lifecycle readiness override', () => {
@@ -55,13 +64,25 @@ test('getCliUpArgs accepts a lifecycle readiness override', () => {
 })
 
 test('getDefaultWaitForOverride waits through post-create only when unset', () => {
-  expect(DevContainerCli.getDefaultWaitForOverride({})).toEqual({
+  expect(
+    DevContainerCli.getDefaultWaitForOverride(
+      {},
+      { features: { 'example/feature': {} }, image: 'alpine' },
+    ),
+  ).toEqual({
+    features: { 'example/feature': {} },
+    image: 'alpine',
     waitFor: 'postCreateCommand',
   })
   expect(
-    DevContainerCli.getDefaultWaitForOverride({ waitFor: 'postStartCommand' }),
+    DevContainerCli.getDefaultWaitForOverride(
+      { waitFor: 'postStartCommand' },
+      { image: 'alpine' },
+    ),
   ).toBeUndefined()
-  expect(DevContainerCli.getDefaultWaitForOverride(undefined)).toBeUndefined()
+  expect(
+    DevContainerCli.getDefaultWaitForOverride({}, undefined),
+  ).toBeUndefined()
 })
 
 test('getCliExecArgs', () => {
