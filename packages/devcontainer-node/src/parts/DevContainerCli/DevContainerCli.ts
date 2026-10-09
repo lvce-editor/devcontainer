@@ -90,6 +90,7 @@ export const getCliUpArgs = ({
 }: WorkspaceOptions) => {
   return [
     'up',
+    '--skip-non-blocking-commands',
     '--workspace-folder',
     workspaceFolder,
     '--no-lockfile',

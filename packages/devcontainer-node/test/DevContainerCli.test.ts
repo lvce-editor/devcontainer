@@ -25,6 +25,7 @@ test('getCliUpArgs', () => {
     }),
   ).toEqual([
     'up',
+    '--skip-non-blocking-commands',
     '--workspace-folder',
     '/workspace',
     '--no-lockfile',
