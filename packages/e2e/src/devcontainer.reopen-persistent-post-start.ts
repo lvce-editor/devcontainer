@@ -47,6 +47,9 @@ export const test: Test = async ({
       ['/container-workspace/container-only.txt'],
       'created inside the devcontainer\n',
     )
+    // Workspace handoff closes the panel; reopening its existing channel must
+    // show the deferred hook's retained output.
+    await Command.execute('Layout.openOutput', 'dev-containers')
     const output = Locator('.Output')
     await expect(output).toContainText('Running the postStartCommand')
     await Command.execute('Layout.showPanel', 'Terminals')
