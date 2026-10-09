@@ -41,3 +41,9 @@ export function forwardPorts(
   },
 ): Promise<void>
 export function disposeForwardPorts(): void
+
+export function getLifecycleProgress(workspaceFolder: string): {
+  errorMessage?: string
+  output: string
+  running: boolean
+}

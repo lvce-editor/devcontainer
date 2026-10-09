@@ -1,9 +1,13 @@
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import type { ErrorResult } from '../SerializeError/SerializeError.ts'
 import * as CliError from '../CliError/CliError.ts'
 import * as CliJson from '../CliJson/CliJson.ts'
 import * as ContainerFileSystem from '../ContainerFileSystem/ContainerFileSystem.ts'
 import * as ForwardPorts from '../ForwardPorts/ForwardPorts.ts'
+import * as LifecycleCommands from '../LifecycleCommands/LifecycleCommands.ts'
 import * as RunProcess from '../RunProcess/RunProcess.ts'
 
 export interface CliCommandSuccess {
@@ -41,6 +45,11 @@ export interface WorkspaceOptions {
   containerCli?: string
   onOutput?: (text: string) => void
   workspaceFolder: string
+}
+
+interface CliUpOptions extends WorkspaceOptions {
+  overrideConfig?: string
+  skipNonBlockingCommands?: boolean
 }
 
 export interface ExecOptions extends WorkspaceOptions {
@@ -86,10 +95,14 @@ export const getCliReadConfigurationArgs = ({
 
 export const getCliUpArgs = ({
   containerCli = dockerPath,
+  overrideConfig,
+  skipNonBlockingCommands = false,
   workspaceFolder,
-}: WorkspaceOptions) => {
+}: CliUpOptions) => {
   return [
     'up',
+    ...(skipNonBlockingCommands ? ['--skip-non-blocking-commands'] : []),
+    ...(overrideConfig ? ['--override-config', overrideConfig] : []),
     '--workspace-folder',
     workspaceFolder,
     '--no-lockfile',
@@ -101,6 +114,19 @@ export const getCliUpArgs = ({
     '--docker-path',
     containerCli,
   ]
+}
+
+export const getDefaultWaitForOverride = (
+  configuration: unknown,
+): Record<string, unknown> | undefined => {
+  if (
+    !configuration ||
+    typeof configuration !== 'object' ||
+    Object.hasOwn(configuration, 'waitFor')
+  ) {
+    return undefined
+  }
+  return { ...configuration, waitFor: 'postCreateCommand' }
 }
 
 export const getCliExecArgs = ({
@@ -275,18 +301,54 @@ export const cliReadConfiguration = (options: WorkspaceOptions) => {
 export const cliUp = async (
   options: WorkspaceOptions,
 ): Promise<CliCommandResult> => {
-  const result = await runDevcontainerCli(
-    'DevContainerNode.cliUp',
-    [getDevcontainerCliPath(), ...getCliUpArgs(options)],
-    options.containerCli,
-    options.onOutput,
-  )
+  const configurationResult = await cliReadConfiguration(options)
+  const configuration = (
+    configurationResult.json as { configuration?: unknown } | undefined
+  )?.configuration
+  const hasExplicitWaitFor =
+    configuration !== null &&
+    typeof configuration === 'object' &&
+    Object.hasOwn(configuration, 'waitFor')
+  const waitForOverride = configurationResult.ok
+    ? getDefaultWaitForOverride(configuration)
+    : undefined
+  const skipNonBlockingCommands = hasExplicitWaitFor || Boolean(waitForOverride)
+  let overrideConfigDirectory: string | undefined
+  let result: CliCommandResult
+  try {
+    let overrideConfig: string | undefined
+    if (waitForOverride) {
+      overrideConfigDirectory = await mkdtemp(
+        join(tmpdir(), 'lvce-devcontainer-up-'),
+      )
+      overrideConfig = join(overrideConfigDirectory, 'devcontainer.json')
+      await writeFile(overrideConfig, JSON.stringify(waitForOverride))
+    }
+    result = await runDevcontainerCli(
+      'DevContainerNode.cliUp',
+      [
+        getDevcontainerCliPath(),
+        ...getCliUpArgs({
+          ...options,
+          overrideConfig,
+          skipNonBlockingCommands,
+        }),
+      ],
+      options.containerCli,
+      options.onOutput,
+    )
+  } finally {
+    if (overrideConfigDirectory) {
+      await rm(overrideConfigDirectory, { force: true, recursive: true })
+    }
+  }
   if (!result.ok) return result
   const json = result.json as {
     containerId: string
     remoteUser?: string
     mergedConfiguration?: { forwardPorts?: unknown }
   }
+  let setupErrorCode = 'DEVCONTAINER_FORWARD_PORTS_ERROR'
   try {
     await ForwardPorts.ensure({
       containerCli: options.containerCli ?? dockerPath,
@@ -295,11 +357,20 @@ export const cliUp = async (
       remoteUser: json.remoteUser,
       workspaceFolder: options.workspaceFolder,
     })
+    if (skipNonBlockingCommands) {
+      setupErrorCode = 'DEVCONTAINER_LIFECYCLE_ERROR'
+      await LifecycleCommands.start(
+        options.workspaceFolder,
+        json.containerId,
+        getDevcontainerCliPath(),
+        options.containerCli ?? dockerPath,
+      )
+    }
     return result
   } catch (error) {
     return {
       commandName: result.commandName,
-      errorCode: 'DEVCONTAINER_FORWARD_PORTS_ERROR',
+      errorCode: setupErrorCode,
       errorMessage: error instanceof Error ? error.message : String(error),
       errorStack: undefined,
       json: result.json,
@@ -317,7 +388,11 @@ export const forwardPorts = (
     remoteUser?: string
   },
 ): Promise<void> => ForwardPorts.ensure(options)
-export const disposeForwardPorts = ForwardPorts.dispose
+export const disposeForwardPorts = () => {
+  LifecycleCommands.dispose()
+  ForwardPorts.dispose()
+}
+export const getLifecycleProgress = LifecycleCommands.getProgress
 
 export const cliExec = (options: ExecOptions) => {
   return runDevcontainerCommand(
@@ -328,6 +403,7 @@ export const cliExec = (options: ExecOptions) => {
 }
 
 export const dockerStopContainer = async (options: ContainerOptions) => {
+  LifecycleCommands.remove(options.containerId)
   await ForwardPorts.remove(options.containerId)
   return runDocker(
     'DevContainerNode.dockerStopContainer',
@@ -337,6 +413,7 @@ export const dockerStopContainer = async (options: ContainerOptions) => {
 }
 
 export const dockerRemoveContainer = async (options: ContainerOptions) => {
+  LifecycleCommands.remove(options.containerId)
   await ForwardPorts.remove(options.containerId)
   return runDocker(
     'DevContainerNode.dockerRemoveContainer',

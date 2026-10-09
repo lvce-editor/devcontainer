@@ -1,0 +1,10 @@
+{
+  "name": "Reopen persistent post-start command",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/host-workspace,type=bind",
+  "workspaceFolder": "/container-workspace",
+  "remoteUser": "root",
+  "postStartCommand": "sh -c 'echo started > /tmp/devcontainer-post-start && echo $$ > /tmp/devcontainer-post-start.pid && exec sleep 300'"
+}

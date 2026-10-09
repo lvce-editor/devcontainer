@@ -38,6 +38,49 @@ test('getCliUpArgs', () => {
   ])
 })
 
+test('getCliUpArgs stops at the readiness boundary when requested', () => {
+  expect(
+    DevContainerCli.getCliUpArgs({
+      skipNonBlockingCommands: true,
+      workspaceFolder: '/workspace',
+    }),
+  ).toContain('--skip-non-blocking-commands')
+})
+
+test('getCliUpArgs accepts a lifecycle readiness override', () => {
+  expect(
+    DevContainerCli.getCliUpArgs({
+      overrideConfig: '/tmp/devcontainer-override.json',
+      workspaceFolder: '/workspace',
+    }),
+  ).toContain('--override-config')
+  expect(
+    DevContainerCli.getCliUpArgs({
+      overrideConfig: '/tmp/devcontainer-override.json',
+      workspaceFolder: '/workspace',
+    }),
+  ).toContain('/tmp/devcontainer-override.json')
+})
+
+test('getDefaultWaitForOverride waits through post-create only when unset', () => {
+  expect(
+    DevContainerCli.getDefaultWaitForOverride({
+      features: { 'example/feature': {} },
+      image: 'alpine',
+      postCreateCommand: 'npm install',
+    }),
+  ).toEqual({
+    features: { 'example/feature': {} },
+    image: 'alpine',
+    postCreateCommand: 'npm install',
+    waitFor: 'postCreateCommand',
+  })
+  expect(
+    DevContainerCli.getDefaultWaitForOverride({ waitFor: 'postStartCommand' }),
+  ).toBeUndefined()
+  expect(DevContainerCli.getDefaultWaitForOverride(undefined)).toBeUndefined()
+})
+
 test('getCliExecArgs', () => {
   expect(
     DevContainerCli.getCliExecArgs({
