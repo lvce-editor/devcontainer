@@ -1,4 +1,7 @@
 import { createRequire } from 'node:module'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import type { ErrorResult } from '../SerializeError/SerializeError.ts'
 import * as CliError from '../CliError/CliError.ts'
 import * as CliJson from '../CliJson/CliJson.ts'
@@ -41,6 +44,10 @@ export interface WorkspaceOptions {
   containerCli?: string
   onOutput?: (text: string) => void
   workspaceFolder: string
+}
+
+interface CliUpOptions extends WorkspaceOptions {
+  overrideConfig?: string
 }
 
 export interface ExecOptions extends WorkspaceOptions {
@@ -86,11 +93,13 @@ export const getCliReadConfigurationArgs = ({
 
 export const getCliUpArgs = ({
   containerCli = dockerPath,
+  overrideConfig,
   workspaceFolder,
-}: WorkspaceOptions) => {
+}: CliUpOptions) => {
   return [
     'up',
     '--skip-non-blocking-commands',
+    ...(overrideConfig ? ['--override-config', overrideConfig] : []),
     '--workspace-folder',
     workspaceFolder,
     '--no-lockfile',
@@ -102,6 +111,19 @@ export const getCliUpArgs = ({
     '--docker-path',
     containerCli,
   ]
+}
+
+export const getDefaultWaitForOverride = (
+  configuration: unknown,
+): { waitFor: string } | undefined => {
+  if (
+    !configuration ||
+    typeof configuration !== 'object' ||
+    Object.hasOwn(configuration, 'waitFor')
+  ) {
+    return undefined
+  }
+  return { waitFor: 'postCreateCommand' }
 }
 
 export const getCliExecArgs = ({
@@ -276,12 +298,38 @@ export const cliReadConfiguration = (options: WorkspaceOptions) => {
 export const cliUp = async (
   options: WorkspaceOptions,
 ): Promise<CliCommandResult> => {
-  const result = await runDevcontainerCli(
-    'DevContainerNode.cliUp',
-    [getDevcontainerCliPath(), ...getCliUpArgs(options)],
-    options.containerCli,
-    options.onOutput,
-  )
+  const configurationResult = await cliReadConfiguration(options)
+  const configuration = (
+    configurationResult.json as { configuration?: unknown } | undefined
+  )?.configuration
+  const waitForOverride = configurationResult.ok
+    ? getDefaultWaitForOverride(configuration)
+    : undefined
+  let overrideConfigDirectory: string | undefined
+  let result: CliCommandResult
+  try {
+    let overrideConfig: string | undefined
+    if (waitForOverride) {
+      overrideConfigDirectory = await mkdtemp(
+        join(tmpdir(), 'lvce-devcontainer-up-'),
+      )
+      overrideConfig = join(overrideConfigDirectory, 'devcontainer.json')
+      await writeFile(overrideConfig, JSON.stringify(waitForOverride))
+    }
+    result = await runDevcontainerCli(
+      'DevContainerNode.cliUp',
+      [
+        getDevcontainerCliPath(),
+        ...getCliUpArgs({ ...options, overrideConfig }),
+      ],
+      options.containerCli,
+      options.onOutput,
+    )
+  } finally {
+    if (overrideConfigDirectory) {
+      await rm(overrideConfigDirectory, { force: true, recursive: true })
+    }
+  }
   if (!result.ok) return result
   const json = result.json as {
     containerId: string

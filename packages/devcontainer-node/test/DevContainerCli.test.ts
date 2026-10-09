@@ -39,6 +39,31 @@ test('getCliUpArgs', () => {
   ])
 })
 
+test('getCliUpArgs accepts a lifecycle readiness override', () => {
+  expect(
+    DevContainerCli.getCliUpArgs({
+      overrideConfig: '/tmp/devcontainer-override.json',
+      workspaceFolder: '/workspace',
+    }),
+  ).toContain('--override-config')
+  expect(
+    DevContainerCli.getCliUpArgs({
+      overrideConfig: '/tmp/devcontainer-override.json',
+      workspaceFolder: '/workspace',
+    }),
+  ).toContain('/tmp/devcontainer-override.json')
+})
+
+test('getDefaultWaitForOverride waits through post-create only when unset', () => {
+  expect(DevContainerCli.getDefaultWaitForOverride({})).toEqual({
+    waitFor: 'postCreateCommand',
+  })
+  expect(
+    DevContainerCli.getDefaultWaitForOverride({ waitFor: 'postStartCommand' }),
+  ).toBeUndefined()
+  expect(DevContainerCli.getDefaultWaitForOverride(undefined)).toBeUndefined()
+})
+
 test('getCliExecArgs', () => {
   expect(
     DevContainerCli.getCliExecArgs({
