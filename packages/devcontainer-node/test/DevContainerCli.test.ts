@@ -13,7 +13,6 @@ test('getCliReadConfigurationArgs', () => {
     'read-configuration',
     '--workspace-folder',
     '/workspace',
-    '--include-merged-configuration',
     '--docker-path',
     'docker',
   ])
@@ -65,24 +64,21 @@ test('getCliUpArgs accepts a lifecycle readiness override', () => {
 
 test('getDefaultWaitForOverride waits through post-create only when unset', () => {
   expect(
-    DevContainerCli.getDefaultWaitForOverride(
-      {},
-      { features: { 'example/feature': {} }, image: 'alpine' },
-    ),
+    DevContainerCli.getDefaultWaitForOverride({
+      features: { 'example/feature': {} },
+      image: 'alpine',
+      postCreateCommand: 'npm install',
+    }),
   ).toEqual({
     features: { 'example/feature': {} },
     image: 'alpine',
+    postCreateCommand: 'npm install',
     waitFor: 'postCreateCommand',
   })
   expect(
-    DevContainerCli.getDefaultWaitForOverride(
-      { waitFor: 'postStartCommand' },
-      { image: 'alpine' },
-    ),
+    DevContainerCli.getDefaultWaitForOverride({ waitFor: 'postStartCommand' }),
   ).toBeUndefined()
-  expect(
-    DevContainerCli.getDefaultWaitForOverride({}, undefined),
-  ).toBeUndefined()
+  expect(DevContainerCli.getDefaultWaitForOverride(undefined)).toBeUndefined()
 })
 
 test('getCliExecArgs', () => {

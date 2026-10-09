@@ -87,7 +87,6 @@ export const getCliReadConfigurationArgs = ({
     'read-configuration',
     '--workspace-folder',
     workspaceFolder,
-    '--include-merged-configuration',
     '--docker-path',
     containerCli,
   ]
@@ -118,7 +117,6 @@ export const getCliUpArgs = ({
 
 export const getDefaultWaitForOverride = (
   configuration: unknown,
-  mergedConfiguration: unknown,
 ): Record<string, unknown> | undefined => {
   if (
     !configuration ||
@@ -127,10 +125,7 @@ export const getDefaultWaitForOverride = (
   ) {
     return undefined
   }
-  if (!mergedConfiguration || typeof mergedConfiguration !== 'object') {
-    return undefined
-  }
-  return { ...mergedConfiguration, waitFor: 'postCreateCommand' }
+  return { ...configuration, waitFor: 'postCreateCommand' }
 }
 
 export const getCliExecArgs = ({
@@ -309,15 +304,12 @@ export const cliUp = async (
   const configuration = (
     configurationResult.json as { configuration?: unknown } | undefined
   )?.configuration
-  const mergedConfiguration = (
-    configurationResult.json as { mergedConfiguration?: unknown } | undefined
-  )?.mergedConfiguration
   const hasExplicitWaitFor =
     configuration !== null &&
     typeof configuration === 'object' &&
     Object.hasOwn(configuration, 'waitFor')
   const waitForOverride = configurationResult.ok
-    ? getDefaultWaitForOverride(configuration, mergedConfiguration)
+    ? getDefaultWaitForOverride(configuration)
     : undefined
   const skipNonBlockingCommands = hasExplicitWaitFor || Boolean(waitForOverride)
   let overrideConfigDirectory: string | undefined
