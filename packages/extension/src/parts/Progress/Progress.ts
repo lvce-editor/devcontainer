@@ -10,52 +10,50 @@ import * as Rpc from '../Rpc/Rpc.ts'
 let output: ReturnType<typeof createOutputChannel> | undefined
 let busy = false
 let monitorGeneration = 0
-let workspaceProgressOperationId: number | undefined
 type WorkspaceProgressData = {
   message: string
   status: 'idle' | 'in-progress' | 'finished' | 'error'
 }
-let workspaceProgressData: WorkspaceProgressData = {
-  message: '',
-  status: 'idle',
+type WorkspaceProgressHandle = {
+  dispose: () => Promise<void>
+  refresh: (operationId?: number) => Promise<void>
 }
-let workspaceProgressRegistration:
-  | {
-      dispose: () => Promise<void>
-      refresh: (operationId?: number) => Promise<void>
-    }
-  | undefined
-const registerWorkspaceProgressProvider = (
+const workspaceProgressApi =
   ExtensionApi as typeof ExtensionApi & {
     registerWorkspaceProgressProvider(provider: {
       getProgressData: () => WorkspaceProgressData
       id: string
-    }): {
-      dispose(): Promise<void>
-      refresh(operationId?: number): Promise<void>
-    }
+    }): WorkspaceProgressHandle
   }
-).registerWorkspaceProgressProvider
+const workspaceProgressState: {
+  data: WorkspaceProgressData
+  operationId: number | undefined
+  registration: WorkspaceProgressHandle | undefined
+} = {
+  data: { message: '', status: 'idle' },
+  operationId: undefined,
+  registration: undefined,
+}
 
 export const registerWorkspaceProgress = (): void => {
-  workspaceProgressRegistration = registerWorkspaceProgressProvider({
-    getProgressData: () => workspaceProgressData,
+  workspaceProgressState.registration = workspaceProgressApi.registerWorkspaceProgressProvider({
+    getProgressData: () => workspaceProgressState.data,
     id: 'devcontainer.setup',
   })
 }
 
 export const deactivateWorkspaceProgress = async (): Promise<void> => {
-  workspaceProgressData = { message: '', status: 'idle' }
-  await workspaceProgressRegistration?.dispose()
-  workspaceProgressRegistration = undefined
+  workspaceProgressState.data = { message: '', status: 'idle' }
+  await workspaceProgressState.registration?.dispose()
+  workspaceProgressState.registration = undefined
 }
 
 const setWorkspaceProgressData = async (
   data: WorkspaceProgressData,
 ): Promise<void> => {
-  workspaceProgressData = data
+  workspaceProgressState.data = data
   try {
-    await workspaceProgressRegistration?.refresh(workspaceProgressOperationId)
+    await workspaceProgressState.registration?.refresh(workspaceProgressState.operationId)
   } catch {
     // Workspace progress is optional and cannot interrupt container setup.
   }
@@ -100,7 +98,7 @@ export const run = async (
     } catch {
       // Workspace progress is optional and cannot interrupt container setup.
     }
-    workspaceProgressOperationId =
+    workspaceProgressState.operationId =
       typeof workspaceProgressId === 'number' ? workspaceProgressId : undefined
     await setWorkspaceProgressData({
       message: header.trim(),
@@ -115,7 +113,7 @@ export const run = async (
       if (typeof text === 'string' && text !== previous) {
         previous = text
         await channel.replace(header + text)
-        const message = text.trim().split('\n').filter(Boolean).at(-1)
+        const message = text.trim().split('\n').findLast(Boolean)
         if (message)
           await setWorkspaceProgressData({ message, status: 'in-progress' })
         // Extension output storage currently has no change notifications. Refresh
@@ -181,7 +179,7 @@ export const run = async (
       completed.resolve()
       await polling
       await setWorkspaceProgressData({ message: '', status: 'idle' })
-      workspaceProgressOperationId = undefined
+      workspaceProgressState.operationId = undefined
       if (typeof workspaceProgressId === 'number') {
         try {
           await executeCommand('Workspace.endProgress', workspaceProgressId)

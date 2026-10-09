@@ -27,13 +27,13 @@ mock.module('@lvce-editor/api', {
     openOutputView: async () => {
       events.push('output opened')
     },
+    openUri: async () => {},
     registerWorkspaceProgressProvider: (provider: {
       getProgressData: () => { message: string; status: string }
     }) => {
       workspaceProgressProvider = provider
       return { dispose: async () => {}, refresh: async () => {} }
     },
-    openUri: async () => {},
     showNotification: async (_type: string, message: string) => {
       events.push(message)
     },

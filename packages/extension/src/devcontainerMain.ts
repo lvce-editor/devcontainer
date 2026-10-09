@@ -4,8 +4,8 @@ import {
   registerFileSystemProvider,
 } from '@lvce-editor/api'
 import * as BuildError from './parts/BuildError/BuildError.ts'
-import * as Progress from './parts/Progress/Progress.ts'
 import { fileSystem } from './parts/FileSystem/FileSystem.ts'
+import * as Progress from './parts/Progress/Progress.ts'
 import * as RegisterCommands from './parts/RegisterCommands/RegisterCommands.ts'
 
 const state = {
