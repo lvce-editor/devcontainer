@@ -1,34 +1,23 @@
+import type {
+  WorkspaceProgressData,
+  WorkspaceProgressProviderHandle,
+} from '@lvce-editor/api'
 import {
   createOutputChannel,
   executeCommand,
   openOutputView,
+  registerWorkspaceProgressProvider,
   showNotification,
 } from '@lvce-editor/api'
-import * as ExtensionApi from '@lvce-editor/api'
 import * as Rpc from '../Rpc/Rpc.ts'
 
 let output: ReturnType<typeof createOutputChannel> | undefined
 let busy = false
 let monitorGeneration = 0
-type WorkspaceProgressData = {
-  message: string
-  status: 'idle' | 'in-progress' | 'finished' | 'error'
-}
-type WorkspaceProgressHandle = {
-  dispose: () => Promise<void>
-  refresh: (operationId?: number) => Promise<void>
-}
-const workspaceProgressApi =
-  ExtensionApi as typeof ExtensionApi & {
-    registerWorkspaceProgressProvider(provider: {
-      getProgressData: () => WorkspaceProgressData
-      id: string
-    }): WorkspaceProgressHandle
-  }
 const workspaceProgressState: {
   data: WorkspaceProgressData
   operationId: number | undefined
-  registration: WorkspaceProgressHandle | undefined
+  registration: WorkspaceProgressProviderHandle | undefined
 } = {
   data: { message: '', status: 'idle' },
   operationId: undefined,
@@ -36,7 +25,7 @@ const workspaceProgressState: {
 }
 
 export const registerWorkspaceProgress = (): void => {
-  workspaceProgressState.registration = workspaceProgressApi.registerWorkspaceProgressProvider({
+  workspaceProgressState.registration = registerWorkspaceProgressProvider({
     getProgressData: () => workspaceProgressState.data,
     id: 'devcontainer.setup',
   })
