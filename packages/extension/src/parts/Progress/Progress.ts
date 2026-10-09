@@ -2,11 +2,13 @@ import {
   createOutputChannel,
   executeCommand,
   openOutputView,
+  showNotification,
 } from '@lvce-editor/api'
 import * as Rpc from '../Rpc/Rpc.ts'
 
 let output: ReturnType<typeof createOutputChannel> | undefined
 let busy = false
+let monitorGeneration = 0
 
 const refreshOutput = async (): Promise<void> => {
   try {
@@ -31,6 +33,7 @@ export const run = async (
     throw new Error('A Dev Containers operation is already in progress')
   }
   busy = true
+  const generation = ++monitorGeneration
   try {
     output ||= createOutputChannel('dev-containers')
     const channel = output
@@ -73,11 +76,19 @@ export const run = async (
     }
     const polling = poll()
     try {
-      return await Rpc.invoke(method, {
+      const result = await Rpc.invoke(method, {
         containerCli,
         progressId,
         workspaceFolder,
       })
+      if (result && typeof result === 'object' && 'ok' in result && result.ok) {
+        // Lifecycle commands have their own lifetime; they do not hold the
+        // startup guard while the editor is connected to the container.
+        setTimeout(() => {
+          void monitorLifecycle(workspaceFolder, generation)
+        }, 0)
+      }
+      return result
     } finally {
       finished = true
       completed.resolve()
@@ -90,5 +101,36 @@ export const run = async (
     }
   } finally {
     busy = false
+  }
+}
+
+const monitorLifecycle = async (
+  workspaceFolder: string,
+  generation: number,
+): Promise<void> => {
+  let previous = ''
+  try {
+    while (generation === monitorGeneration) {
+      const state = (await Rpc.invoke(
+        'DevContainer.getLifecycleProgress',
+        workspaceFolder,
+      )) as { errorMessage?: string; output: string; running: boolean }
+      if (generation !== monitorGeneration) return
+      if (state.output !== previous) {
+        const text = state.output.startsWith(previous)
+          ? state.output.slice(previous.length)
+          : state.output
+        previous = state.output
+        await appendLine(text)
+      }
+      if (state.errorMessage)
+        await showNotification('error', state.errorMessage)
+      if (!state.running) return
+      await new Promise<void>((resolve) => setTimeout(resolve, 250))
+    }
+  } catch (error) {
+    if (generation === monitorGeneration) {
+      await appendLine(`Unable to read lifecycle progress: ${String(error)}`)
+    }
   }
 }

@@ -38,7 +38,7 @@ test('getCliUpArgs', () => {
   ])
 })
 
-test('getCliUpArgs enables background lifecycle commands when requested', () => {
+test('getCliUpArgs stops at the readiness boundary when requested', () => {
   expect(
     DevContainerCli.getCliUpArgs({
       skipNonBlockingCommands: true,

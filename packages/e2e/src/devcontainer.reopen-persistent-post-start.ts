@@ -23,10 +23,16 @@ export const test: Test = async ({
       '.Explorer .TreeItem[aria-label="container-only.txt"]',
     )
     await expect(containerFile).toBeVisible()
+    // The readiness boundary precedes the deferred hook. Wait for its actual
+    // marker, then assert it is alive while the workspace is usable.
+    await Devcontainer.exec('sh', [
+      '-c',
+      'for i in $(seq 1 200); do test -f /tmp/devcontainer-post-start && exit 0; sleep 0.1; done; exit 1',
+    ])
     await Devcontainer.shouldHaveExecOutput(
       'cat',
       ['/tmp/devcontainer-post-start'],
-      'started',
+      'started\n',
     )
     await Devcontainer.shouldHaveExecOutput(
       'sh',
@@ -34,12 +40,39 @@ export const test: Test = async ({
         '-c',
         'kill -0 "$(cat /tmp/devcontainer-post-start.pid)" && echo running',
       ],
-      'running',
+      'running\n',
     )
     await Devcontainer.shouldHaveExecOutput(
       'cat',
       ['/container-workspace/container-only.txt'],
       'created inside the devcontainer\n',
+    )
+    await expect(Locator('.Output')).toContainText(
+      'Running the postStartCommand',
+    )
+    await Command.execute('Layout.showPanel', 'Terminals')
+    const terminal = Locator('.XtermTerminal')
+    await expect(terminal).toBeVisible()
+    await expect(terminal).toContainText('# ')
+    await Command.execute(
+      'Terminals.sendText',
+      'printf "persistent-%s" terminal > /tmp/terminal-acceptance; printf "terminal-%s\\n" ready\r',
+    )
+    await expect(terminal).toContainText('terminal-ready')
+    await Devcontainer.shouldHaveExecOutput(
+      'cat',
+      ['/tmp/terminal-acceptance'],
+      'persistent-terminal',
+    )
+    const pid = await Devcontainer.exec('cat', [
+      '/tmp/devcontainer-post-start.pid',
+    ])
+    await Command.executeExtensionCommand('devcontainer.openWorkspace')
+    await waitForContainerWorkspace({ Command })
+    await Devcontainer.shouldHaveExecOutput(
+      'cat',
+      ['/tmp/devcontainer-post-start.pid'],
+      pid,
     )
     if ((await Command.execute('Workspace.getUri')) !== workspaceUri) {
       throw new Error(

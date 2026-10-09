@@ -7,6 +7,7 @@ import * as DevContainerCommandType from './parts/DevContainerCommandType/DevCon
 import * as DevContainerNodeClient from './parts/DevContainerNodeClient/DevContainerNodeClient.ts'
 import * as GetDockerInstallCommand from './parts/GetDockerInstallCommand/GetDockerInstallCommand.ts'
 import * as Progress from './parts/Progress/Progress.ts'
+import * as WorkspaceFolder from './parts/WorkspaceFolder/WorkspaceFolder.ts'
 
 let initialized = false
 const initialize = () => {
@@ -85,6 +86,10 @@ export const commandMap = {
   'DevContainer.disposeTerminal': ContainerTerminalSession.dispose,
   'DevContainer.getDockerInstallCommand': () =>
     GetDockerInstallCommand.getDockerInstallCommand(process.platform),
+  'DevContainer.getLifecycleProgress': async (workspaceFolder: string) =>
+    DevContainerCli.getLifecycleProgress(
+      await WorkspaceFolder.toPath(workspaceFolder),
+    ),
   'DevContainer.getProgress': Progress.getProgress,
   'DevContainer.getTerminalSpawnOptions': getTerminalSpawnOptions,
   [DevContainerCommandType.DevContainerDetect]: detect,

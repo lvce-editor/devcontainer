@@ -7,6 +7,7 @@ import * as CliError from '../CliError/CliError.ts'
 import * as CliJson from '../CliJson/CliJson.ts'
 import * as ContainerFileSystem from '../ContainerFileSystem/ContainerFileSystem.ts'
 import * as ForwardPorts from '../ForwardPorts/ForwardPorts.ts'
+import * as LifecycleCommands from '../LifecycleCommands/LifecycleCommands.ts'
 import * as RunProcess from '../RunProcess/RunProcess.ts'
 
 export interface CliCommandSuccess {
@@ -347,6 +348,7 @@ export const cliUp = async (
     remoteUser?: string
     mergedConfiguration?: { forwardPorts?: unknown }
   }
+  let setupErrorCode = 'DEVCONTAINER_FORWARD_PORTS_ERROR'
   try {
     await ForwardPorts.ensure({
       containerCli: options.containerCli ?? dockerPath,
@@ -355,11 +357,20 @@ export const cliUp = async (
       remoteUser: json.remoteUser,
       workspaceFolder: options.workspaceFolder,
     })
+    if (skipNonBlockingCommands) {
+      setupErrorCode = 'DEVCONTAINER_LIFECYCLE_ERROR'
+      await LifecycleCommands.start(
+        options.workspaceFolder,
+        json.containerId,
+        getDevcontainerCliPath(),
+        options.containerCli ?? dockerPath,
+      )
+    }
     return result
   } catch (error) {
     return {
       commandName: result.commandName,
-      errorCode: 'DEVCONTAINER_FORWARD_PORTS_ERROR',
+      errorCode: setupErrorCode,
       errorMessage: error instanceof Error ? error.message : String(error),
       errorStack: undefined,
       json: result.json,
@@ -377,7 +388,11 @@ export const forwardPorts = (
     remoteUser?: string
   },
 ): Promise<void> => ForwardPorts.ensure(options)
-export const disposeForwardPorts = ForwardPorts.dispose
+export const disposeForwardPorts = () => {
+  LifecycleCommands.dispose()
+  ForwardPorts.dispose()
+}
+export const getLifecycleProgress = LifecycleCommands.getProgress
 
 export const cliExec = (options: ExecOptions) => {
   return runDevcontainerCommand(
@@ -388,6 +403,7 @@ export const cliExec = (options: ExecOptions) => {
 }
 
 export const dockerStopContainer = async (options: ContainerOptions) => {
+  LifecycleCommands.remove(options.containerId)
   await ForwardPorts.remove(options.containerId)
   return runDocker(
     'DevContainerNode.dockerStopContainer',
@@ -397,6 +413,7 @@ export const dockerStopContainer = async (options: ContainerOptions) => {
 }
 
 export const dockerRemoveContainer = async (options: ContainerOptions) => {
+  LifecycleCommands.remove(options.containerId)
   await ForwardPorts.remove(options.containerId)
   return runDocker(
     'DevContainerNode.dockerRemoveContainer',
