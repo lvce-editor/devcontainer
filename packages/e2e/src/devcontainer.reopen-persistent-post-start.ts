@@ -47,9 +47,8 @@ export const test: Test = async ({
       ['/container-workspace/container-only.txt'],
       'created inside the devcontainer\n',
     )
-    await expect(Locator('.Output')).toContainText(
-      'Running the postStartCommand',
-    )
+    const output = Locator('.Output')
+    await expect(output).toContainText('Running the postStartCommand')
     await Command.execute('Layout.showPanel', 'Terminals')
     const terminal = Locator('.XtermTerminal')
     await expect(terminal).toBeVisible()
