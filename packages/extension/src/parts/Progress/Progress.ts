@@ -1,7 +1,12 @@
+import type {
+  WorkspaceProgressData,
+  WorkspaceProgressProviderHandle,
+} from '@lvce-editor/api'
 import {
   createOutputChannel,
   executeCommand,
   openOutputView,
+  registerWorkspaceProgressProvider,
   showNotification,
 } from '@lvce-editor/api'
 import * as Rpc from '../Rpc/Rpc.ts'
@@ -9,6 +14,39 @@ import * as Rpc from '../Rpc/Rpc.ts'
 let output: ReturnType<typeof createOutputChannel> | undefined
 let busy = false
 let monitorGeneration = 0
+const workspaceProgressState: {
+  data: WorkspaceProgressData
+  operationId: number | undefined
+  registration: WorkspaceProgressProviderHandle | undefined
+} = {
+  data: { message: '', status: 'idle' },
+  operationId: undefined,
+  registration: undefined,
+}
+
+export const registerWorkspaceProgress = (): void => {
+  workspaceProgressState.registration = registerWorkspaceProgressProvider({
+    getProgressData: () => workspaceProgressState.data,
+    id: 'devcontainer.setup',
+  })
+}
+
+export const deactivateWorkspaceProgress = async (): Promise<void> => {
+  workspaceProgressState.data = { message: '', status: 'idle' }
+  await workspaceProgressState.registration?.dispose()
+  workspaceProgressState.registration = undefined
+}
+
+const setWorkspaceProgressData = async (
+  data: WorkspaceProgressData,
+): Promise<void> => {
+  workspaceProgressState.data = data
+  try {
+    await workspaceProgressState.registration?.refresh(workspaceProgressState.operationId)
+  } catch {
+    // Workspace progress is optional and cannot interrupt container setup.
+  }
+}
 
 const refreshOutput = async (): Promise<void> => {
   try {
@@ -40,6 +78,21 @@ export const run = async (
     const header = `Starting Dev Containers for ${workspaceFolder}…\n`
     await channel.replace(header)
     await openOutputView({ channel: 'dev-containers' })
+    let workspaceProgressId: unknown
+    try {
+      workspaceProgressId = await executeCommand(
+        'Workspace.startProgress',
+        header.trim(),
+      )
+    } catch {
+      // Workspace progress is optional and cannot interrupt container setup.
+    }
+    workspaceProgressState.operationId =
+      typeof workspaceProgressId === 'number' ? workspaceProgressId : undefined
+    await setWorkspaceProgressData({
+      message: header.trim(),
+      status: 'in-progress',
+    })
     const progressId = crypto.randomUUID()
     const completed = Promise.withResolvers<void>()
     let finished = false
@@ -49,6 +102,9 @@ export const run = async (
       if (typeof text === 'string' && text !== previous) {
         previous = text
         await channel.replace(header + text)
+        const message = text.trim().split('\n').findLast(Boolean)
+        if (message)
+          await setWorkspaceProgressData({ message, status: 'in-progress' })
         // Extension output storage currently has no change notifications. Refresh
         // the visible channel without reopening the panel or changing selection.
         await refreshOutput()
@@ -82,6 +138,24 @@ export const run = async (
         workspaceFolder,
       })
       if (result && typeof result === 'object' && 'ok' in result && result.ok) {
+        await setWorkspaceProgressData({
+          message: 'Dev Container is ready',
+          status: 'finished',
+        })
+      } else {
+        const errorMessage =
+          result &&
+          typeof result === 'object' &&
+          'errorMessage' in result &&
+          typeof result.errorMessage === 'string'
+            ? result.errorMessage
+            : 'Dev Container setup failed'
+        await setWorkspaceProgressData({
+          message: errorMessage,
+          status: 'error',
+        })
+      }
+      if (result && typeof result === 'object' && 'ok' in result && result.ok) {
         // Lifecycle commands have their own lifetime; they do not hold the
         // startup guard while the editor is connected to the container.
         setTimeout(() => {
@@ -93,6 +167,15 @@ export const run = async (
       finished = true
       completed.resolve()
       await polling
+      await setWorkspaceProgressData({ message: '', status: 'idle' })
+      workspaceProgressState.operationId = undefined
+      if (typeof workspaceProgressId === 'number') {
+        try {
+          await executeCommand('Workspace.endProgress', workspaceProgressId)
+        } catch {
+          // The workspace operation may have been cancelled or superseded.
+        }
+      }
       try {
         await refresh()
       } catch {

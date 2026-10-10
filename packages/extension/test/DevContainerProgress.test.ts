@@ -4,6 +4,8 @@ import { mock, test } from 'node:test'
 const events: string[] = []
 const pending = Promise.withResolvers<unknown>()
 let startupResult: unknown = pending.promise
+let workspaceProgressProvider:
+  { getProgressData: () => { message: string; status: string } } | undefined
 let lifecycle = {
   errorMessage: undefined as string | undefined,
   output: '',
@@ -26,6 +28,12 @@ mock.module('@lvce-editor/api', {
       events.push('output opened')
     },
     openUri: async () => {},
+    registerWorkspaceProgressProvider: (provider: {
+      getProgressData: () => { message: string; status: string }
+    }) => {
+      workspaceProgressProvider = provider
+      return { dispose: async () => {}, refresh: async () => {} }
+    },
     showNotification: async (_type: string, message: string) => {
       events.push(message)
     },
@@ -46,8 +54,10 @@ mock.module('../src/parts/Rpc/Rpc.ts', {
 })
 const { openWorkspace } =
   await import('../src/parts/DevContainerCommands/DevContainerCommands.ts')
+const Progress = await import('../src/parts/Progress/Progress.ts')
 
 await test('reopen opens output and displays logs before the build finishes', async () => {
+  Progress.registerWorkspaceProgress()
   const operation = openWorkspace()
   try {
     await new Promise((resolve) => setTimeout(resolve, 600))
@@ -60,6 +70,10 @@ await test('reopen opens output and displays logs before the build finishes', as
       events.some((text) => text.includes('Building layer 1')),
       'Build output must appear before completion',
     )
+    assert.deepEqual(workspaceProgressProvider?.getProgressData(), {
+      message: 'Building layer 1',
+      status: 'in-progress',
+    })
   } finally {
     pending.resolve({ errorMessage: 'build failed', ok: false })
     await operation
@@ -68,6 +82,11 @@ await test('reopen opens output and displays logs before the build finishes', as
         text.includes('Failed to open devcontainer workspace: build failed'),
       ),
     )
+    assert.deepEqual(workspaceProgressProvider?.getProgressData(), {
+      message: '',
+      status: 'idle',
+    })
+    await Progress.deactivateWorkspaceProgress()
   }
 })
 
