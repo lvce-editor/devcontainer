@@ -11,7 +11,9 @@ import {
 } from '@lvce-editor/api'
 import * as Rpc from '../Rpc/Rpc.ts'
 
-let output: ReturnType<typeof createOutputChannel> | undefined
+// Register the channel during extension activation so it is available in the
+// Output dropdown before the first container operation starts.
+const output = createOutputChannel('dev-containers')
 let busy = false
 let monitorGeneration = 0
 const workspaceProgressState: {
@@ -73,7 +75,6 @@ export const run = async (
   busy = true
   const generation = ++monitorGeneration
   try {
-    output ||= createOutputChannel('dev-containers')
     const channel = output
     const header = `Starting Dev Containers for ${workspaceFolder}…\n`
     await channel.replace(header)

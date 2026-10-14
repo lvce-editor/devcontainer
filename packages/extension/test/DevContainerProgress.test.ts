@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
 const events: string[] = []
+const createdOutputChannels: string[] = []
 const pending = Promise.withResolvers<unknown>()
 let startupResult: unknown = pending.promise
 let workspaceProgressProvider:
@@ -14,14 +15,17 @@ let lifecycle = {
 mock.module('@lvce-editor/api', {
   namedExports: {
     closeUri: async () => {},
-    createOutputChannel: () => ({
-      appendLine: async (text: string) => {
-        events.push(text)
-      },
-      replace: async (text: string) => {
-        events.push(text)
-      },
-    }),
+    createOutputChannel: (id: string) => {
+      createdOutputChannels.push(id)
+      return {
+        appendLine: async (text: string) => {
+          events.push(text)
+        },
+        replace: async (text: string) => {
+          events.push(text)
+        },
+      }
+    },
     executeCommand: async () => {},
     getPreference: async () => 'docker',
     openOutputView: async () => {
@@ -55,6 +59,10 @@ mock.module('../src/parts/Rpc/Rpc.ts', {
 const { openWorkspace } =
   await import('../src/parts/DevContainerCommands/DevContainerCommands.ts')
 const Progress = await import('../src/parts/Progress/Progress.ts')
+
+await test('registers the output channel as soon as the extension activates', () => {
+  assert.deepEqual(createdOutputChannels, ['dev-containers'])
+})
 
 await test('reopen opens output and displays logs before the build finishes', async () => {
   Progress.registerWorkspaceProgress()
