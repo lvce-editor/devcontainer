@@ -30,7 +30,8 @@
     "onFileSystem:devcontainer-logs",
     "onCommand:devcontainer.installDocker",
     "onCommand:devcontainer.getTerminalSpawnOptions",
-    "onCommand:devcontainer.disposeTerminal"
+    "onCommand:devcontainer.disposeTerminal",
+    "onOutput"
   ],
   "commands": [
     {
