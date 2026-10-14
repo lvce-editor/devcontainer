@@ -27,7 +27,10 @@ done`,
   writeFile: 'cat > "$1"',
 }
 
-export const run = async (options: Options): Promise<unknown> => {
+const runOperation = async (
+  options: Options,
+  runProcess: typeof RunProcess.runProcess,
+): Promise<unknown> => {
   const {
     containerCli = 'docker',
     containerId,
@@ -42,7 +45,7 @@ export const run = async (options: Options): Promise<unknown> => {
   if (!script) {
     throw new Error(`Unsupported container file operation: ${operation}`)
   }
-  const result = await RunProcess.runProcess({
+  const result = await runProcess({
     args: [
       'exec',
       '-i',
@@ -81,3 +84,37 @@ export const run = async (options: Options): Promise<unknown> => {
   }
   return result.stdout
 }
+
+// File searches and language services can request hundreds of files at once.
+// Bound Docker exec processes across containers while allowing terminal and
+// lifecycle commands to proceed independently.
+const maxProcesses = 8
+
+export const createContainerFileSystem = (
+  runProcess: typeof RunProcess.runProcess,
+) => {
+  let activeProcesses = 0
+  const waiting: (() => void)[] = []
+  return async (options: Options): Promise<unknown> => {
+    if (activeProcesses < maxProcesses) {
+      activeProcesses++
+    } else {
+      await new Promise<void>((resolve) => {
+        waiting.push(resolve)
+      })
+    }
+    try {
+      return await runOperation(options, runProcess)
+    } finally {
+      const next = waiting.shift()
+      if (next) {
+        // Transfer the slot directly so a new request cannot overtake the queue.
+        next()
+      } else {
+        activeProcesses--
+      }
+    }
+  }
+}
+
+export const run = createContainerFileSystem(RunProcess.runProcess)
