@@ -29,7 +29,7 @@ jobs:
         id: runtime-cache
         with:
           path: .tmp/playground-image
-          key: playground-runtime-${{ runner.os }}-${{ hashFiles('packages/playground/image/**', 'packages/playground/scripts/build-image.sh') }}
+          key: playground-runtime-${{ runner.os }}-${{ hashFiles('packages/playground/image/**', 'packages/playground/scripts/build-image.sh', '.nvmrc') }}
       - name: Build Alpine and convert to Wasm
         if: steps.runtime-cache.outputs.cache-hit != 'true'
         run: npm run build:image --workspace=packages/playground
