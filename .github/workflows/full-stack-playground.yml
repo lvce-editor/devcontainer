@@ -26,7 +26,7 @@ jobs:
         id: runtime-cache
         with:
           path: .tmp/full-stack/image
-          key: full-stack-runtime-${{ runner.os }}-${{ hashFiles('packages/devcontainer-node/src/**', 'packages/devcontainer-worker/src/**', 'packages/playground/full-stack/image/**', 'packages/playground/full-stack/workspace/**', 'packages/playground/full-stack/src/probe.ts', 'packages/playground/full-stack/build-bundle.js', 'packages/playground/full-stack/build-image.sh', 'packages/playground/full-stack/prepare-converter.js', 'package-lock.json') }}
+          key: full-stack-runtime-${{ runner.os }}-${{ hashFiles('packages/devcontainer-node/src/**', 'packages/devcontainer-worker/src/**', 'packages/playground/full-stack/image/**', 'packages/playground/full-stack/workspace/**', 'packages/playground/full-stack/src/probe.ts', 'packages/playground/full-stack/build-bundle.js', 'packages/playground/full-stack/build-image.sh', 'packages/playground/full-stack/prepare-converter.js', 'package-lock.json', '.nvmrc') }}
       - name: Build and test the real startup stack
         if: steps.runtime-cache.outputs.cache-hit != 'true'
         run: bash packages/playground/full-stack/build-image.sh
