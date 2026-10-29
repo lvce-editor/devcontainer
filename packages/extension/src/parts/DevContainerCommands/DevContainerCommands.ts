@@ -63,6 +63,10 @@ export const setDockerPath = (path: string) => {
 export const openWorkspace = async (): Promise<void> => {
   try {
     const originalWorkspace = await Workspace.getFolder()
+    if (originalWorkspace.startsWith('remote-server://')) {
+      await executeCommand('remote-server.reopenInContainer')
+      return
+    }
     const result = (await Progress.run(
       'DevContainer.openWorkspace',
       originalWorkspace,

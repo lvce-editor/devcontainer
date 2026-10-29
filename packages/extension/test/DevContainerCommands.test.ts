@@ -187,3 +187,10 @@ await test('workspace readiness stays false until the deferred view refresh comp
   const ready = await Commands.getState()
   assert.equal(ready.workspaceReady, true)
 })
+
+await test('tunnel workspaces reopen through the authenticated remote server without a local Node RPC', async () => {
+  workspaceUri = 'remote-server://host/workspace'
+  await Commands.openWorkspace()
+  assert.deepEqual(calls, [['remote-server.reopenInContainer']])
+  assert.deepEqual(progressCalls, [])
+})
