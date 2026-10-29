@@ -7,7 +7,7 @@
   "preserveRuntimeOnWorkspaceChange": true,
   "contentSecurityPolicy": ["default-src 'none'", "script-src 'self'"],
   "compatibility": {
-    "web": false
+    "web": true
   },
   "rpc": [
     {
